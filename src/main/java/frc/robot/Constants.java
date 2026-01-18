@@ -4,6 +4,21 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
+import frc.robot.generated.TunerConstants;
+
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
  * constants. This class should not be used for any other purpose. All constants should be declared
@@ -36,5 +51,24 @@ public final class Constants {
     public static final double shooterTimeMargin = 0; // TODO
 
     public static final double hoodToMotorRatio = 0; // TODO
+  }
+
+  public static class Drive {
+    public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
+    public static final LinearAcceleration MAX_ACCELERATION =
+        MetersPerSecondPerSecond.of(3); // TODO measure
+    public static final AngularVelocity MAX_ANGULAR_RATE =
+        RotationsPerSecond.of(0.75); // TODO measure
+    public static final AngularAcceleration MAX_ANGULAR_ACCELERATION =
+        RotationsPerSecondPerSecond.of(1); // TODO  measure
+    public static final double SLOW_SPEED_SCALAR = 0.3;
+    public static final double FAST_SPEED_SCALAR = 1.0;
+
+    public static final Translation2d HUB_COORDINATES = new Translation2d(4.619, 4.049);
+
+    public static final TrapezoidProfile.Constraints TURN_CONSTRAINTS =
+      new TrapezoidProfile.Constraints(
+          MAX_ANGULAR_RATE.in(RadiansPerSecond),
+          MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond));
   }
 }
