@@ -1,5 +1,8 @@
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.MetersPerSecond;
+
+import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import org.lasarobotics.fsm.StateMachine;
@@ -18,6 +21,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.Constants;
 import frc.robot.LoopTimer;
 import frc.robot.generated.TunerConstants;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
     public static record Hardware() {}
@@ -54,10 +58,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
                       Constants.Drive.MAX_ANGULAR_RATE
                           .times(-s_rotateRequest.getAsDouble())
                           .times(s_driveSpeedScalar)));
-          }
+        }
         @Override
         public SystemState nextState() {
           if (DriverStation.isAutonomous()) return AUTO;
+          if (fuelAlignRisingEdge()) return FUEL_ALIGN;
           return this;
         }
       },
@@ -106,7 +111,55 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       },
       FUEL_ALIGN {
+        @Override
+        public void execute() {
+          if (!s_vision.hasValidTarget()) {
+            s_drivetrain.setControl(
+                s_robotAlign
+                    .withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(0));
+            return;
+          }
+
+          Translation2d robotTranslation = s_vision.getRobotRelativeTranslation();
+          double distance = s_vision.getTargetDistance();
+
+          if (distance < Constants.Drive.FUEL_ALIGN_STOP_DISTANCE_METERS) {
+            s_drivetrain.setControl(
+                s_robotAlign
+                    .withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(0));
+            return;
+          }
+
+          double cappedSpeed =
+              Constants.Drive.MAX_SPEED
+                  .times(Constants.Drive.FUEL_ALIGN_SPEED_SCALAR)
+                  .in(MetersPerSecond);
+
+          double commandedSpeed =
+              Math.min(distance * Constants.Drive.FUEL_ALIGN_DISTANCE_KP, cappedSpeed);
+
+          double translationNorm =
+              Math.max(robotTranslation.getNorm(), Constants.Vision.MIN_DISTANCE_METERS);
+          Translation2d direction = robotTranslation.div(translationNorm);
+
+          double vx = direction.getX() * commandedSpeed;
+          double vy = direction.getY() * commandedSpeed;
+
+          s_drivetrain.setControl(
+              s_robotAlign
+                  .withVelocityX(vx)
+                  .withVelocityY(vy)
+                  .withRotationalRate(0));
+        }
+
+        @Override
         public SystemState nextState() {
+          if (DriverStation.isAutonomous()) return AUTO;
+          if (!fuelAlignPressed()) return DRIVER_CONTROL;
           return this;
         }
 
@@ -116,15 +169,19 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private static CommandSwerveDrivetrain s_drivetrain;
   private static SwerveRequest.FieldCentric s_drive;
+  private static RobotCentricWithPose s_robotAlign;
+  private static VisionSubsystem s_vision;
 
   private static DoubleSupplier s_driveRequest = () -> 0;
   private static DoubleSupplier s_strafeRequest = () -> 0;
   private static DoubleSupplier s_rotateRequest = () -> 0;
+  private static BooleanSupplier s_fuelAlignRequest = () -> false;
 
   private static final Double DEADBAND_SCALAR = 0.085;
 
   private boolean m_hasAppliedOperatorPerspective = false;
 
+  private static boolean s_prevFuelAlignRequest = false;
 
   private static double s_driveSpeedScalar = Constants.Drive.FAST_SPEED_SCALAR;
 
@@ -136,6 +193,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     super(DriveStates.DRIVER_CONTROL);
 
     s_drivetrain = TunerConstants.createDrivetrain();
+    s_vision = new VisionSubsystem();
 
     s_drive =
         new SwerveRequest.FieldCentric()
@@ -144,6 +202,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             .withDriveRequestType(DriveRequestType.Velocity)
             .withSteerRequestType(SteerRequestType.MotionMagicExpo)
             .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
+
+    s_robotAlign =
+        new RobotCentricWithPose()
+            .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
+            .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1))
+            .withDriveRequestType(DriveRequestType.Velocity)
+            .withSteerRequestType(SteerRequestType.MotionMagicExpo);
 
     s_autoIntakeController = new ProfiledPIDController(
       1.0, 
@@ -157,9 +222,18 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    */
   public void bindControls(
       DoubleSupplier driveRequest, DoubleSupplier strafeRequest, DoubleSupplier rotateRequest) {
+    bindControls(driveRequest, strafeRequest, rotateRequest, () -> false);
+  }
+
+  public void bindControls(
+      DoubleSupplier driveRequest,
+      DoubleSupplier strafeRequest,
+      DoubleSupplier rotateRequest,
+      BooleanSupplier fuelAlignRequest) {
     s_driveRequest = driveRequest;
     s_strafeRequest = strafeRequest;
     s_rotateRequest = rotateRequest;
+    s_fuelAlignRequest = fuelAlignRequest;
   }
 
   /**
@@ -169,6 +243,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   public static Hardware initializeHardware() {
     Hardware driveHardware = new Hardware();
     return driveHardware;
+  }
+
+  private static boolean fuelAlignPressed() {
+    return s_fuelAlignRequest.getAsBoolean();
+  }
+
+  private static boolean fuelAlignRisingEdge() {
+    boolean pressed = fuelAlignPressed();
+    boolean rising = pressed && !s_prevFuelAlignRequest;
+    s_prevFuelAlignRequest = pressed;
+    return rising;
   }
 
   @Override
