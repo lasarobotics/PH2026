@@ -10,6 +10,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
@@ -49,5 +50,21 @@ public final class Constants {
       new TrapezoidProfile.Constraints(
           MAX_ANGULAR_RATE.in(RadiansPerSecond),
           MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond));
+
+    public static final double FUEL_ALIGN_SPEED_SCALAR = 0.15;
+    public static final double FUEL_ALIGN_STOP_DISTANCE_METERS = 0.10; // stop about 10 cm away
+    public static final double FUEL_ALIGN_DISTANCE_KP = 1.0;
+  }
+
+  public static class Vision {
+    public static final String CAMERA_NAME = "photonvision";
+    public static final int OBJECT_DETECTION_PIPELINE_INDEX = 0;
+    public static final int MAX_TARGETS_TO_PROCESS = 50; // safety/performance cap on detections
+
+    public static final double MIN_CONFIDENCE = 0.2;
+    public static final double MIN_TARGET_AREA_PERCENT = 0.1;
+    public static final double AREA_PERCENT_AT_ONE_METER = 12.0;
+    public static final double BOUNDING_BOX_AREA_AT_ONE_METER = 9000.0;
+    public static final double MIN_DISTANCE_METERS = Meters.of(0.05).in(Meters);
   }
 }
