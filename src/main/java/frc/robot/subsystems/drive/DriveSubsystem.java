@@ -15,6 +15,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -112,8 +113,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       },
       FUEL_ALIGN {
         @Override
+        public void initialize() {
+          s_fuelDistanceController.reset();
+        }
+
+        @Override
         public void execute() {
-          if (!s_vision.hasValidTarget()) {
+          if (isIntakeFull() || !s_vision.hasValidTarget()) {
+            s_hasRegisteredPickup = false;
+            s_pickupDebounceFrames = 0;
             s_drivetrain.setControl(
                 s_robotAlign
                     .withVelocityX(0)
@@ -126,6 +134,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           double distance = s_vision.getTargetDistance();
 
           if (distance < Constants.Drive.FUEL_ALIGN_STOP_DISTANCE_METERS) {
+            if (!s_hasRegisteredPickup) {
+              s_pickupDebounceFrames++;
+              if (s_pickupDebounceFrames >= PICKUP_CONFIRM_FRAMES) {
+                registerPickup();
+                s_hasRegisteredPickup = true;
+                s_pickupDebounceFrames = 0;
+                s_vision.clearTargetLock();
+              }
+            }
             s_drivetrain.setControl(
                 s_robotAlign
                     .withVelocityX(0)
@@ -134,13 +151,32 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             return;
           }
 
+          s_hasRegisteredPickup = false;
+          s_pickupDebounceFrames = 0;
+
           double cappedSpeed =
               Constants.Drive.MAX_SPEED
                   .times(Constants.Drive.FUEL_ALIGN_SPEED_SCALAR)
                   .in(MetersPerSecond);
 
+          double errorDistance = distance - Constants.Drive.FUEL_ALIGN_STOP_DISTANCE_METERS;
+          if (Math.abs(errorDistance) < 0.02) {
+            s_drivetrain.setControl(
+                s_robotAlign
+                    .withVelocityX(0)
+                    .withVelocityY(0)
+                    .withRotationalRate(0));
+            return;
+          }
+
+          double pidOutput =
+              s_fuelDistanceController.calculate(
+                  distance, Constants.Drive.FUEL_ALIGN_STOP_DISTANCE_METERS);
+          double minForward = cappedSpeed * 0.1;
           double commandedSpeed =
-              Math.min(distance * Constants.Drive.FUEL_ALIGN_DISTANCE_KP, cappedSpeed);
+              Math.min(
+                  Math.max(Math.max(pidOutput, 0), minForward),
+                  cappedSpeed);
 
           double translationNorm =
               Math.max(robotTranslation.getNorm(), Constants.Vision.MIN_DISTANCE_METERS);
@@ -182,12 +218,19 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private boolean m_hasAppliedOperatorPerspective = false;
 
   private static boolean s_prevFuelAlignRequest = false;
+  private static boolean s_hasRegisteredPickup = false;
+  private static double s_estimatedBallsCollected = 0.0;
+  private static int s_pickupDebounceFrames = 0;
 
   private static double s_driveSpeedScalar = Constants.Drive.FAST_SPEED_SCALAR;
 
   private static ProfiledPIDController s_autoAimController;
   private static ProfiledPIDController s_climbAutoAlignController;
   private static ProfiledPIDController s_autoIntakeController;
+  private static PIDController s_fuelDistanceController;
+  private static final double PICKUP_EFFICIENCY = 0.9;
+  private static final int MAX_BALL_CAPACITY = 60;
+  private static final int PICKUP_CONFIRM_FRAMES = 5;
 
   public DriveSubsystem(Hardware driveHardware) {
     super(DriveStates.DRIVER_CONTROL);
@@ -215,6 +258,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       1.0, 
       1.0, 
       Constants.Drive.TURN_CONSTRAINTS);
+    s_fuelDistanceController = new PIDController(1.0, 0.0, 0.0);
   }
 
   /*
@@ -249,6 +293,14 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return s_fuelAlignRequest.getAsBoolean();
   }
 
+  private static boolean isIntakeFull() {
+    return s_estimatedBallsCollected >= MAX_BALL_CAPACITY;
+  }
+
+  private static void registerPickup() {
+    s_estimatedBallsCollected = Math.min(s_estimatedBallsCollected + PICKUP_EFFICIENCY, MAX_BALL_CAPACITY);
+  }
+
   private static boolean fuelAlignRisingEdge() {
     boolean pressed = fuelAlignPressed();
     boolean rising = pressed && !s_prevFuelAlignRequest;
@@ -260,6 +312,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   public void periodic() {
 
     LoopTimer.addTimestamp(getName() + " Start");
+    Logger.recordOutput("Drive/EstimatedBalls", s_estimatedBallsCollected);
+    Logger.recordOutput("Drive/IntakeFull", isIntakeFull());
 
     /*
      * Periodically try to apply the operator perspective.
