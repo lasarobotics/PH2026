@@ -57,7 +57,7 @@ public final class Constants {
   }
 
   public static class Vision {
-    public static final String CAMERA_NAME = "photonvision";
+    public static final String CAMERA_NAME = "Arducam_OV9782_USB_Camera"; // NEED TO CHANGE!!
     public static final int OBJECT_DETECTION_PIPELINE_INDEX = 0;
     public static final int MAX_TARGETS_TO_PROCESS = 60; // can be increased, js for now kept low to help with performance
 
