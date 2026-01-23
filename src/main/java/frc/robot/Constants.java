@@ -12,6 +12,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 
+import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -75,10 +77,15 @@ public final class Constants {
     public static final double FUEL_ALIGN_SPEED_SCALAR = 0.15;
     public static final double FUEL_ALIGN_STOP_DISTANCE_METERS = 0.10; // stop about 10 cm away CAN BE CHANGED js guestimating on intake rn
     public static final double FUEL_ALIGN_DISTANCE_KP = 1.0;
+    //bump pos should go bellow
+    public static final Pose3d bumpRed1 = new Pose3d(16, 2, 0, new Rotation3d(0, 0, Math.PI / 2));
+    public static final Pose3d bumpRed2 = new Pose3d(16, 8, 0, new Rotation3d(0, 0, Math.PI / 2));
+    public static final Pose3d bumpBlue1 = new Pose3d(4, 2, 0, new Rotation3d(0, 0, Math.PI / 2));
+    public static final Pose3d bumpBlue2 = new Pose3d(4, 8, 0, new Rotation3d(0, 0, Math.PI / 2));
   }
 
   public static class Vision {
-    public static final String CAMERA_NAME = "Arducam_OV9782_USB_Camera"; // NEED TO CHANGE!!
+    public static final String CAMERA_NAME = "Arducam_OV9782_USB_Camera"; // NEED TO CHANGE maybe.....
     public static final int OBJECT_DETECTION_PIPELINE_INDEX = 0;
     public static final int MAX_TARGETS_TO_PROCESS = 60; // can be increased, js for now kept low to help with performance
 
