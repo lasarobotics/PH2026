@@ -191,5 +191,6 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     public void close() {
         m_indexerMotor.close();
         m_shooterMotor.close();
+        m_hoodMotor.close();
     }
 }
