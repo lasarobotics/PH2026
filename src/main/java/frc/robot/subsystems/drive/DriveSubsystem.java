@@ -14,6 +14,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -210,11 +211,40 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         public void initialize() {
           s_overBumpTimer.reset();
           s_overBumpTimer.start();
+          s_overBumpPhase = OverBumpPhase.TO_POSA;
+          selectClosestBumpSet();
+          s_overBumpHeadingGoal = s_targetPosA.getRotation().getZ();
+          s_overBumpDistanceController.reset();
+          s_overBumpHeadingController.reset();
         }
 
         @Override
         public void execute() {
           updateQuestPose();
+          Pose2d robotPose = s_drivetrain.getState().Pose;
+          switch (s_overBumpPhase) {
+            case TO_POSA:
+              if (driveToPose(robotPose, s_targetPosA, Constants.Drive.GO_TO_POSA_SPEED_SCALAR, OVER_BUMP_HEADING_KP, 0.1)) {
+                s_overBumpPhase = OverBumpPhase.TO_POSB;
+                s_overBumpHeadingGoal = s_targetPosB.getRotation().getZ();
+              }
+              break;
+            case TO_POSB:
+              if (driveToPose(robotPose, s_targetPosB, Constants.Drive.GO_OVER_BUMP_SPEED_SCALAR, OVER_BUMP_HEADING_KP, 0.1)) {
+                s_overBumpPhase = OverBumpPhase.TO_POSC;
+                s_overBumpHeadingGoal = s_targetPosC.getRotation().getZ();
+              }
+              break;
+            case TO_POSC:
+              if (driveToPose(robotPose, s_targetPosC, Constants.Drive.GO_DOWN_BUMP_SPEED_SCALAR, OVER_BUMP_HEADING_KP_FAST, 0.1)) {
+                s_overBumpPhase = OverBumpPhase.DONE;
+              }
+              break;
+            case DONE:
+              s_drivetrain.setControl(
+                  s_drive.withVelocityX(0).withVelocityY(0).withRotationalRate(0));
+              break;
+          }
         }
 
         @Override
@@ -225,7 +255,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         @Override
         public SystemState nextState() {
           if (DriverStation.isAutonomous()) return AUTO;
-          if (!overBumpPressed() || s_overBumpTimer.hasElapsed(OVER_BUMP_DURATION_SECONDS)) return DRIVER_CONTROL;
+          if (!overBumpPressed() || s_overBumpPhase == OverBumpPhase.DONE) return DRIVER_CONTROL;
           return this;
         }
       },
@@ -239,6 +269,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static QuestNav s_questNav;
   private static Pose3d s_latestQuestPose = new Pose3d();
   private static double s_latestQuestTimestamp = 0.0;
+  private static Pose3d s_targetPosA;
+  private static Pose3d s_targetPosB;
+  private static Pose3d s_targetPosC;
+  private static double s_lastIntakeActiveTime = Double.NEGATIVE_INFINITY;
 
   private static DoubleSupplier s_driveRequest = () -> 0;
   private static DoubleSupplier s_strafeRequest = () -> 0;
@@ -262,12 +296,18 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static ProfiledPIDController s_climbAutoAlignController;
   private static ProfiledPIDController s_autoIntakeController;
   private static PIDController s_fuelDistanceController;
+  private static PIDController s_overBumpDistanceController;
+  private static PIDController s_overBumpHeadingController;
   private static final Timer s_overBumpTimer = new Timer();
   private static final double PICKUP_EFFICIENCY = 0.9;
   private static final int MAX_BALL_CAPACITY = 60;
   private static final int PICKUP_CONFIRM_FRAMES = 5;
   private static final double OVER_BUMP_DURATION_SECONDS = 1.0;
   private static final double OVER_BUMP_SPEED_SCALAR = 0.6;
+  private static final double OVER_BUMP_HEADING_KP = 4.0;
+  private static final double OVER_BUMP_HEADING_KP_FAST = 6.0;
+  private static OverBumpPhase s_overBumpPhase = OverBumpPhase.DONE;
+  private static double s_overBumpHeadingGoal = 0.0;
 
   public DriveSubsystem(Hardware driveHardware) {
     super(DriveStates.DRIVER_CONTROL);
@@ -296,6 +336,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       1.0, 
       Constants.Drive.TURN_CONSTRAINTS);
     s_fuelDistanceController = new PIDController(1.0, 0.0, 0.0);
+    s_overBumpDistanceController = new PIDController(1.0, 0.0, 0.0);
+    s_overBumpHeadingController = new PIDController(4.0, 0.0, 0.0);
     s_questNav = new QuestNav();
   }
 
@@ -373,6 +415,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     LoopTimer.addTimestamp(getName() + " Start");
     Logger.recordOutput("Drive/EstimatedBalls", s_estimatedBallsCollected);
     Logger.recordOutput("Drive/IntakeFull", isIntakeFull());
+    if (fuelAlignPressed()) {
+      s_lastIntakeActiveTime = Timer.getFPGATimestamp();
+    }
 
     /*
      * Periodically try to apply the operator perspective.
@@ -426,5 +471,112 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   public boolean questIsTracking() {
     return s_questNav != null && s_questNav.isTracking();
+  }
+
+  private static void selectClosestBumpSet() {
+    boolean allowNZ = (Timer.getFPGATimestamp() - s_lastIntakeActiveTime) <= 5.0;
+    Pose3d[] posa = allowNZ
+        ? new Pose3d[] {
+            Constants.Drive.NZ_bumpRed1_posa,
+            Constants.Drive.NZ_bumpRed2_posa,
+            Constants.Drive.NZ_bumpBlue1_posa,
+            Constants.Drive.NZ_bumpBlue2_posa
+          }
+        : new Pose3d[] {
+            Constants.Drive.AZ_bumpRed1_posa,
+            Constants.Drive.AZ_bumpRed2_posa,
+            Constants.Drive.AZ_bumpBlue1_posa,
+            Constants.Drive.AZ_bumpBlue2_posa
+          };
+    Pose3d[] posb = allowNZ
+        ? new Pose3d[] {
+            Constants.Drive.NZ_bumpRed1_posb,
+            Constants.Drive.NZ_bumpRed2_posb,
+            Constants.Drive.NZ_bumpBlue1_posb,
+            Constants.Drive.NZ_bumpBlue2_posb
+          }
+        : new Pose3d[] {
+            Constants.Drive.AZ_bumpRed1_posb,
+            Constants.Drive.AZ_bumpRed2_posb,
+            Constants.Drive.AZ_bumpBlue1_posb,
+            Constants.Drive.AZ_bumpBlue2_posb
+          };
+    Pose3d[] posc = allowNZ
+        ? new Pose3d[] {
+            Constants.Drive.NZ_bumpRed1_posc,
+            Constants.Drive.NZ_bumpRed2_posc,
+            Constants.Drive.NZ_bumpBlue1_posc,
+            Constants.Drive.NZ_bumpBlue2_posc
+          }
+        : new Pose3d[] {
+            Constants.Drive.AZ_bumpRed1_posc,
+            Constants.Drive.AZ_bumpRed2_posc,
+            Constants.Drive.AZ_bumpBlue1_posc,
+            Constants.Drive.AZ_bumpBlue2_posc
+          };
+
+    Pose2d robotPose = s_drivetrain.getState().Pose;
+    double bestDistance = Double.POSITIVE_INFINITY;
+    int bestIndex = 0;
+    for (int i = 0; i < posa.length; i++) {
+      double distance =
+          robotPose.getTranslation().getDistance(posa[i].getTranslation().toTranslation2d());
+      if (distance < bestDistance) {
+        bestDistance = distance;
+        bestIndex = i;
+      }
+    }
+
+    s_targetPosA = posa[bestIndex];
+    s_targetPosB = posb[bestIndex];
+    s_targetPosC = posc[bestIndex];
+  }
+
+  private static boolean driveToPose(
+      Pose2d currentPose,
+      Pose3d targetPose,
+      double speedScalar,
+      double headingKp,
+      double stopDistance) {
+    Translation2d targetTranslation = targetPose.getTranslation().toTranslation2d();
+    Translation2d error = targetTranslation.minus(currentPose.getTranslation());
+    double distance = error.getNorm();
+
+    double targetHeading = targetPose.getRotation().getZ();
+    s_overBumpHeadingController.setP(headingKp);
+    double rotationalRate =
+        s_overBumpHeadingController.calculate(currentPose.getRotation().getRadians(), targetHeading);
+
+    if (distance < stopDistance) {
+      s_drivetrain.setControl(
+          s_drive
+              .withVelocityX(0)
+              .withVelocityY(0)
+              .withRotationalRate(rotationalRate));
+      return true;
+    }
+
+    Translation2d direction = error.div(Math.max(distance, 1e-6));
+    s_overBumpDistanceController.setP(speedScalar);
+    double speedCommand =
+        Math.min(
+            Math.max(s_overBumpDistanceController.calculate(distance, 0), 0),
+            Constants.Drive.MAX_SPEED.in(MetersPerSecond) * speedScalar);
+    double vx = direction.getX() * speedCommand;
+    double vy = direction.getY() * speedCommand;
+
+    s_drivetrain.setControl(
+        s_drive
+            .withVelocityX(vx)
+            .withVelocityY(vy)
+            .withRotationalRate(rotationalRate));
+    return false;
+  }
+
+  private enum OverBumpPhase {
+    TO_POSA,
+    TO_POSB,
+    TO_POSC,
+    DONE
   }
 }
