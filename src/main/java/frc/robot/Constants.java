@@ -20,10 +20,11 @@ public final class Constants {
   public static class ShooterSubsystem {
     public static final int shooterMotorId = 0; // TODO
     public static final int indexerMotorId = 0; // TODO
+    public static final int hoodMotorId = 0; // TODO
 
     // TODO should be between -1 and 1
     public static final double indexerMotorSpeed = 0;
-    
+
     // TODO find value for this
     // set shooter motor to constant speed
     // ideally, this will be somewhere in the
