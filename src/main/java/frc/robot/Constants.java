@@ -16,4 +16,18 @@ public final class Constants {
   public static class OperatorConstants {
     public static final int kDriverControllerPort = 0;
   }
+
+  public static class ShooterSubsystem {
+    public static final int shooterMotorId = 0; // TODO
+    public static final int indexerMotorId = 0; // TODO
+
+    // TODO should be between -1 and 1
+    public static final double indexerMotorSpeed = 0;
+    
+    // TODO find value for this
+    // set shooter motor to constant speed
+    // ideally, this will be somewhere in the
+    // middle of how fast we generally shoot
+    public static final double shooterHoldSpeed = 0;
+  }
 }
