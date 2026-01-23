@@ -14,11 +14,15 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
-import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
+import gg.questnav.questnav.PoseFrame;
+import gg.questnav.questnav.QuestNav;
 import frc.robot.Constants;
 import frc.robot.LoopTimer;
 import frc.robot.generated.TunerConstants;
@@ -63,6 +67,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         @Override
         public SystemState nextState() {
           if (DriverStation.isAutonomous()) return AUTO;
+          if (overBumpRisingEdge()) return OVER_BUMP;
           if (fuelAlignRisingEdge()) return FUEL_ALIGN;
           return this;
         }
@@ -200,6 +205,30 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         }
 
       },
+      OVER_BUMP {
+        @Override
+        public void initialize() {
+          s_overBumpTimer.reset();
+          s_overBumpTimer.start();
+        }
+
+        @Override
+        public void execute() {
+          updateQuestPose();
+        }
+
+        @Override
+        public void end(boolean interrupted) {
+          s_overBumpTimer.stop();
+        }
+
+        @Override
+        public SystemState nextState() {
+          if (DriverStation.isAutonomous()) return AUTO;
+          if (!overBumpPressed() || s_overBumpTimer.hasElapsed(OVER_BUMP_DURATION_SECONDS)) return DRIVER_CONTROL;
+          return this;
+        }
+      },
     }
 
 
@@ -207,17 +236,22 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static SwerveRequest.FieldCentric s_drive;
   private static RobotCentricWithPose s_robotAlign;
   private static VisionSubsystem s_vision;
+  private static QuestNav s_questNav;
+  private static Pose3d s_latestQuestPose = new Pose3d();
+  private static double s_latestQuestTimestamp = 0.0;
 
   private static DoubleSupplier s_driveRequest = () -> 0;
   private static DoubleSupplier s_strafeRequest = () -> 0;
   private static DoubleSupplier s_rotateRequest = () -> 0;
   private static BooleanSupplier s_fuelAlignRequest = () -> false;
+  private static BooleanSupplier s_overBumpRequest = () -> false;
 
   private static final Double DEADBAND_SCALAR = 0.085;
 
   private boolean m_hasAppliedOperatorPerspective = false;
 
   private static boolean s_prevFuelAlignRequest = false;
+  private static boolean s_prevOverBumpRequest = false;
   private static boolean s_hasRegisteredPickup = false;
   private static double s_estimatedBallsCollected = 0.0;
   private static int s_pickupDebounceFrames = 0;
@@ -228,9 +262,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static ProfiledPIDController s_climbAutoAlignController;
   private static ProfiledPIDController s_autoIntakeController;
   private static PIDController s_fuelDistanceController;
+  private static final Timer s_overBumpTimer = new Timer();
   private static final double PICKUP_EFFICIENCY = 0.9;
   private static final int MAX_BALL_CAPACITY = 60;
   private static final int PICKUP_CONFIRM_FRAMES = 5;
+  private static final double OVER_BUMP_DURATION_SECONDS = 1.0;
+  private static final double OVER_BUMP_SPEED_SCALAR = 0.6;
 
   public DriveSubsystem(Hardware driveHardware) {
     super(DriveStates.DRIVER_CONTROL);
@@ -259,6 +296,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       1.0, 
       Constants.Drive.TURN_CONSTRAINTS);
     s_fuelDistanceController = new PIDController(1.0, 0.0, 0.0);
+    s_questNav = new QuestNav();
   }
 
   /*
@@ -266,7 +304,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    */
   public void bindControls(
       DoubleSupplier driveRequest, DoubleSupplier strafeRequest, DoubleSupplier rotateRequest) {
-    bindControls(driveRequest, strafeRequest, rotateRequest, () -> false);
+    bindControls(driveRequest, strafeRequest, rotateRequest, () -> false, () -> false);
   }
 
   public void bindControls(
@@ -274,10 +312,20 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       DoubleSupplier strafeRequest,
       DoubleSupplier rotateRequest,
       BooleanSupplier fuelAlignRequest) {
+    bindControls(driveRequest, strafeRequest, rotateRequest, fuelAlignRequest, () -> false);
+  }
+
+  public void bindControls(
+      DoubleSupplier driveRequest,
+      DoubleSupplier strafeRequest,
+      DoubleSupplier rotateRequest,
+      BooleanSupplier fuelAlignRequest,
+      BooleanSupplier overBumpRequest) {
     s_driveRequest = driveRequest;
     s_strafeRequest = strafeRequest;
     s_rotateRequest = rotateRequest;
     s_fuelAlignRequest = fuelAlignRequest;
+    s_overBumpRequest = overBumpRequest;
   }
 
   /**
@@ -293,6 +341,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return s_fuelAlignRequest.getAsBoolean();
   }
 
+  private static boolean overBumpPressed() {
+    return s_overBumpRequest.getAsBoolean();
+  }
+
   private static boolean isIntakeFull() {
     return s_estimatedBallsCollected >= MAX_BALL_CAPACITY;
   }
@@ -305,6 +357,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     boolean pressed = fuelAlignPressed();
     boolean rising = pressed && !s_prevFuelAlignRequest;
     s_prevFuelAlignRequest = pressed;
+    return rising;
+  }
+
+  private static boolean overBumpRisingEdge() {
+    boolean pressed = overBumpPressed();
+    boolean rising = pressed && !s_prevOverBumpRequest;
+    s_prevOverBumpRequest = pressed;
     return rising;
   }
 
@@ -335,7 +394,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     } else {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
     }
-
   }
 
   @Override
@@ -343,4 +401,30 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_drivetrain.close();
   }
 
+  private static void updateQuestPose() {
+    if (s_questNav == null) return;
+    s_questNav.commandPeriodic();
+    PoseFrame[] frames = s_questNav.getAllUnreadPoseFrames();
+    if (frames.length > 0) {
+      PoseFrame frame = frames[frames.length - 1];
+      if (frame.isTracking()) {
+        s_latestQuestPose = frame.questPose3d();
+        s_latestQuestTimestamp = frame.dataTimestamp();
+      }
+    }
+    Logger.recordOutput("Drive/QuestPose", s_latestQuestPose);
+    Logger.recordOutput("Drive/QuestPoseTimestamp", s_latestQuestTimestamp);
+  }
+
+  public Pose3d getQuestPose() {
+    return s_latestQuestPose;
+  }
+
+  public double getQuestPoseTimestamp() {
+    return s_latestQuestTimestamp;
+  }
+
+  public boolean questIsTracking() {
+    return s_questNav != null && s_questNav.isTracking();
+  }
 }
