@@ -30,5 +30,7 @@ public final class Constants {
     // ideally, this will be somewhere in the
     // middle of how fast we generally shoot
     public static final double shooterHoldSpeed = 0;
+
+    public static final double shooterSpeedTolerance = 0; // TODO
   }
 }

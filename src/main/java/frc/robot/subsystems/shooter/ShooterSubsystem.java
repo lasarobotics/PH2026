@@ -1,12 +1,17 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.RotationsPerSecond;
+
 import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.Constants;
 
 public class ShooterSubsystem extends StateMachine implements AutoCloseable {
@@ -54,16 +59,16 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         },
         SHOOTING {
             @Override
-            public void initialize() {
-                s_shooterSubsystem.index();
-            }
-
-            @Override
             public void execute() {
                 // set shooter to desired speed
                 s_shooterSubsystem.shoot();
                 // set the hood to the optimal position
                 s_shooterSubsystem.adjustHood();
+                if (s_shooterSubsystem.atShootSpeed()) {
+                    s_shooterSubsystem.index();
+                } else {
+                    s_shooterSubsystem.stopIndexer();
+                }
             }
 
             @Override
@@ -87,6 +92,10 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     private TalonFX m_indexerMotor;
     private TalonFX m_hoodMotor;
 
+    private final MotionMagicVelocityVoltage m_shooterRequest;
+    private final MotionMagicVelocityVoltage m_indexerRequest;
+    private final MotionMagicVoltage m_hoodRequest;
+
     public static ShooterSubsystem getInstance() {
         if (s_shooterSubsystem == null) {
             s_shooterSubsystem = new ShooterSubsystem();
@@ -106,17 +115,27 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
-        m_shooterMotor.getConfigurator().apply(shooterConfig);        m_indexerMotor.getConfigurator().apply(indexerConfig);
+        m_shooterMotor.getConfigurator().apply(shooterConfig);
         m_indexerMotor.getConfigurator().apply(indexerConfig);
         m_hoodMotor.getConfigurator().apply(hoodConfig);
 
+        // TODO finish configuring these
+        // configuration is done via talonfx configs
+        m_shooterRequest = new MotionMagicVelocityVoltage(0);
+
+        m_indexerRequest = new MotionMagicVelocityVoltage(0);
+
+        // configuration for this is done via talonfx configs
+        m_hoodRequest = new MotionMagicVoltage(0);
     }
 
     /**
      * Stop the {@link #m_indexerMotor indexer motor}.
      */
     public void stopIndexer() {
-        m_indexerMotor.set(0);
+        m_indexerMotor.setControl(
+            m_indexerRequest.withVelocity(0)
+        );
     }
 
     /**
@@ -125,14 +144,18 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
      * {@link Constants.ShooterSubsystem#indexerHoldSpeed indexer hold speed}.
      */
     public void index() {
-        m_indexerMotor.set(Constants.ShooterSubsystem.indexerMotorSpeed);
+        m_indexerMotor.setControl(
+            m_indexerRequest.withVelocity(Constants.ShooterSubsystem.indexerMotorSpeed)
+        );
     }
 
     /**
      * Stop the {@link #m_shooterMotor shooter motor}.
      */
     public void stopShooter() {
-        m_shooterMotor.set(0);
+        m_shooterMotor.setControl(
+            m_shooterRequest.withVelocity(0)
+        );
     }
 
     /**
@@ -141,7 +164,9 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
      * {@link Constants.ShooterSubsystem#shooterHoldSpeed shooter hold speed}.
      */
     public void holdShooter() {
-        m_shooterMotor.set(Constants.ShooterSubsystem.shooterHoldSpeed);
+        m_shooterMotor.setControl(
+            m_shooterRequest.withVelocity(Constants.ShooterSubsystem.shooterHoldSpeed)
+        );
     }
 
     /**
@@ -150,7 +175,18 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
      * according to {@link #wantedShooterSpeed()}
      */
     public void shoot() {
-        m_shooterMotor.set(wantedShooterSpeed());
+        m_shooterMotor.setControl(
+            m_shooterRequest.withVelocity(wantedShooterSpeed())
+        );
+    }
+
+    // TODO verify this works and write javadoc
+    public boolean atShootSpeed() {
+        AngularVelocity v = m_shooterMotor.getVelocity().getValue();
+        return v.isNear(
+            RotationsPerSecond.of(wantedShooterSpeed()),
+            Constants.ShooterSubsystem.shooterSpeedTolerance
+        );
     }
 
     /**
@@ -158,10 +194,8 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
      * (i.e. stop the hood)
      */
     public void stopHood() {
-        PositionVoltage control = new PositionVoltage(
-            m_hoodMotor.getPosition().getValue()
-        );
-        m_hoodMotor.setControl(control);
+        double pos = m_hoodMotor.getPosition().getValueAsDouble();
+        m_hoodMotor.setControl(m_hoodRequest.withPosition(pos));
     }
 
     /**
@@ -170,14 +204,13 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
      * according to {@link #wantedHoodPosition()}
      */
     public void adjustHood() {
-        PositionVoltage control = new PositionVoltage(
-            wantedHoodPosition()
+        m_hoodMotor.setControl(
+            m_hoodRequest.withPosition(wantedHoodPosition())
         );
-        m_hoodMotor.setControl(control);
     }
 
     // TODO implement
-    // return between -1 and 1
+    // return rotations per second
     public double wantedShooterSpeed() {
         return 0;
     }
@@ -185,6 +218,13 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     // TODO implement
     // return a number of rotations
     public double wantedHoodPosition() {
+        return 0;
+    }
+
+    // TODO implement
+    // to be honest, I think that phoenix6 already does this?
+    // (RotorToSensor ratio)
+    public double hoodAngleToRotations(Angle angle) {
         return 0;
     }
 
