@@ -65,7 +65,7 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
                 s_shooterSubsystem.shoot();
                 // set the hood to the optimal position
                 s_shooterSubsystem.adjustHood();
-                if (s_shooterSubsystem.atShootSpeed()) {
+                if (s_shooterSubsystem.readyToShoot()) {
                     s_shooterSubsystem.index();
                 } else {
                     s_shooterSubsystem.stopIndexer();
@@ -211,6 +211,17 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         m_hoodMotor.setControl(
             m_hoodRequest.withPosition(wantedHoodPosition())
         );
+    }
+
+    // TODO add extra checks for if it's ok to shoot
+    // check rotation/position
+    // would also need to check if passing
+    /**
+     * Checks that the robot is probably going to make it in if it shoots right now
+     * @return If robot is in a good position to shoot
+     */
+    public boolean readyToShoot() {
+        return atShootSpeed();
     }
 
     // TODO implement
