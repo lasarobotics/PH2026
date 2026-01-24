@@ -14,10 +14,10 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -213,7 +213,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           s_overBumpTimer.start();
           s_overBumpPhase = OverBumpPhase.TO_POSA;
           selectClosestBumpSet();
-          s_overBumpHeadingGoal = s_targetPosA.getRotation().getZ();
+          s_overBumpHeadingGoal = s_targetPosA.getRotation().getRadians();
           s_overBumpDistanceController.reset();
           s_overBumpHeadingController.reset();
         }
@@ -226,13 +226,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             case TO_POSA:
               if (driveToPose(robotPose, s_targetPosA, Constants.Drive.GO_TO_POSA_SPEED_SCALAR, OVER_BUMP_HEADING_KP, 0.1)) {
                 s_overBumpPhase = OverBumpPhase.TO_POSB;
-                s_overBumpHeadingGoal = s_targetPosB.getRotation().getZ();
+                s_overBumpHeadingGoal = s_targetPosB.getRotation().getRadians();
               }
               break;
             case TO_POSB:
               if (driveToPose(robotPose, s_targetPosB, Constants.Drive.GO_OVER_BUMP_SPEED_SCALAR, OVER_BUMP_HEADING_KP, 0.1)) {
                 s_overBumpPhase = OverBumpPhase.TO_POSC;
-                s_overBumpHeadingGoal = s_targetPosC.getRotation().getZ();
+                s_overBumpHeadingGoal = s_targetPosC.getRotation().getRadians();
               }
               break;
             case TO_POSC:
@@ -269,9 +269,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static QuestNav s_questNav;
   private static Pose3d s_latestQuestPose = new Pose3d();
   private static double s_latestQuestTimestamp = 0.0;
-  private static Pose3d s_targetPosA;
-  private static Pose3d s_targetPosB;
-  private static Pose3d s_targetPosC;
+  private static Pose2d s_targetPosA;
+  private static Pose2d s_targetPosB;
+  private static Pose2d s_targetPosC;
   private static double s_lastIntakeActiveTime = Double.NEGATIVE_INFINITY;
 
   private static DoubleSupplier s_driveRequest = () -> 0;
@@ -475,40 +475,40 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private static void selectClosestBumpSet() {
     boolean allowNZ = (Timer.getFPGATimestamp() - s_lastIntakeActiveTime) <= 5.0;
-    Pose3d[] posa = allowNZ
-        ? new Pose3d[] {
+    Pose2d[] posa = allowNZ
+        ? new Pose2d[] {
             Constants.Drive.NZ_bumpRed1_posa,
             Constants.Drive.NZ_bumpRed2_posa,
             Constants.Drive.NZ_bumpBlue1_posa,
             Constants.Drive.NZ_bumpBlue2_posa
           }
-        : new Pose3d[] {
+        : new Pose2d[] {
             Constants.Drive.AZ_bumpRed1_posa,
             Constants.Drive.AZ_bumpRed2_posa,
             Constants.Drive.AZ_bumpBlue1_posa,
             Constants.Drive.AZ_bumpBlue2_posa
           };
-    Pose3d[] posb = allowNZ
-        ? new Pose3d[] {
+    Pose2d[] posb = allowNZ
+        ? new Pose2d[] {
             Constants.Drive.NZ_bumpRed1_posb,
             Constants.Drive.NZ_bumpRed2_posb,
             Constants.Drive.NZ_bumpBlue1_posb,
             Constants.Drive.NZ_bumpBlue2_posb
           }
-        : new Pose3d[] {
+        : new Pose2d[] {
             Constants.Drive.AZ_bumpRed1_posb,
             Constants.Drive.AZ_bumpRed2_posb,
             Constants.Drive.AZ_bumpBlue1_posb,
             Constants.Drive.AZ_bumpBlue2_posb
           };
-    Pose3d[] posc = allowNZ
-        ? new Pose3d[] {
+    Pose2d[] posc = allowNZ
+        ? new Pose2d[] {
             Constants.Drive.NZ_bumpRed1_posc,
             Constants.Drive.NZ_bumpRed2_posc,
             Constants.Drive.NZ_bumpBlue1_posc,
             Constants.Drive.NZ_bumpBlue2_posc
           }
-        : new Pose3d[] {
+        : new Pose2d[] {
             Constants.Drive.AZ_bumpRed1_posc,
             Constants.Drive.AZ_bumpRed2_posc,
             Constants.Drive.AZ_bumpBlue1_posc,
@@ -520,7 +520,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     int bestIndex = 0;
     for (int i = 0; i < posa.length; i++) {
       double distance =
-          robotPose.getTranslation().getDistance(posa[i].getTranslation().toTranslation2d());
+          robotPose.getTranslation().getDistance(posa[i].getTranslation());
       if (distance < bestDistance) {
         bestDistance = distance;
         bestIndex = i;
@@ -534,15 +534,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private static boolean driveToPose(
       Pose2d currentPose,
-      Pose3d targetPose,
-      double speedScalar,
+      Pose2d targetPose,
+      double speedMetersPerSecond,
       double headingKp,
       double stopDistance) {
-    Translation2d targetTranslation = targetPose.getTranslation().toTranslation2d();
+    Translation2d targetTranslation = targetPose.getTranslation();
     Translation2d error = targetTranslation.minus(currentPose.getTranslation());
     double distance = error.getNorm();
 
-    double targetHeading = targetPose.getRotation().getZ();
+    double targetHeading = targetPose.getRotation().getRadians();
     s_overBumpHeadingController.setP(headingKp);
     double rotationalRate =
         s_overBumpHeadingController.calculate(currentPose.getRotation().getRadians(), targetHeading);
@@ -557,11 +557,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
 
     Translation2d direction = error.div(Math.max(distance, 1e-6));
-    s_overBumpDistanceController.setP(speedScalar);
+    s_overBumpDistanceController.setP(1.0);
     double speedCommand =
         Math.min(
             Math.max(s_overBumpDistanceController.calculate(distance, 0), 0),
-            Constants.Drive.MAX_SPEED.in(MetersPerSecond) * speedScalar);
+            speedMetersPerSecond);
     double vx = direction.getX() * speedCommand;
     double vy = direction.getY() * speedCommand;
 

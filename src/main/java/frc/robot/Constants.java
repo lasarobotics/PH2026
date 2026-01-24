@@ -4,16 +4,15 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Meters;
 
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.AngularAcceleration;
@@ -56,39 +55,40 @@ public final class Constants {
     public static final double FUEL_ALIGN_SPEED_SCALAR = 0.15;
     public static final double FUEL_ALIGN_STOP_DISTANCE_METERS = 0.10; // stop about 10 cm away CAN BE CHANGED js guestimating on intake rn
     public static final double FUEL_ALIGN_DISTANCE_KP = 1.0;
-    public static final double GO_TO_POSA_SPEED_SCALAR = 0.9;
-    public static final double GO_OVER_BUMP_SPEED_SCALAR = 0.4;
-    public static final double GO_DOWN_BUMP_SPEED_SCALAR = 0.3;
+    public static final double GO_TO_POSA_SPEED_SCALAR = 1.0;
+    public static final double GO_OVER_BUMP_SPEED_SCALAR = 1.0;
+    public static final double GO_DOWN_BUMP_SPEED_SCALAR = 1.0;
     // bump pos should go below
-    public static final Pose3d AZ_bumpRed1_posa = new Pose3d(16, 2, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d AZ_bumpRed2_posa = new Pose3d(16, 8, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d AZ_bumpBlue1_posa = new Pose3d(4, 2, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d AZ_bumpBlue2_posa = new Pose3d(4, 8, 0, new Rotation3d(0, 0, Math.PI / 4));
+    public static final Pose2d AZ_bumpRed1_posa = new Pose2d(12.846304, 2.498344, new Rotation2d(Math.PI / 4));
+    public static final Pose2d AZ_bumpRed2_posa = new Pose2d(12.846304, 5.546344, new Rotation2d(Math.PI / 4));
+    public static final Pose2d AZ_bumpBlue1_posa = new Pose2d(3.661664, 2.498344, new Rotation2d(Math.PI / 4));
+    public static final Pose2d AZ_bumpBlue2_posa = new Pose2d(3.661664, 5.546344, new Rotation2d(Math.PI / 4));
 
-    public static final Pose3d AZ_bumpRed1_posb = new Pose3d(16, 2, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d AZ_bumpRed2_posb = new Pose3d(16, 8, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d AZ_bumpBlue1_posb = new Pose3d(4, 2, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d AZ_bumpBlue2_posb = new Pose3d(4, 8, 0, new Rotation3d(0, 0, Math.PI / 4));
+    public static final Pose2d AZ_bumpRed1_posb = new Pose2d(11.938, 2.498344, new Rotation2d(Math.PI / 4));
+    public static final Pose2d AZ_bumpRed2_posb = new Pose2d(11.938, 5.546344, new Rotation2d(Math.PI / 4));
+    public static final Pose2d AZ_bumpBlue1_posb = new Pose2d(4.6482, 2.498344, new Rotation2d(Math.PI / 4));
+    public static final Pose2d AZ_bumpBlue2_posb = new Pose2d(4.6482, 5.546344, new Rotation2d(Math.PI / 4));
 
-    public static final Pose3d AZ_bumpRed1_posc = new Pose3d(16, 2, 0, new Rotation3d(0, 0, 0));
-    public static final Pose3d AZ_bumpRed2_posc = new Pose3d(16, 8, 0, new Rotation3d(0, 0, 0));
-    public static final Pose3d AZ_bumpBlue1_posc = new Pose3d(4, 2, 0, new Rotation3d(0, 0, 0));
-    public static final Pose3d AZ_bumpBlue2_posc = new Pose3d(4, 8, 0, new Rotation3d(0, 0, 0));
+    public static final Pose2d AZ_bumpRed1_posc = new Pose2d(13.0048, 2.498344, new Rotation2d(0));
+    public static final Pose2d AZ_bumpRed2_posc = new Pose2d(13.0048, 5.546344, new Rotation2d(0));
+    public static final Pose2d AZ_bumpBlue1_posc = new Pose2d(5.715, 2.498344, new Rotation2d(0));
+    public static final Pose2d AZ_bumpBlue2_posc = new Pose2d(5.715, 5.546344, new Rotation2d(0));
 
-    public static final Pose3d NZ_bumpRed1_posa = new Pose3d(16, 2, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d NZ_bumpRed2_posa = new Pose3d(16, 8, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d NZ_bumpBlue1_posa = new Pose3d(4, 2, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d NZ_bumpBlue2_posa = new Pose3d(4, 8, 0, new Rotation3d(0, 0, Math.PI / 4));
+    // NZ has 1000 rn bc we are not testing that rn
+    public static final Pose2d NZ_bumpRed1_posa = new Pose2d(1000, 1000, new Rotation2d(Math.PI / 4));
+    public static final Pose2d NZ_bumpRed2_posa = new Pose2d(1000, 1000, new Rotation2d(Math.PI / 4));
+    public static final Pose2d NZ_bumpBlue1_posa = new Pose2d(1000, 1000, new Rotation2d(Math.PI / 4));
+    public static final Pose2d NZ_bumpBlue2_posa = new Pose2d(1000, 1000, new Rotation2d(Math.PI / 4));
 
-    public static final Pose3d NZ_bumpRed1_posb = new Pose3d(16, 2, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d NZ_bumpRed2_posb = new Pose3d(16, 8, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d NZ_bumpBlue1_posb = new Pose3d(4, 2, 0, new Rotation3d(0, 0, Math.PI / 4));
-    public static final Pose3d NZ_bumpBlue2_posb = new Pose3d(4, 8, 0, new Rotation3d(0, 0, Math.PI / 4));
+    public static final Pose2d NZ_bumpRed1_posb = new Pose2d(1000, 1000, new Rotation2d(Math.PI / 4));
+    public static final Pose2d NZ_bumpRed2_posb = new Pose2d(1000, 1000, new Rotation2d(Math.PI / 4));
+    public static final Pose2d NZ_bumpBlue1_posb = new Pose2d(1000, 1000, new Rotation2d(Math.PI / 4));
+    public static final Pose2d NZ_bumpBlue2_posb = new Pose2d(1000, 1000, new Rotation2d(Math.PI / 4));
 
-    public static final Pose3d NZ_bumpRed1_posc = new Pose3d(16, 2, 0, new Rotation3d(0, 0, 0));
-    public static final Pose3d NZ_bumpRed2_posc = new Pose3d(16, 8, 0, new Rotation3d(0, 0, 0));
-    public static final Pose3d NZ_bumpBlue1_posc = new Pose3d(4, 2, 0, new Rotation3d(0, 0, 0));
-    public static final Pose3d NZ_bumpBlue2_posc = new Pose3d(4, 8, 0, new Rotation3d(0, 0, 0));
+    public static final Pose2d NZ_bumpRed1_posc = new Pose2d(1000, 1000, new Rotation2d(0));
+    public static final Pose2d NZ_bumpRed2_posc = new Pose2d(1000, 1000, new Rotation2d(0));
+    public static final Pose2d NZ_bumpBlue1_posc = new Pose2d(1000, 1000, new Rotation2d(0));
+    public static final Pose2d NZ_bumpBlue2_posc = new Pose2d(1000, 1000, new Rotation2d(0));
   }
 
   public static class Vision {
