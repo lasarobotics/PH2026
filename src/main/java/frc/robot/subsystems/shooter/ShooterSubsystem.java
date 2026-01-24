@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import org.lasarobotics.fsm.StateMachine;
@@ -105,28 +106,27 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
 
     private ShooterSubsystem() {
         super(ShooterSubsystemStates.REST);
+        nextState = ShooterSubsystemStates.REST;
         
         m_shooterMotor = new TalonFX(Constants.ShooterSubsystem.shooterMotorId);
         m_indexerMotor = new TalonFX(Constants.ShooterSubsystem.indexerMotorId);
         m_hoodMotor = new TalonFX(Constants.ShooterSubsystem.hoodMotorId);
 
+        m_shooterRequest = new MotionMagicVelocityVoltage(0);
+        m_indexerRequest = new MotionMagicVelocityVoltage(0);
+        m_hoodRequest = new MotionMagicVoltage(0);
+
         // TODO set up configs
+        // https://github.com/lasarobotics/PH2025/blob/master/src/main/java/frc/robot/subsystems/lift/LiftSubsystem.java#L1359-L1422
         TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
+
         TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
+
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
         m_shooterMotor.getConfigurator().apply(shooterConfig);
         m_indexerMotor.getConfigurator().apply(indexerConfig);
         m_hoodMotor.getConfigurator().apply(hoodConfig);
-
-        // TODO finish configuring these
-        // configuration is done via talonfx configs
-        m_shooterRequest = new MotionMagicVelocityVoltage(0);
-
-        m_indexerRequest = new MotionMagicVelocityVoltage(0);
-
-        // configuration for this is done via talonfx configs
-        m_hoodRequest = new MotionMagicVoltage(0);
     }
 
     /**
@@ -180,7 +180,11 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         );
     }
 
-    // TODO verify this works and write javadoc
+    /**
+     * 
+     * @return If the shooter motor is {@link Constants.ShooterSubsystem#shooterSpeedTolerance near}
+     * the desired speed according to {@link #wantedShooterSpeed()}
+     */
     public boolean atShootSpeed() {
         AngularVelocity v = m_shooterMotor.getVelocity().getValue();
         return v.isNear(
@@ -221,11 +225,16 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         return 0;
     }
 
-    // TODO implement
-    // to be honest, I think that phoenix6 already does this?
-    // (RotorToSensor ratio)
+    /**
+     * Converts a given angle to the number of rotations
+     * the hood motor would be at at that angle
+     * @param angle The angle to convert
+     * @return The number of rotations
+     */
     public double hoodAngleToRotations(Angle angle) {
-        return 0;
+        double base = angle.in(Rotations);
+        double rotations = base * 0; // TODO find actual ratio for this
+        return rotations;
     }
 
     public void close() {
