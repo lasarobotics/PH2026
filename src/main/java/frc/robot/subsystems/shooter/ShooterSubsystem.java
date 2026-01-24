@@ -180,15 +180,15 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         );
     }
 
+    // TODO maybe use getClosedLoopError() instead?
     /**
      * 
      * @return If the shooter motor is {@link Constants.ShooterSubsystem#shooterSpeedTolerance near}
      * the desired speed according to {@link #wantedShooterSpeed()}
      */
     public boolean atShootSpeed() {
-        AngularVelocity v = m_shooterMotor.getVelocity().getValue();
-        return v.isNear(
-            RotationsPerSecond.of(wantedShooterSpeed()),
+        return m_shooterMotor.getVelocity().isNear(
+            wantedShooterSpeed(),
             Constants.ShooterSubsystem.shooterSpeedTolerance
         );
     }
