@@ -1,7 +1,6 @@
 package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Rotations;
-import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
@@ -12,8 +11,8 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
 import frc.robot.Constants;
+import frc.robot.Helpers;
 
 public class ShooterSubsystem extends StateMachine implements AutoCloseable {
 
@@ -214,14 +213,19 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     }
 
     // TODO add extra checks for if it's ok to shoot
-    // check rotation/position
+    // check rotation/position/time
     // would also need to check if passing
     /**
-     * Checks that the robot is probably going to make it in if it shoots right now
+     * Checks that the robot can make it in if it shoots right now
      * @return If robot is in a good position to shoot
      */
     public boolean readyToShoot() {
-        return atShootSpeed();
+        return (
+            (
+                Helpers.scoringTimeLeft() - getShotTime() >= Constants.ShooterSubsystem.shooterTimeMargin
+            ) &&
+            atShootSpeed()
+        );
     }
 
     // TODO implement
@@ -246,6 +250,11 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         double base = angle.in(Rotations);
         double rotations = base * 0; // TODO find actual ratio for this
         return rotations;
+    }
+
+    // TODO implement
+    public double getShotTime() {
+        return 0;
     }
 
     public void close() {
