@@ -22,7 +22,7 @@ public final class Constants {
     public static final int indexerMotorId = 0; // TODO
     public static final int hoodMotorId = 0; // TODO
 
-    // TODO should be between -1 and 1
+    // TODO find value for this
     public static final double indexerMotorSpeed = 0;
 
     // TODO find value for this

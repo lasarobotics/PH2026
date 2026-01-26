@@ -24,7 +24,7 @@ public class Helpers {
         }
 
         boolean wonAuto = (autoAlliance == 'B' && currentAlliance.get().equals(Alliance.Blue)) ||
-                          (autoAlliance == 'B' && currentAlliance.get().equals(Alliance.Red));
+                          (autoAlliance == 'R' && currentAlliance.get().equals(Alliance.Red));
         return wonAuto;
     }
 
@@ -57,11 +57,11 @@ public class Helpers {
         if (wonAuto) {
             boolean s1 = time <= 130 && time >= 105;
             boolean s3 = time <= 80 && time >= 55;
-            return (!s1 || !s3);
+            return (!s1 && !s3);
         } else {
             boolean s2 = time <= 105 && time >= 80;
             boolean s4 = time <= 55 && time >= 30;
-            return (!s2 || !s4);
+            return (!s2 && !s4);
         }
     }
 
