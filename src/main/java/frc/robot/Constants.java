@@ -34,5 +34,7 @@ public final class Constants {
     public static final double shooterSpeedTolerance = 0; // TODO
 
     public static final double shooterTimeMargin = 0; // TODO
+
+    public static final double hoodToMotorRatio = 0; // TODO
   }
 }

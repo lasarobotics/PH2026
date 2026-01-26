@@ -75,6 +75,25 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
             public SystemState nextState() {
                 return nextState;
             }
+        },
+        PASSING {
+            @Override
+            public void execute() {
+                // set shooter to desired speed
+                s_shooterSubsystem.shoot();
+                // set the hood to the optimal position
+                s_shooterSubsystem.adjustHood();
+                if (s_shooterSubsystem.readyToPass()) {
+                    s_shooterSubsystem.index();
+                } else {
+                    s_shooterSubsystem.stopIndexer();
+                }
+            }
+
+            @Override
+            public SystemState nextState() {
+                return nextState;
+            }
         }
     }
 
@@ -116,6 +135,7 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         m_hoodRequest = new MotionMagicVoltage(0);
 
         // TODO set up configs
+        // for reference:
         // https://github.com/lasarobotics/PH2025/blob/master/src/main/java/frc/robot/subsystems/lift/LiftSubsystem.java#L1359-L1422
         TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
 
@@ -180,6 +200,9 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     }
 
     // TODO maybe use getClosedLoopError() instead?
+    // getClosedLoop error would need to be configured for a higher refresh rate though
+    // https://www.chiefdelphi.com/t/phoenix6-kraken-is-up-to-speed/512695/3
+    // "the default [status signal for getClosedLoopError()] is 4 Hz"
     /**
      * 
      * @return If the shooter motor is {@link Constants.ShooterSubsystem#shooterSpeedTolerance near}
@@ -212,9 +235,7 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
         );
     }
 
-    // TODO add extra checks for if it's ok to shoot
-    // check rotation/position/time
-    // would also need to check if passing
+    // TODO also check rotation/position
     /**
      * Checks that the robot can make it in if it shoots right now
      * @return If robot is in a good position to shoot
@@ -226,6 +247,16 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
             ) &&
             atShootSpeed()
         );
+    }
+
+    // TODO also check rotation/position
+    /**
+     * Checks that the robot can make it in the alliance zone if it shoots right now
+     * (doesn't check if hub is active)
+     * @return If robot is in a good position to shoot
+     */
+    public boolean readyToPass() {
+        return atShootSpeed();
     }
 
     // TODO implement
@@ -248,7 +279,7 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
      */
     public double hoodAngleToRotations(Angle angle) {
         double base = angle.in(Rotations);
-        double rotations = base * 0; // TODO find actual ratio for this
+        double rotations = base * Constants.ShooterSubsystem.hoodToMotorRatio;
         return rotations;
     }
 
