@@ -12,7 +12,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.units.measure.Angle;
 import frc.robot.Constants;
-import frc.robot.Helpers;
+import frc.robot.GameHelpers;
 
 public class ShooterSubsystem extends StateMachine implements AutoCloseable {
 
@@ -109,7 +109,7 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     private static ShooterSubsystemStates nextState;
     private TalonFX m_shooterMotor;
     private TalonFX m_indexerMotor;
-    private TalonFX m_hoodMotor;
+     private TalonFX m_hoodMotor;
 
     private final MotionMagicVelocityVoltage m_shooterRequest;
     private final MotionMagicVelocityVoltage m_indexerRequest;
@@ -243,7 +243,7 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     public boolean readyToShoot() {
         return (
             (
-                Helpers.scoringTimeLeft() - getShotTime() >= Constants.ShooterSubsystem.shooterTimeMargin
+                GameHelpers.scoringTimeLeft() - getShotTime() >= Constants.ShooterSubsystem.shooterTimeMargin
             ) &&
             atShootSpeed()
         );

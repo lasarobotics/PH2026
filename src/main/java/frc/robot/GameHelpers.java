@@ -8,7 +8,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 // TODO find a better way to do this
 class DriverStationException extends Exception {}
 
-public class Helpers {
+public class GameHelpers {
     public static boolean wonAuto() throws DriverStationException {
         String gameData = DriverStation.getGameSpecificMessage();
         // should never happen
