@@ -169,12 +169,10 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     }
 
     /**
-     * Stop the {@link #m_shooterMotor shooter motor}.
+     * Stop the {@link #m_shooterMotor shooter motor} (coast to 0).
      */
     public void stopShooter() {
-        m_shooterMotor.setControl(
-            m_shooterRequest.withVelocity(0)
-        );
+        m_shooterMotor.setVoltage(0);
     }
 
     /**
