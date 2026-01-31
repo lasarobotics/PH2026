@@ -6,6 +6,8 @@ import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.hopper.HopperSubsystem;
+import frc.robot.subsystems.hopper.HopperSubsystem.HopperSubsystemStates;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 public class HeadHoncho extends StateMachine implements AutoCloseable {
@@ -15,6 +17,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
             @Override
             public void initialize() {
                 ShooterSubsystem.getInstance().stopEverything();
+                HopperSubsystem.setState(HopperSubsystemStates.REST);
             }
 
             @Override
@@ -25,10 +28,18 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         NORMAL {
             @Override
             public void execute() {
+                boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
+                boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
+
                 ShooterSubsystem.getInstance().shooterPeriodic(
-                    s_headHoncho.m_shootButton.getAsBoolean(),
-                    s_headHoncho.m_passButton.getAsBoolean()
+                    shootButton, passButton
                 );
+
+                if (shootButton || passButton) {
+                    HopperSubsystem.setState(HopperSubsystemStates.LOADING);
+                } else {
+                    HopperSubsystem.setState(HopperSubsystemStates.REST);
+                }
 
                 if (s_headHoncho.m_intakeButtonDown.getAsBoolean()) {
                     IntakeSubsystem.getInstance().toggleIntake();
