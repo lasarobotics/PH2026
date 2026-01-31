@@ -22,12 +22,12 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
-import gg.questnav.questnav.PoseFrame;
-import gg.questnav.questnav.QuestNav;
 import frc.robot.Constants;
 import frc.robot.LoopTimer;
 import frc.robot.generated.TunerConstants;
 import frc.robot.subsystems.vision.VisionSubsystem;
+import gg.questnav.questnav.PoseFrame;
+import gg.questnav.questnav.QuestNav;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
     public static record Hardware() {}
@@ -83,26 +83,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         @Override
         public void execute() {
-          Translation2d currentPoseTranslation = s_drivetrain.getState().Pose.getTranslation();
-          double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
-          Translation2d hubTranslation = Constants.Drive.HUB_COORDINATES;
-          Translation2d angleTranslation = hubTranslation.minus(currentPoseTranslation);
-          double angle = Math.atan2(angleTranslation.getY(), angleTranslation.getX());
-          double output = s_autoAimController.calculate(currentAngle, angle);
 
-          s_drivetrain.setControl(
-            s_drive
-                .withVelocityX(
-                    Constants.Drive.MAX_SPEED
-                        .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
-                .withVelocityY(
-                    Constants.Drive.MAX_SPEED
-                        .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
-                .withRotationalRate(
-                  output
-                ));
           
         }
         @Override
@@ -572,6 +553,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             .withRotationalRate(rotationalRate));
     return false;
   }
+
 
   private enum OverBumpPhase {
     TO_POSA,
