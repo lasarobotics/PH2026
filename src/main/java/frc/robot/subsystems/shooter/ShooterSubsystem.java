@@ -4,6 +4,8 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
@@ -82,11 +84,20 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @param passing If pass button is held
    */
   public void shooterPeriodic(boolean shooting, boolean passing) {
+    Logger.recordOutput(getName() + "/wantToShoot", shooting);
+    Logger.recordOutput(getName() + "/wantToPass", passing);
+    
     adjustHood();
+
     if (shooting || passing) {
       shoot();
-      if ((readyToShoot() && shooting) ||
-        (readyToPass() && passing)) {
+      boolean shootReady = readyToShoot();
+      boolean passReady = readyToPass();
+      Logger.recordOutput(getName() + "/readyToShoot", shootReady);
+      Logger.recordOutput(getName() + "/readyToPass", passReady);
+
+      if ((shootReady && shooting) ||
+          (passReady && passing)) {
         index();
       } else {
         stopIndexer();
@@ -198,6 +209,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  public boolean atHoodPosition() {
+    return m_hoodMotor.getPosition().isNear(
+      wantedHoodPosition(),
+      Constants.Shooter.HOOD_POSITION_TOLERANCE
+    );
+  }
+
   /**
    * Checks that the robot can make it in if it shoots right now
    * and that the drivetrain is at the wanted rotation
@@ -210,6 +228,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         >= Constants.Shooter.SHOOTER_TIME_MARGIN
       ) &&
       atShootSpeed() &&
+      atHoodPosition() &&
       DriveSubsystem.getInstance().atWantedRotation()
     );
   }
@@ -221,7 +240,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return If robot is in a good position to shoot
    */
   public boolean readyToPass() {
-    return atShootSpeed() && DriveSubsystem.getInstance().atWantedRotation();
+    return (
+      atShootSpeed() &&
+      atHoodPosition() &&
+      DriveSubsystem.getInstance().atWantedRotation()
+    );
   }
 
   /**
@@ -256,6 +279,21 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     double base = angle.in(Rotations);
     double rotations = base * Constants.Shooter.HOOD_TO_MOTOR_RATIO;
     return rotations;
+  }
+
+  @Override
+  public void periodic() {
+    super.periodic();
+    Logger.recordOutput(getName() + "/shooterSpeed",
+      m_shooterMotorMaster.get());
+    Logger.recordOutput(getName() + "/indexerSpeed",
+      m_indexerMotor.get());
+    Logger.recordOutput(getName() + "/hoodPosition",
+      m_hoodMotor.getPosition().getValueAsDouble());
+    Logger.recordOutput(getName() + "/atShootSpeed",
+      atShootSpeed());
+    Logger.recordOutput(getName() + "/atHoodPosition",
+      atHoodPosition());
   }
 
   @Override
