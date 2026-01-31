@@ -1,7 +1,6 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
-import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -14,7 +13,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Velocity;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class AimUtil {
@@ -49,13 +47,21 @@ public class AimUtil {
   }
 
   /**
-   * @param robotPose Your current robot pose
-   * @return Speed of the ball needed to shoot stationary
+   * @return Speed of the ball needed to shoot while stationary
+   * from the current position
    */
   public static double getVelocitySpeedStationary() {
     SwerveDriveState driveState = DriveSubsystem.getDrivetrain().getState();
     Pose2d robotPose = driveState.Pose;
 
+    return getVelocityFromPose(robotPose);
+  }
+
+  /**
+   * @param robotPose Your current robot pose
+   * @return Speed of the ball needed to shoot while stationary
+   */
+  public static double getVelocityFromPose(Pose2d robotPose) {
     Translation2d goalLocation = Constants.Drive.HUB_COORDINATES;
     Translation2d targetVec = goalLocation.minus(robotPose.getTranslation());
     double dist = targetVec.getNorm();
@@ -64,8 +70,7 @@ public class AimUtil {
     double y_vel = getVelocityYStationary();
     
     return Math.sqrt(Math.pow(x_vel, 2) + Math.pow(y_vel, 2));
-
-  } 
+  }
 
   /**
    * What this method does it calculates the ball speed, robot heading, and shooter angle needed to shoot
@@ -78,10 +83,34 @@ public class AimUtil {
     Pose2d currentRobotPose = driveState.Pose;
     AngularVelocity currentAngularVelocity = AngularVelocity.ofBaseUnits(driveState.Speeds.omegaRadiansPerSecond, RadiansPerSecond);
 
+    ShooterMathResults results = runShooterMath(
+      currentRobotSpeeds,
+      currentRobotPose,
+      currentAngularVelocity
+    );
+
+    ballVelocity = results.ballVelocity();
+    exitAngle = results.exitAngle();
+    robotHeading = results.robotHeading();
+
+  }
+
+  public record ShooterMathResults(
+    Angle exitAngle,
+    LinearVelocity ballVelocity,
+    Angle robotHeading
+  ){}
+
+  public static ShooterMathResults runShooterMath(
+    ChassisSpeeds currentRobotSpeeds,
+    Pose2d currentRobotPose,
+    AngularVelocity currentAngularVelocity
+  ) {
+
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
 
-    //Project your movement forward 
+    // Project your movement forward 
     Translation2d futurePos = currentRobotPose.getTranslation().plus(
           new Translation2d(
             currentRobotSpeeds.vxMetersPerSecond, 
@@ -93,28 +122,39 @@ public class AimUtil {
           )
          )
         );
-
     
-    //Get your distance to the hub (using the future position)
+    // Get your distance to the hub (using the future position)
     Translation2d goalLocation = Constants.Drive.HUB_COORDINATES;
     Translation2d targetVec = goalLocation.minus(futurePos);
     double dist = targetVec.getNorm();
 
-
-    //Get your stationary shooter velocity 2d vector
+    // Get your stationary shooter velocity 2d vector
     Translation2d shooterVelocityVec = new Translation2d(
       getVelocityXStationary(dist),
       getVelocityYStationary());
-
-
-    //the arctangent of the Y velocity and the X velocity is the shooterAngle
-    exitAngle = Angle.ofBaseUnits(Math.atan2(shooterVelocityVec.getY(), shooterVelocityVec.getX()), Radians);
-
-    //Pythagorean sum of the X velocity and the Z velocity is the shooter
-    ballVelocity = LinearVelocity.ofBaseUnits(Math.sqrt(Math.pow(shooterVelocityVec.getX(), shooterVelocityVec.getY())), MetersPerSecond);
-
-    //The angle of the target vector is your robot heading
-    robotHeading = targetVec.getAngle().getMeasure();
+    
+    return new ShooterMathResults(
+      // the arctangent of the Y velocity and the X velocity is the shooterAngle
+      Angle.ofBaseUnits(
+        Math.atan2(
+          shooterVelocityVec.getY(), shooterVelocityVec.getX()
+        ),
+        Radians
+      ),
+      
+      // Pythagorean sum of the X velocity and the Z velocity is the shooter
+      LinearVelocity.ofBaseUnits(
+        Math.sqrt(
+          Math.pow(
+            shooterVelocityVec.getX(), shooterVelocityVec.getY()
+          )
+        ),
+        MetersPerSecond
+      ),
+      
+      // The angle of the target vector is your robot heading
+      targetVec.getAngle().getMeasure()
+    );
   }
 
   /**
