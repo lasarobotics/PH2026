@@ -286,6 +286,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static boolean s_prevFuelAlignRequest = false;
   private static boolean s_prevOverBumpRequest = false;
   private static boolean s_hasRegisteredPickup = false;
+  private boolean m_shouldGoTo = false;
+  private boolean m_lastGoToToggle = false;
   private static double s_estimatedBallsCollected = 0.0;
   private static int s_pickupDebounceFrames = 0;
 
@@ -297,6 +299,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static PIDController s_fuelDistanceController;
   private static PIDController s_overBumpDistanceController;
   private static PIDController s_overBumpHeadingController;
+  private static PIDController s_autoDrive;
+  private static PIDController s_headingController;
   private static final Timer s_overBumpTimer = new Timer();
   private static final double PICKUP_EFFICIENCY = 0.9;
   private static final int MAX_BALL_CAPACITY = 60;
@@ -352,6 +356,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_fuelDistanceController = new PIDController(1.0, 0.0, 0.0);
     s_overBumpDistanceController = new PIDController(1.0, 0.0, 0.0);
     s_overBumpHeadingController = new PIDController(4.0, 0.0, 0.0);
+    s_autoDrive = new PIDController(1.75, 0.0, 0.0);
+    s_headingController = new PIDController(3, 0.0, 0.5);
+    s_headingController.enableContinuousInput(-Math.PI, Math.PI);
     s_questNav = new QuestNav();
   }
 
