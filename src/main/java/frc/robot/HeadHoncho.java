@@ -31,6 +31,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
                 boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
                 boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
 
+                boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
+                boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
+
                 ShooterSubsystem.getInstance().shooterPeriodic(
                     shootButton, passButton
                 );
