@@ -2,111 +2,19 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Rotations;
 
-import org.lasarobotics.fsm.StateMachine;
-import org.lasarobotics.fsm.SystemState;
-
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.GameHelpers;
 
-public class ShooterSubsystem extends StateMachine implements AutoCloseable {
-
-    public enum ShooterSubsystemStates implements SystemState {
-        NOTHING {
-            @Override
-            public SystemState nextState() {
-                return this;
-            }
-        },
-        REST {
-            @Override
-            public void initialize() {
-                // stop indexer and shooter motor
-                s_shooterSubsystem.stopShooter();
-                s_shooterSubsystem.stopIndexer();
-                s_shooterSubsystem.stopHood();
-            }
-
-            @Override
-            public SystemState nextState() {
-                return nextState;
-            }
-        },
-        AUTO_ADJUST {
-            @Override
-            public void initialize() {
-                // set shooter motor to hold speed
-                s_shooterSubsystem.holdShooter();
-                // stop indexer motor
-                s_shooterSubsystem.stopIndexer();
-            }
-
-            @Override
-            public void execute() {
-                // set the hood to the optimal position
-                s_shooterSubsystem.adjustHood();
-            }
-
-            @Override
-            public SystemState nextState() {
-                return nextState;
-            }
-        },
-        SHOOTING {
-            @Override
-            public void execute() {
-                // set shooter to desired speed
-                s_shooterSubsystem.shoot();
-                // set the hood to the optimal position
-                s_shooterSubsystem.adjustHood();
-                if (s_shooterSubsystem.readyToShoot()) {
-                    s_shooterSubsystem.index();
-                } else {
-                    s_shooterSubsystem.stopIndexer();
-                }
-            }
-
-            @Override
-            public SystemState nextState() {
-                return nextState;
-            }
-        },
-        PASSING {
-            @Override
-            public void execute() {
-                // set shooter to desired speed
-                s_shooterSubsystem.shoot();
-                // set the hood to the optimal position
-                s_shooterSubsystem.adjustHood();
-                if (s_shooterSubsystem.readyToPass()) {
-                    s_shooterSubsystem.index();
-                } else {
-                    s_shooterSubsystem.stopIndexer();
-                }
-            }
-
-            @Override
-            public SystemState nextState() {
-                return nextState;
-            }
-        }
-    }
-
-    /**
-     * Sets the next state of the {@link #ShooterSubsystem shooter subsystem}
-     * @param state The state to be set.
-     */
-    public static void setState(ShooterSubsystemStates state) {
-        nextState = state;
-    }
+public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     private static ShooterSubsystem s_shooterSubsystem;
-    private static ShooterSubsystemStates nextState;
     private TalonFX m_shooterMotor;
     private TalonFX m_indexerMotor;
      private TalonFX m_hoodMotor;
@@ -123,9 +31,6 @@ public class ShooterSubsystem extends StateMachine implements AutoCloseable {
     }
 
     private ShooterSubsystem() {
-        super(ShooterSubsystemStates.REST);
-        nextState = ShooterSubsystemStates.REST;
-        
         m_shooterMotor = new TalonFX(Constants.ShooterSubsystem.shooterMotorId);
         m_indexerMotor = new TalonFX(Constants.ShooterSubsystem.indexerMotorId);
         m_hoodMotor = new TalonFX(Constants.ShooterSubsystem.hoodMotorId);
