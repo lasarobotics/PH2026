@@ -5,29 +5,24 @@ import org.lasarobotics.fsm.SystemState;
 
 public class HopperSubsystem extends StateMachine implements AutoCloseable {
     
-    public enum HopperSubsystemStates implements SystemState {
+    enum HopperSubsystemStates implements SystemState {
         REST {
             @Override
             public SystemState nextState() {
                 // TODO Auto-generated method stub
-                return nextState;
+                return null;
             }
         },
-        LOADING {
+        FEEDING {
             @Override
             public SystemState nextState() {
                 // TODO Auto-generated method stub
-                return nextState;
+                return null;
             }
         }
     }
 
-    public static void setState(HopperSubsystemStates state) {
-        nextState = state;
-    }
-
     private static HopperSubsystem s_hopperSubsystem;
-    private static HopperSubsystemStates nextState;
 
     public static HopperSubsystem getInstance() {
         if (s_hopperSubsystem == null) {
