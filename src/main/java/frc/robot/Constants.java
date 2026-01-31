@@ -36,10 +36,10 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
   }
 
-  public static class ShooterSubsystem {
-    public static final int SHOOTER_ONE_MOTOR_ID = 0; // TODO
-    public static final int SHOOTER_TWO_MOTOR_ID = 0; // TODO
-    public static final int SHOOTER_THREE_MOTOR_ID = 0; // TODO
+  public static class Shooter {
+    public static final int MASTER_SHOOTER_MOTOR_ID = 0; // TODO
+    public static final int SLAVE_SHOOTER_ONE_MOTOR_ID = 0; // TODO
+    public static final int SLAVE_SHOOTER_TWO_MOTOR_ID = 0; // TODO
     public static final int INDEXER_MOTOR_ID = 0; // TODO
     public static final int HOOD_MOTOR_ID = 0; // TODO
 
@@ -148,7 +148,7 @@ public final class Constants {
     public static final double MIN_DISTANCE_METERS = Meters.of(0.05).in(Meters);
   }
 
-  public static class IntakeSubsystem {
+  public static class Intake {
     // TODO: find the ids of the motors and encoder
     public static final int INTAKE_MOTOR_ID = 0;
     public static final int ARM_MOTOR_ID = 0;

@@ -20,9 +20,9 @@ import frc.robot.subsystems.drive.DriveSubsystem;
 public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     private static ShooterSubsystem s_shooterSubsystem;
-    private TalonFX m_shooterMotorOne;
-    private TalonFX m_shooterMotorTwo;
-    private TalonFX m_shooterMotorThree;
+    private TalonFX m_shooterMotorMaster;
+    private TalonFX m_shooterMotorSlaveOne;
+    private TalonFX m_shooterMotorSlaveTwo;
     private TalonFX m_indexerMotor;
     private TalonFX m_hoodMotor;
 
@@ -38,11 +38,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
 
     private ShooterSubsystem() {
-        m_shooterMotorOne = new TalonFX(Constants.ShooterSubsystem.SHOOTER_ONE_MOTOR_ID);
-        m_shooterMotorOne = new TalonFX(Constants.ShooterSubsystem.SHOOTER_TWO_MOTOR_ID);
-        m_shooterMotorOne = new TalonFX(Constants.ShooterSubsystem.SHOOTER_THREE_MOTOR_ID);
-        m_indexerMotor = new TalonFX(Constants.ShooterSubsystem.INDEXER_MOTOR_ID);
-        m_hoodMotor = new TalonFX(Constants.ShooterSubsystem.HOOD_MOTOR_ID);
+        m_shooterMotorMaster = new TalonFX(Constants.Shooter.MASTER_SHOOTER_MOTOR_ID);
+        m_shooterMotorMaster = new TalonFX(Constants.Shooter.SLAVE_SHOOTER_ONE_MOTOR_ID);
+        m_shooterMotorMaster = new TalonFX(Constants.Shooter.SLAVE_SHOOTER_TWO_MOTOR_ID);
+        m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
+        m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
 
         m_shooterRequest = new MotionMagicVelocityVoltage(0);
         m_indexerRequest = new MotionMagicVelocityVoltage(0);
@@ -59,9 +59,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
         TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
-        m_shooterMotorOne.getConfigurator().apply(shooterOneConfig);
-        m_shooterMotorTwo.getConfigurator().apply(shooterTwoConfig);
-        m_shooterMotorThree.getConfigurator().apply(shooterThreeConfig);
+        m_shooterMotorMaster.getConfigurator().apply(shooterOneConfig);
+        m_shooterMotorSlaveOne.getConfigurator().apply(shooterTwoConfig);
+        m_shooterMotorSlaveTwo.getConfigurator().apply(shooterThreeConfig);
         m_indexerMotor.getConfigurator().apply(indexerConfig);
         m_hoodMotor.getConfigurator().apply(hoodConfig);
     }
@@ -118,65 +118,63 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     /**
      * Set the speed of the {@link #m_indexerMotor indexer motor}
      * to the (constant)
-     * {@link Constants.ShooterSubsystem#indexerHoldSpeed indexer hold speed}.
+     * {@link Constants.Shooter#indexerHoldSpeed indexer hold speed}.
      */
     public void index() {
         m_indexerMotor.setControl(
-            m_indexerRequest.withVelocity(Constants.ShooterSubsystem.INDEXER_MOTOR_SPEED)
+            m_indexerRequest.withVelocity(Constants.Shooter.INDEXER_MOTOR_SPEED)
         );
     }
 
     /**
-     * Stop the {@link #m_shooterMotorOne shooter motors} (coast to 0).
+     * Stop the {@link #m_shooterMotorMaster shooter motors} (coast to 0).
      */
     public void stopShooter() {
-        m_shooterMotorOne.setVoltage(0);
-        m_shooterMotorTwo.setVoltage(0);
-        m_shooterMotorThree.setVoltage(0);
+        m_shooterMotorMaster.setVoltage(0);
+        m_shooterMotorSlaveOne.setVoltage(0);
+        m_shooterMotorSlaveTwo.setVoltage(0);
     }
 
     /**
-     * Set the speed of one {@link #m_shooterMotorOne shooter motor}
+     * Set the speed of one {@link #m_shooterMotorMaster shooter motor}
      * to the (constant)
-     * {@link Constants.ShooterSubsystem#SHOOTER_HOLD_SPEED shooter hold speed}
+     * {@link Constants.Shooter#SHOOTER_HOLD_SPEED shooter hold speed}
      * and let the others coast.
      */
     public void holdShooter() {
-        m_shooterMotorOne.setControl(
-            m_shooterRequest.withVelocity(Constants.ShooterSubsystem.SHOOTER_HOLD_SPEED)
+        m_shooterMotorMaster.setControl(
+            m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
         );
-        m_shooterMotorTwo.setVoltage(0);
-        m_shooterMotorThree.setVoltage(0);
+        m_shooterMotorSlaveOne.setVoltage(0);
+        m_shooterMotorSlaveTwo.setVoltage(0);
     }
 
     /**
-     * Set the speed of the {@link #m_shooterMotorOne shooter motors}
+     * Set the speed of the {@link #m_shooterMotorMaster shooter motors}
      * to the desired shooting speed
      * according to {@link #wantedShooterSpeed()}
      */
     public void shoot() {
-        m_shooterMotorOne.setControl(
+        m_shooterMotorMaster.setControl(
             m_shooterRequest.withVelocity(wantedShooterSpeed())
         );
-        m_shooterMotorTwo.setControl(
+        m_shooterMotorSlaveOne.setControl(
             m_shooterRequest.withVelocity(wantedShooterSpeed())
         );
-        m_shooterMotorThree.setControl(
+        m_shooterMotorSlaveTwo.setControl(
             m_shooterRequest.withVelocity(wantedShooterSpeed())
         );
     }
 
-    // TODO see if every motor should be checked
-    // TODO update javadoc
     /**
      * 
-     * @return If the shooter motor is {@link Constants.ShooterSubsystem#SHOOTER_SPEED_TOLERANCE near}
+     * @return If the master shooter motor is {@link Constants.Shooter#SHOOTER_SPEED_TOLERANCE near}
      * the desired speed according to {@link #wantedShooterSpeed()}
      */
     public boolean atShootSpeed() {
-        return m_shooterMotorOne.getVelocity().isNear(
+        return m_shooterMotorMaster.getVelocity().isNear(
             wantedShooterSpeed(),
-            Constants.ShooterSubsystem.SHOOTER_SPEED_TOLERANCE
+            Constants.Shooter.SHOOTER_SPEED_TOLERANCE
         );
     }
 
@@ -209,7 +207,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         return (
             (
                 GameHelpers.scoringTimeLeft() - Constants.Drive.HANG_TIME
-                >= Constants.ShooterSubsystem.SHOOTER_TIME_MARGIN
+                >= Constants.Shooter.SHOOTER_TIME_MARGIN
             ) &&
             atShootSpeed() &&
             DriveSubsystem.getInstance().atWantedRotation()
@@ -235,7 +233,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         LinearVelocity ballVelocity = AimUtil.getBallVelocity();
         double radiansPerSecond =
             2 * ballVelocity.in(MetersPerSecond)
-            / Constants.ShooterSubsystem.SHOOTER_RADIUS.in(Meters);
+            / Constants.Shooter.SHOOTER_RADIUS.in(Meters);
         double rotationsPerSecond =
             radiansPerSecond / (2 * Math.PI);
         return rotationsPerSecond;
@@ -256,14 +254,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
      */
     public double hoodAngleToRotations(Angle angle) {
         double base = angle.in(Rotations);
-        double rotations = base * Constants.ShooterSubsystem.HOOD_TO_MOTOR_RATIO;
+        double rotations = base * Constants.Shooter.HOOD_TO_MOTOR_RATIO;
         return rotations;
     }
 
     public void close() {
-        m_shooterMotorOne.close();
-        m_shooterMotorTwo.close();
-        m_shooterMotorThree.close();
+        m_shooterMotorMaster.close();
+        m_shooterMotorSlaveOne.close();
+        m_shooterMotorSlaveTwo.close();
         m_indexerMotor.close();
         m_hoodMotor.close();
     }

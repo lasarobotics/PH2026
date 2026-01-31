@@ -19,12 +19,8 @@ import edu.wpi.first.units.measure.Angle;
 import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
-  public static record Hardware (
-    TalonFX intakeMotor,
-    TalonFX armMotor,
-    CANcoder armEncoder
-  ) {}
 
+  // TODO maybe these should be in constants instead? -mw
   // TODO: find values of intake positions
   static final Dimensionless INTAKE_SPEED = Value.of(0.6);
   static final Angle STOW_ANGLE = Degrees.of(0);
@@ -36,18 +32,18 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private final MotionMagicVoltage m_armPositionSetter;
   private CANcoder m_armEncoder;
 
-  private boolean m_isInIntake;
+  private boolean m_isIntaking;
   private boolean m_isIntakeRunning;
 
   /** Creates a new IntakeSubsystem */
-  private IntakeSubsystem(Hardware intakeHardware) {
-    this.m_intakeMotor = intakeHardware.intakeMotor;
-    this.m_armMotor = intakeHardware.armMotor;
-    this.m_armEncoder = intakeHardware.armEncoder;
+  private IntakeSubsystem() {
+    this.m_intakeMotor = new TalonFX(Constants.Intake.INTAKE_MOTOR_ID);
+    this.m_armMotor = new TalonFX(Constants.Intake.ARM_MOTOR_ID);
+    this.m_armEncoder = new CANcoder(Constants.Intake.ARM_ENCODER_ID);
 
     m_armPositionSetter = new MotionMagicVoltage(Radians.zero());
 
-    m_isInIntake = false;
+    m_isIntaking = false;
     m_isIntakeRunning = false;
 
     // Create configs for TalonFX motors
@@ -68,30 +64,24 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Get an instance of IntakeSubsystem
-   * <p>
-   * Will only return an instance once, subsequent calls will return null.
-   * @param intakeHardware Necessary hardware for this subsystem
    * @return Subsystem instance
    */
-  public static IntakeSubsystem getInstance(Hardware intakeHardware) {
+  public static IntakeSubsystem getInstance() {
     if (s_intakeInstance == null) {
-      s_intakeInstance = new IntakeSubsystem(intakeHardware);
-      return s_intakeInstance;
-    } else
-      return null;
+      s_intakeInstance = new IntakeSubsystem();
+    }
+    return s_intakeInstance;
   }
 
   /**
-   * Initialize hardware devices for intake subsystem
-   * @return Hardware object containing all necessary devices for this subsystem
+   * If the intake is started, stop it (and vice versa).
    */
-  public static Hardware initializeHardware() {
-    Hardware intakeHardware = new Hardware(
-      new TalonFX(Constants.IntakeSubsystem.INTAKE_MOTOR_ID),
-      new TalonFX(Constants.IntakeSubsystem.ARM_MOTOR_ID),
-      new CANcoder(Constants.IntakeSubsystem.ARM_ENCODER_ID)
-    );
-    return intakeHardware;
+  public void toggleIntake() {
+    if (m_isIntaking) {
+      stopIntake();
+    } else {
+      startIntake();
+    }
   }
 
   /**
@@ -100,7 +90,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   public void startIntake() {
     deployArm();
     startIntakeMotor();
-    m_isInIntake = true;
+    m_isIntaking = true;
   }
 
   /**
@@ -109,7 +99,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   public void stopIntake() {
     stowArm();
     stopIntakeMotor();
-    m_isInIntake = false;
+    m_isIntaking = false;
   }
 
   /**
@@ -146,7 +136,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     super.periodic();
     Logger.recordOutput(getName() + "/intakeMotor", m_isIntakeRunning);
-    Logger.recordOutput(getName() + "/isInIntake", m_isInIntake);
+    Logger.recordOutput(getName() + "/isInIntake", m_isIntaking);
     Logger.recordOutput(getName() + "/armEncoder", m_armEncoder.getAbsolutePosition().getValue());
   }
   

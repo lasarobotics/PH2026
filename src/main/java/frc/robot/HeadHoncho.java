@@ -5,6 +5,7 @@ import java.util.function.BooleanSupplier;
 import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 
+import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 public class HeadHoncho extends StateMachine implements AutoCloseable {
@@ -28,6 +29,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
                     s_headHoncho.m_shootButton.getAsBoolean(),
                     s_headHoncho.m_passButton.getAsBoolean()
                 );
+
+                if (s_headHoncho.m_intakeButtonDown.getAsBoolean()) {
+                    IntakeSubsystem.getInstance().toggleIntake();
+                }
             }
 
             @Override
@@ -52,7 +57,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     private static HeadHoncho s_headHoncho;
     private BooleanSupplier m_shootButton;
     private BooleanSupplier m_passButton;
-    private BooleanSupplier m_intakeButton;
+    private BooleanSupplier m_intakeButtonDown;
 
     public static HeadHoncho getInstance() {
         if (s_headHoncho == null) {
@@ -79,7 +84,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     ) {
         m_shootButton = shootButton;
         m_passButton = passButton;
-        m_intakeButton = intakeButton;
+        m_intakeButtonDown = intakeButton;
     }
 
     // TODO impl
