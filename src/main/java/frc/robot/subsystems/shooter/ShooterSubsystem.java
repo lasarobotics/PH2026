@@ -54,6 +54,46 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
 
     /**
+     * Periodic shooter logic. Basically:
+     * <ul>
+     * <li>Always adjust hood
+     * <li>If holding shoot/pass button:
+     * <ul>
+         * <li>Set shoot motor to shoot speed
+         * <li>Toggle indexer motor based on if ready to shoot/pass
+     * </ul>
+     * <li>If not holding button, set shoot motor to hold speed
+     * and stop indexer
+     * </ul
+     * @param shooting If shoot button is held
+     * @param passing If pass button is held
+     */
+    public void shooterPeriodic(boolean shooting, boolean passing) {
+        adjustHood();
+        if (shooting || passing) {
+            shoot();
+            if ((readyToShoot() && shooting) ||
+                (readyToPass() && passing)) {
+                index();
+            } else {
+                stopIndexer();
+            }
+        } else {
+            holdShooter();
+            stopIndexer();
+        }
+    }
+
+    /**
+     * Stops all motors.
+     */
+    public void stopEverything() {
+        stopShooter();
+        stopIndexer();
+        stopHood();
+    }
+
+    /**
      * Stop the {@link #m_indexerMotor indexer motor}.
      */
     public void stopIndexer() {

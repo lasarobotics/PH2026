@@ -13,9 +13,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         REST {
             @Override
             public void initialize() {
-                ShooterSubsystem.getInstance().stopShooter();
-                ShooterSubsystem.getInstance().stopIndexer();
-                ShooterSubsystem.getInstance().stopHood();
+                ShooterSubsystem.getInstance().stopEverything();
             }
 
             @Override
@@ -25,41 +23,11 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         },
         NORMAL {
             @Override
-            public void initialize() {
-                // set shooter motor to hold speed
-                ShooterSubsystem.getInstance().holdShooter();
-                // stop indexer motor
-                ShooterSubsystem.getInstance().stopIndexer();
-            }
-
-            @Override
             public void execute() {
-
-                // Shooter logic
-                // Basically:
-                // Always adjust hood
-                // If holding shoot/pass button:
-                    // Set shoot motor to shoot speed
-                    // Toggle indexer motor based on if ready to shoot/pass
-                // If not holding button, set shoot motor to hold speed
-                // and stop indexer
-                boolean shootB = s_headHoncho.m_shootButton.getAsBoolean();
-                boolean passB = s_headHoncho.m_passButton.getAsBoolean();
-                ShooterSubsystem.getInstance().adjustHood();
-                if (shootB || passB) {
-                    ShooterSubsystem.getInstance().shoot();
-                    if ((ShooterSubsystem.getInstance().readyToShoot() &&
-                         shootB) ||
-                        (ShooterSubsystem.getInstance().readyToPass() &&
-                         passB)) {
-                        ShooterSubsystem.getInstance().index();
-                    } else {
-                        ShooterSubsystem.getInstance().stopIndexer();
-                    }
-                } else {
-                    ShooterSubsystem.getInstance().holdShooter();
-                    ShooterSubsystem.getInstance().stopIndexer();
-                }
+                ShooterSubsystem.getInstance().shooterPeriodic(
+                    s_headHoncho.m_shootButton.getAsBoolean(),
+                    s_headHoncho.m_passButton.getAsBoolean()
+                );
             }
 
             @Override
