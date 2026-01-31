@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -17,6 +18,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import frc.robot.generated.TunerConstants;
@@ -35,24 +37,26 @@ public final class Constants {
   }
 
   public static class ShooterSubsystem {
-    public static final int shooterMotorId = 0; // TODO
-    public static final int indexerMotorId = 0; // TODO
-    public static final int hoodMotorId = 0; // TODO
+    public static final int SHOOTER_MOTOR_ID = 0; // TODO
+    public static final int INDEXER_MOTOR_ID = 0; // TODO
+    public static final int HOOD_MOTOR_ID = 0; // TODO
 
     // TODO find value for this
-    public static final double indexerMotorSpeed = 0;
+    public static final double INDEXER_MOTOR_SPEED = 0;
 
     // TODO find value for this
     // set shooter motor to constant speed
     // ideally, this will be somewhere in the
     // middle of how fast we generally shoot
-    public static final double shooterHoldSpeed = 0;
+    public static final double SHOOTER_HOLD_SPEED = 0;
 
-    public static final double shooterSpeedTolerance = 0; // TODO
+    public static final double SHOOTER_SPEED_TOLERANCE = 0; // TODO
 
-    public static final double shooterTimeMargin = 0; // TODO
+    public static final double SHOOTER_TIME_MARGIN = 0; // TODO
 
-    public static final double hoodToMotorRatio = 0; // TODO
+    public static final double HOOD_TO_MOTOR_RATIO = 0; // TODO
+
+    public static final Distance SHOOTER_RADIUS = Inches.of(2);
   }
 
   public static class Drive {
@@ -66,13 +70,15 @@ public final class Constants {
     public static final double SLOW_SPEED_SCALAR = 0.3;
     public static final double FAST_SPEED_SCALAR = 1.0;
 
+    public static final double ROTATION_TOLERANCE = 0; // TODO
+
     public static final double ROBOT_LATENCY = 0.15; //TODO: measure
 
     public static final Translation2d HUB_COORDINATES = new Translation2d(4.619, 4.049);
 
     public static final double HANG_TIME = (((
       Math.sqrt(Constants.Field.MAX_BALL_Y_POS)) * 2) + 
-      Math.sqrt(Constants.Field.END_BALL_Y_POS) /Math.sqrt(Constants.Field.GRAVITY_VALUE));
+      Math.sqrt(Constants.Field.END_BALL_Y_POS) / Math.sqrt(Constants.Field.GRAVITY_VALUE));
 
     public static final TrapezoidProfile.Constraints TURN_CONSTRAINTS =
       new TrapezoidProfile.Constraints(

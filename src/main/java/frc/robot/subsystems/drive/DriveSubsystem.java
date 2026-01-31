@@ -1,6 +1,7 @@
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.LoopTimer;
 import frc.robot.generated.TunerConstants;
@@ -34,7 +36,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     public enum DriveStates implements SystemState {
       NOTHING {
-
         @Override
         public SystemState nextState() {
           return this;
@@ -65,6 +66,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
                           .times(-s_rotateRequest.getAsDouble())
                           .times(s_driveSpeedScalar)));
         }
+
         @Override
         public SystemState nextState() {
           if (DriverStation.isAutonomous()) return AUTO;
@@ -74,7 +76,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         }
       },
       AUTO_AIM {
-
         @Override
         public void initialize() {
           s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
@@ -83,22 +84,39 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         @Override
         public void execute() {
+          double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
+          double angle = AimUtil.getRobotHeading().in(Radians);
+          double output = s_autoAimController.calculate(currentAngle, angle);
 
-          
+          s_drivetrain.setControl(
+            s_drive
+              .withVelocityX(
+                  Constants.Drive.MAX_SPEED
+                      .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                      .times(s_driveSpeedScalar))
+              .withVelocityY(
+                  Constants.Drive.MAX_SPEED
+                      .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                      .times(s_driveSpeedScalar))
+              .withRotationalRate(
+                output
+              ));
         }
+
         @Override
         public SystemState nextState() {
           return this;
         }
       },
       CLIMB_ALIGN {
+        // TODO implement when yfc pushes goto code
         @Override
         public SystemState nextState() {
           return this;
         }
-
       },
       FUEL_ALIGN {
+        // TODO redo
         @Override
         public void initialize() {
           s_fuelDistanceController.reset();
@@ -185,9 +203,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           if (!fuelAlignPressed()) return DRIVER_CONTROL;
           return this;
         }
-
       },
       OVER_BUMP {
+        // TODO redo
         @Override
         public void initialize() {
           s_overBumpTimer.reset();
@@ -242,7 +260,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       },
     }
 
-
+  private static DriveSubsystem s_driveSubsystem;
   private static CommandSwerveDrivetrain s_drivetrain;
   private static SwerveRequest.FieldCentric s_drive;
   private static RobotCentricWithPose s_robotAlign;
@@ -290,6 +308,21 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static OverBumpPhase s_overBumpPhase = OverBumpPhase.DONE;
   private static double s_overBumpHeadingGoal = 0.0;
 
+  public static DriveSubsystem getInstance() {
+    if (s_driveSubsystem == null) {
+      s_driveSubsystem = new DriveSubsystem(initializeHardware());
+    }
+    return s_driveSubsystem;
+  }
+
+  public static CommandSwerveDrivetrain getDrivetrain() {
+    if (s_drivetrain == null) {
+      // shouldn't happen
+      s_drivetrain = TunerConstants.createDrivetrain();
+    }
+    return s_drivetrain;
+  }
+
   public DriveSubsystem(Hardware driveHardware) {
     super(DriveStates.DRIVER_CONTROL);
 
@@ -322,6 +355,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_questNav = new QuestNav();
   }
 
+  // TODO move all these bindings into headhoncho
   /*
    * Binds the controls needed to drive for controller usage
    */
@@ -454,6 +488,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return s_questNav != null && s_questNav.isTracking();
   }
 
+  public boolean atWantedRotation() {
+    return AimUtil.getRobotHeading().isNear(
+      s_drivetrain.getState().Pose.getRotation().getMeasure(),
+      Constants.Drive.ROTATION_TOLERANCE
+    );
+  }
+
   private static void selectClosestBumpSet() {
     boolean allowNZ = (Timer.getFPGATimestamp() - s_lastIntakeActiveTime) <= 5.0;
     Pose2d[] posa = allowNZ
@@ -524,7 +565,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     double distance = error.getNorm();
 
     double targetHeading = targetPose.getRotation().getRadians();
-    s_overBumpHeadingController.setP(headingKp);
+    s_overBumpHeadingController.setP(headingKp); // TODO wtf
     double rotationalRate =
         s_overBumpHeadingController.calculate(currentPose.getRotation().getRadians(), targetHeading);
 
@@ -551,9 +592,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             .withVelocityX(vx)
             .withVelocityY(vy)
             .withRotationalRate(rotationalRate));
+
     return false;
   }
-
 
   private enum OverBumpPhase {
     TO_POSA,

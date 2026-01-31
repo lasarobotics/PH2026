@@ -65,6 +65,13 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         super(HeadHonchoStates.REST);
     }
 
+    /**
+     * The bindings to control the robot.
+     * Should only be called once on startup.
+     * @param shootButton
+     * @param passButton
+     * @param intakeButton
+     */
     public void configureBindings(
         BooleanSupplier shootButton,
         BooleanSupplier passButton,

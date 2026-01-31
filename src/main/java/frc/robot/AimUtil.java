@@ -1,29 +1,34 @@
-package frc.robot.subsystems.drive;
+package frc.robot;
+
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
+
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-import frc.robot.Constants;
+import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Velocity;
+import frc.robot.subsystems.drive.DriveSubsystem;
 
-public class Util {
+public class AimUtil {
     
-  private double ballVelocity;
-  private double exitAngle;
-  private double robotHeading;
-
-  public Util(DriveSubsystem driveSubsystem) {
-    ballVelocity = 0.0;
-    exitAngle = 0.0;
-    robotHeading = 0.0;
-  }
+  private static LinearVelocity ballVelocity = MetersPerSecond.of(0);
+  private static Angle exitAngle = Degrees.of(45);
+  private static Angle robotHeading = Radians.of(0);
 
   /**
    * 
    * @param distance Linear distance from hub
    * @return Value of X velocity of the ball when shot stationary
    */
-  public double getVelocityXStationary(double distance) {
+  public static double getVelocityXStationary(double distance) {
     double y_max = Constants.Field.MAX_BALL_Y_POS;
     double y_end = Constants.Field.END_BALL_Y_POS;
     double g = Constants.Field.GRAVITY_VALUE;
@@ -35,7 +40,7 @@ public class Util {
   /**
    * @return Value of Y velocity of the ball when shot stationary
    */
-  public double getVelocityYStationary() {
+  public static double getVelocityYStationary() {
     double y_max = Constants.Field.MAX_BALL_Y_POS;
     double g = Constants.Field.GRAVITY_VALUE;
 
@@ -47,7 +52,10 @@ public class Util {
    * @param robotPose Your current robot pose
    * @return Speed of the ball needed to shoot stationary
    */
-  public double getVelocitySpeedStationary(Pose2d robotPose) {
+  public static double getVelocitySpeedStationary() {
+    SwerveDriveState driveState = DriveSubsystem.getDrivetrain().getState();
+    Pose2d robotPose = driveState.Pose;
+
     Translation2d goalLocation = Constants.Drive.HUB_COORDINATES;
     Translation2d targetVec = goalLocation.minus(robotPose.getTranslation());
     double dist = targetVec.getNorm();
@@ -60,17 +68,15 @@ public class Util {
   } 
 
   /**
-   * @param currentRobotSpeeds Your current robot speeds
-   * @param currentRobotPose Your current robot pose
-   * @param currentAngularVelocity Your current robot's angular velocity
-   * 
    * What this method does it calculates the ball speed, robot heading, and shooter angle needed to shoot
    * even while moving at an arbitary position on the field. It then sets the member variables of this class to those values
    * (you can then call the related get methods of this file to get stuff you need)
    */
-  public void setShooterConstants(ChassisSpeeds currentRobotSpeeds, 
-              Pose2d currentRobotPose, 
-              AngularVelocity currentAngularVelocity) {
+  public static void updateShooterConstants() {
+    SwerveDriveState driveState = DriveSubsystem.getDrivetrain().getState();
+    ChassisSpeeds currentRobotSpeeds = driveState.Speeds;
+    Pose2d currentRobotPose = driveState.Pose;
+    AngularVelocity currentAngularVelocity = AngularVelocity.ofBaseUnits(driveState.Speeds.omegaRadiansPerSecond, RadiansPerSecond);
 
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
@@ -102,46 +108,41 @@ public class Util {
 
 
     //the arctangent of the Y velocity and the X velocity is the shooterAngle
-    double shooterAngle = Math.atan2(shooterVelocityVec.getY(), shooterVelocityVec.getX());
+    exitAngle = Angle.ofBaseUnits(Math.atan2(shooterVelocityVec.getY(), shooterVelocityVec.getX()), Radians);
 
     //Pythagorean sum of the X velocity and the Z velocity is the shooter
-    double shotVelocity = Math.sqrt(Math.pow(shooterVelocityVec.getX(), shooterVelocityVec.getY()));
+    ballVelocity = LinearVelocity.ofBaseUnits(Math.sqrt(Math.pow(shooterVelocityVec.getX(), shooterVelocityVec.getY())), MetersPerSecond);
 
     //The angle of the target vector is your robot heading
-    double robotHeading = targetVec.getAngle().getRadians();
-
-
-    this.exitAngle = shooterAngle;
-    this.ballVelocity = shotVelocity;
-    this.robotHeading = robotHeading;
+    robotHeading = targetVec.getAngle().getMeasure();
   }
 
   /**
    * @return Returns the speed of the ball at any given point needed to shoot
    */
-  public double getBallVelocity() {
+  public static LinearVelocity getBallVelocity() {
     return ballVelocity;
   }
 
   /**
    * @return Returns the exitAngle of the ball at any given point
    */
-  public double getExitAngle() {
+  public static Angle getExitAngle() {
     return exitAngle;
   }
 
   /**
    * @return Returns the robot heading needed to shoot at any given point
    */
-  public double getRobotHeading() {
+  public static Angle getRobotHeading() {
     return robotHeading;
   }
 
   /**
    * @return Returns the speed of the flywheel needed to shoot
    */
-  public double getFlyWheelRadiansPerSecond() {
-    return (2 * ballVelocity)/Constants.Drive.FLYWHEEL_RADIUS;
+  public static double getFlyWheelRadiansPerSecond() {
+    return (2 * ballVelocity.in(MetersPerSecond))/Constants.Drive.FLYWHEEL_RADIUS;
   }
 
 }
