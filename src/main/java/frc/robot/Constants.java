@@ -37,7 +37,9 @@ public final class Constants {
   }
 
   public static class ShooterSubsystem {
-    public static final int SHOOTER_MOTOR_ID = 0; // TODO
+    public static final int SHOOTER_ONE_MOTOR_ID = 0; // TODO
+    public static final int SHOOTER_TWO_MOTOR_ID = 0; // TODO
+    public static final int SHOOTER_THREE_MOTOR_ID = 0; // TODO
     public static final int INDEXER_MOTOR_ID = 0; // TODO
     public static final int HOOD_MOTOR_ID = 0; // TODO
 
