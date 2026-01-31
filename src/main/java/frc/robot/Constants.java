@@ -139,4 +139,11 @@ public final class Constants {
     public static final double BOUNDING_BOX_AREA_AT_ONE_METER = 9000.0;
     public static final double MIN_DISTANCE_METERS = Meters.of(0.05).in(Meters);
   }
+
+  public static class IntakeSubsystem {
+    // TODO: find the ids of the motors and encoder
+    public static final int INTAKE_MOTOR_ID = 0;
+    public static final int ARM_MOTOR_ID = 0;
+    public static final int ARM_ENCODER_ID = 0;
+  }
 }
