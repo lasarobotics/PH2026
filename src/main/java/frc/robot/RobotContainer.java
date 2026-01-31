@@ -45,8 +45,7 @@ public class RobotContainer {
       m_driverController.a(),
       m_driverController.b(),
       // toggle intake when button is pressed
-      () -> m_driverController.getHID().getAButtonPressed(),
-      m_driverController.leftBumper()
+      () -> m_driverController.getHID().getAButtonPressed()
     );
   }
 
