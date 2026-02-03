@@ -6,7 +6,6 @@ import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 
 import frc.robot.subsystems.intake.IntakeSubsystem;
-import frc.robot.subsystems.hopper.HopperSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 public class HeadHoncho extends StateMachine implements AutoCloseable {
