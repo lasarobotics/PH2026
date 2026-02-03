@@ -101,6 +101,16 @@ public class AimUtil {
     Angle robotHeading
   ){}
 
+  /**
+   * Given a chassis speeds, position, and angular velocity, calculate the
+   * optimal shooting parameters to get a ball in the hub.
+   * @param currentRobotSpeeds driveState.Speeds
+   * @param currentRobotPose driveState.Pose
+   * @param currentAngularVelocity driveState.Speeds.omegaRadiansPerSecond
+   * (as an AngularVelocity object)
+   * @return A ShooterMathResults record with the wanted exit angle,
+   * ball velocity, and robot heading
+   */
   public static ShooterMathResults runShooterMath(
     ChassisSpeeds currentRobotSpeeds,
     Pose2d currentRobotPose,
