@@ -173,4 +173,11 @@ public final class Constants {
     // TODO adjust maybe
     public static final Time DELAY_TIME = Seconds.of(2);
   }
+
+  public static class Climb {
+    // TODO: find the ids of the climb motors and encoder
+    public static final int CLIMB_MOTOR_1_ID = 0;
+    public static final int CLIMB_MOTOR_2_ID = 0;
+    public static final int ARM_ENCODER_ID = 0;
+  }
 }
