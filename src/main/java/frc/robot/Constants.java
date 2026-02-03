@@ -11,6 +11,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -21,6 +22,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 import frc.robot.generated.TunerConstants;
 
 /**
@@ -154,5 +156,21 @@ public final class Constants {
     public static final int INTAKE_MOTOR_ID = 0;
     public static final int ARM_MOTOR_ID = 0;
     public static final int ARM_ENCODER_ID = 0;
+  }
+
+  public static class Hopper {
+    // TODO find these
+    public static final int CANRANGE_TOP_ONE_ID = 0;
+    public static final int CANRANGE_TOP_TWO_ID = 0;
+    public static final int CANRANGE_TOP_THREE_ID = 0;
+    public static final int CANRANGE_BOTTOM_ONE_ID = 0;
+    public static final int CANRANGE_BOTTOM_TWO_ID = 0;
+    public static final int CANRANGE_BOTTOM_THREE_ID = 0;
+
+    // TODO update to be not 5 inches
+    public static final Distance BLOCKED_DISTANCE = Inches.of(5);
+
+    // TODO adjust maybe
+    public static final Time DELAY_TIME = Seconds.of(2);
   }
 }
