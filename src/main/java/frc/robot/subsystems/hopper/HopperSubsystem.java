@@ -76,20 +76,35 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
     m_bottomBlocked = bottomB;
   }
 
-  // TODO javadoc
+  /**
+   * Checks that at least one of the top beam breaks has been blocked for
+   * {@link frc.robot.Constants.Hopper#DELAY_TIME a certain amount of time}.
+   * @return true if a beambreak is blocked and that the timer has elapsed
+   * the desired amount of time, false otherwise
+   */
   public boolean getTopRow() {
     return m_topBlocked &&
       m_topTimer.hasElapsed(Constants.Hopper.DELAY_TIME);
   }
 
-  // TODO javadoc
+  /**
+   * Checks that at least one of the bottom beam breaks has been blocked for
+   * {@link frc.robot.Constants.Hopper#DELAY_TIME a certain amount of time}.
+   * @return true if a beambreak is blocked and that the timer has elapsed
+   * the desired amount of time, false otherwise
+   */
   public boolean getBottomRow() {
     return m_bottomBlocked &&
       m_bottomTimer.hasElapsed(Constants.Hopper.DELAY_TIME);
   }
 
-  // TODO maybe use different values for top and bottom?
-  // TODO write javadoc
+  /**
+   * Gets the distance measured by a CANrange and compares it to
+   * {@link frc.robot.Constants.Hopper#BLOCKED_DISTANCE a certain distance}
+   * @param range The CANrange that the distance should be checked for
+   * @return true if the measured value is less than or equal to the
+   * constant distance
+   */
   private boolean canRangeBlocked(CANrange range) {
     return range.getDistance().getValue().lte(
       Constants.Hopper.BLOCKED_DISTANCE
