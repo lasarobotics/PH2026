@@ -7,9 +7,11 @@ import static edu.wpi.first.units.Units.Rotations;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -156,8 +158,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorMaster.setControl(
       m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
     );
-    m_shooterMotorSlaveOne.setVoltage(0);
-    m_shooterMotorSlaveTwo.setVoltage(0);
+
+    //TODO: figure out the alignment of the slave motors with respect to the master
+    m_shooterMotorSlaveOne.setControl(
+      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
+    );
+    m_shooterMotorSlaveTwo.setControl(
+      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
+    );
   }
 
   /**
@@ -169,11 +177,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorMaster.setControl(
       m_shooterRequest.withVelocity(wantedShooterSpeed())
     );
+
+    //TODO: figure out the alignment of the slave motors with respect to the master
     m_shooterMotorSlaveOne.setControl(
-      m_shooterRequest.withVelocity(wantedShooterSpeed())
+      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
     );
     m_shooterMotorSlaveTwo.setControl(
-      m_shooterRequest.withVelocity(wantedShooterSpeed())
+      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
     );
   }
 
@@ -224,7 +234,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public boolean readyToShoot() {
     return (
       (
-        GameHelpers.scoringTimeLeft() - Constants.Drive.HANG_TIME
+        GameHelpers.scoringTimeLeft() - Constants.Field.HANG_TIME
         >= Constants.Shooter.SHOOTER_TIME_MARGIN
       ) &&
       atShootSpeed() &&
