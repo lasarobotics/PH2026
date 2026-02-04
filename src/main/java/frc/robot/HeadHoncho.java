@@ -44,26 +44,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         return this;
       }
     },
-    AUTO_INTAKE {
-      @Override
-      public void initialize() {
-        IntakeSubsystem.getInstance().startIntake();
-        ShooterSubsystem.getInstance().stopEverything();
-      }
-
-      @Override
-      public void execute() {
-        // should get the wanted position from the ball targeter
-        // and go there
-        // TODO
-      }
-
-      // when do we want to go back? TODO
-      @Override
-      public SystemState nextState() {
-        return this;
-      }
-    },
     CLIMB {
       @Override
       public void initialize() {
