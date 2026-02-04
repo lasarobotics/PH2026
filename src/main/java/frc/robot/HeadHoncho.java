@@ -116,13 +116,11 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     public void configureBindings(
         BooleanSupplier shootButton,
         BooleanSupplier passButton,
-        BooleanSupplier intakeButton,
-        BooleanSupplier goToToggle
+        BooleanSupplier intakeButton
     ) {
         m_shootButton = shootButton;
         m_passButton = passButton;
         m_intakeButtonDown = intakeButton;
-        m_goToToggle = goToToggle;
     }
 
   // TODO impl
