@@ -30,7 +30,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private final TalonFX m_intakeMotor;
   private final TalonFX m_armMotor;
   private final MotionMagicVoltage m_armPositionSetter;
-  private CANcoder m_armEncoder;
+  private CANcoder m_intakeEncoder;
 
   private boolean m_isIntaking;
   private boolean m_isIntakeRunning;
@@ -39,7 +39,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private IntakeSubsystem() {
     this.m_intakeMotor = new TalonFX(Constants.Intake.INTAKE_MOTOR_ID);
     this.m_armMotor = new TalonFX(Constants.Intake.ARM_MOTOR_ID);
-    this.m_armEncoder = new CANcoder(Constants.Intake.ARM_ENCODER_ID);
+    this.m_intakeEncoder = new CANcoder(Constants.Intake.ARM_ENCODER_ID);
 
     m_armPositionSetter = new MotionMagicVoltage(Radians.zero());
 
@@ -54,12 +54,12 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration armConfig = new TalonFXConfiguration();
 
     // TODO: set the config for the cancoder
-    CANcoderConfiguration armEncoderConfig = new CANcoderConfiguration();
+    CANcoderConfiguration intakeEncoderConfig = new CANcoderConfiguration();
 
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
     m_armMotor.getConfigurator().apply(armConfig);
-    m_armEncoder.getConfigurator().apply(armEncoderConfig);
+    m_intakeEncoder.getConfigurator().apply(intakeEncoderConfig);
   }
 
   /**
@@ -137,7 +137,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     super.periodic();
     Logger.recordOutput(getName() + "/intakeMotor", m_isIntakeRunning);
     Logger.recordOutput(getName() + "/isInIntake", m_isIntaking);
-    Logger.recordOutput(getName() + "/armEncoder", m_armEncoder.getAbsolutePosition().getValue());
+    Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getAbsolutePosition().getValue());
   }
   
   /**
@@ -147,7 +147,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   public void close() {
     m_intakeMotor.close();
     m_armMotor.close();
-    m_armEncoder.close();
+    m_intakeEncoder.close();
     s_intakeInstance = null;
   }
 }

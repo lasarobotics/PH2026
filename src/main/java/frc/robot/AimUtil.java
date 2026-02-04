@@ -62,7 +62,7 @@ public class AimUtil {
    * @return Speed of the ball needed to shoot while stationary
    */
   public static double getVelocityFromPose(Pose2d robotPose) {
-    Translation2d goalLocation = Constants.Drive.HUB_COORDINATES;
+    Translation2d goalLocation = Constants.Field.HUB_COORDINATES;
     Translation2d targetVec = goalLocation.minus(robotPose.getTranslation());
     double dist = targetVec.getNorm();
     
@@ -125,16 +125,16 @@ public class AimUtil {
           new Translation2d(
             currentRobotSpeeds.vxMetersPerSecond, 
             currentRobotSpeeds.vyMetersPerSecond).
-            times(latency + Constants.Drive.HANG_TIME).plus(
+            times(latency + Constants.Field.HANG_TIME).plus(
           new Translation2d(
-            currentAngularVelocity.magnitude() * Constants.Drive.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
-            currentAngularVelocity.magnitude() * Constants.Drive.SHOOTER_OFFSET * Math.sin(currentRobotHeading)
+            currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
+            currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.sin(currentRobotHeading)
           )
          )
         );
     
     // Get your distance to the hub (using the future position)
-    Translation2d goalLocation = Constants.Drive.HUB_COORDINATES;
+    Translation2d goalLocation = Constants.Field.HUB_COORDINATES;
     Translation2d targetVec = goalLocation.minus(futurePos);
     double dist = targetVec.getNorm();
 
@@ -192,7 +192,7 @@ public class AimUtil {
    * @return Returns the speed of the flywheel needed to shoot
    */
   public static double getFlyWheelRadiansPerSecond() {
-    return (2 * ballVelocity.in(MetersPerSecond))/Constants.Drive.FLYWHEEL_RADIUS;
+    return (2 * ballVelocity.in(MetersPerSecond))/Constants.Shooter.FLYWHEEL_RADIUS;
   }
 
 }
