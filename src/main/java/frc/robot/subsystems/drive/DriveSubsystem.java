@@ -431,6 +431,51 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return rising;
   }
 
+  
+    private void goTo(Pose2d target) {
+        Logger.recordOutput("DriveSubsystem/Odometry/target", target);
+
+        Pose2d robotPose = s_drivetrain.getState().Pose;
+        Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
+
+        double distance = robotPose.getTranslation().getDistance(target.getTranslation());
+
+        Logger.recordOutput("DriveSubsystem/Odometry/distance", distance);
+
+        var directionOfTravel = newPosition.getAngle();
+
+        Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
+
+
+        var outputVelocity = 
+            Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2;
+
+        // how does it know to rotate the amount in the time it takes to get to target.
+
+        var rotationRate = 
+            s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians());
+
+        
+
+        var xComponent = outputVelocity * directionOfTravel.getCos();
+        var yComponent = outputVelocity * directionOfTravel.getSin();
+
+        s_drivetrain.setControl(
+            s_drive
+                .withVelocityX(MetersPerSecond.of(xComponent))
+                .withVelocityY(MetersPerSecond.of(yComponent))
+                .withRotationalRate(rotationRate)
+        );
+        Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
+
+
+        if(Math.abs(distance) < 0.2 && Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()) < 0.1) {
+            m_shouldGoTo = false;
+        }
+
+    }
+
+
   @Override
   public void periodic() {
 
