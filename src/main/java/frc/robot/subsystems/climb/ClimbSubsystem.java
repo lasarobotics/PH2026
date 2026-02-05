@@ -23,6 +23,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   private final CANcoder m_climbEncoder;
   private final TalonFX m_climbMotor1;
   private final TalonFX m_climbMotor2;
+  private boolean m_isClimbing;
 
   public static ClimbSubsystem getInstance() {
     if (s_climbInstance == null){
@@ -47,15 +48,15 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Make climbMotor2 follow climbMotor1
     this.m_climbMotor2.setControl(new Follower(this.m_climbMotor1.getDeviceID(), MotorAlignmentValue.Aligned));
+
+    this.m_isClimbing = false;
   }
 
   /**
    * Stow the climber so it is inside the frame perimeter
    */
   public void stow() {
-    while (!inStowPosition()) {
-      m_climbMotor1.set(-Constants.Climb.CLIMB_SPEED_SLOW);
-    }
+    m_isClimbing = false;
   }
 
   /**
@@ -66,12 +67,10 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Sets the motor output for climbing
+   * Set the motor output for climbing
    */
   public void climb() {
-    while (!inClimbPosition()) {
-      m_climbMotor1.set(Constants.Climb.CLIMB_SPEED);
-    }
+    m_isClimbing = true;
   }
 
   /**
@@ -97,8 +96,37 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     return this.m_climbEncoder.getAbsolutePosition().getValue();
   }
 
+  /**
+   *  Set the motor to move to climb position
+   */
+  private void moveToClimb() {
+    s_climbInstance.m_climbMotor1.set(Constants.Climb.CLIMB_SPEED);
+  }
+
+  /**
+   *  Set the motor to move to stow position
+   */
+  private void moveToStow() {
+    s_climbInstance.m_climbMotor1.set(-Constants.Climb.CLIMB_SPEED);
+  }
+
   @Override
   public void periodic() {
+    // Handle climbing logic
+    if (m_isClimbing) {
+      if (!s_climbInstance.inClimbPosition()) {
+        s_climbInstance.moveToClimb();
+      } else {
+        s_climbInstance.m_climbMotor1.stopMotor();
+      }
+    } else {
+      if (!s_climbInstance.inStowPosition()) {
+        s_climbInstance.moveToStow();
+      } else {
+        s_climbInstance.m_climbMotor1.stopMotor();
+      }
+    }
+
     // This method will be called once per scheduler run
     Logger.recordOutput(getName() + "/encoderAngle", s_climbInstance.getClimberAngle());
     Logger.recordOutput(getName() + "/inStowPosition", s_climbInstance.inStowPosition());
