@@ -5,6 +5,8 @@ import java.util.function.BooleanSupplier;
 import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 
+import frc.robot.subsystems.climb.ClimbSubsystem;
+import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
@@ -16,6 +18,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       public void initialize() {
         ShooterSubsystem.getInstance().stopEverything();
         IntakeSubsystem.getInstance().stopIntake();
+        DriveSubsystem.getInstance().driverControl();
+        ClimbSubsystem.getInstance().stow();
       }
 
       @Override
@@ -25,6 +29,11 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     },
     NORMAL {
       @Override
+      public void initialize() {
+        ClimbSubsystem.getInstance().stow();
+      }
+
+      @Override
       public void execute() {
         boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
         boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
@@ -33,37 +42,53 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
           shootButton, passButton
         );
 
+        if (shootButton || passButton) {
+          DriveSubsystem.getInstance().driveAutoAim();
+        } else {
+          DriveSubsystem.getInstance().driverControl();
+        }
+
         if (s_headHoncho.m_intakeButtonDown.getAsBoolean()) {
           IntakeSubsystem.getInstance().toggleIntake();
         }
       }
 
-      // when should we transition to other states? TODO
       @Override
       public SystemState nextState() {
+        if (s_headHoncho.m_climbButton.getAsBoolean()) return CLIMB;
+
         return this;
       }
     },
     CLIMB {
+      // assume true when starting state
+      boolean climbButtonWasDown = true;
+
       @Override
       public void initialize() {
         IntakeSubsystem.getInstance().startIntake();
         ShooterSubsystem.getInstance().stopEverything();
-        
-        // goto the climb position?
-          // maybe the goto should be in execute
+        DriveSubsystem.getInstance().driveAutoClimb();
+        ClimbSubsystem.getInstance().stow();
       }
 
       @Override
       public void execute() {
-        // check if at climb position
-        // move onto the tower
-        // run the motor
+        // TODO do the drive thing where it makes it go slow once at tower
+
+        boolean climbButton = s_headHoncho.m_climbButton.getAsBoolean();
+        // TODO also check if drivetrain is in position
+        if (climbButton && !climbButtonWasDown) {
+          ClimbSubsystem.getInstance().climb();
+        }
+
+        climbButtonWasDown = climbButton;
       }
 
-      // do we even ever want to go back?
       @Override
       public SystemState nextState() {
+        if (s_headHoncho.m_cancelButton.getAsBoolean()) return NORMAL;
+
         return this;
       }
     }
@@ -98,11 +123,15 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     public void configureBindings(
         BooleanSupplier shootButton,
         BooleanSupplier passButton,
-        BooleanSupplier intakeButton
+        BooleanSupplier intakeButton,
+        BooleanSupplier climbButton,
+        BooleanSupplier cancelButton
     ) {
         m_shootButton = shootButton;
         m_passButton = passButton;
         m_intakeButtonDown = intakeButton;
+        m_climbButton = climbButton;
+        m_cancelButton = cancelButton;
     }
 
   // TODO impl

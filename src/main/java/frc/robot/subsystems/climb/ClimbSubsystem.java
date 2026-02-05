@@ -24,6 +24,13 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   private final TalonFX m_climbMotor1;
   private final TalonFX m_climbMotor2;
 
+  public static ClimbSubsystem getInstance() {
+    if (s_climbInstance == null){
+      s_climbInstance = new ClimbSubsystem();
+    }
+    return s_climbInstance;
+  }
+
   /** Creates a new ClimbSubsystem. */
   private ClimbSubsystem() {
 
@@ -40,18 +47,6 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
 
     // Make climbMotor2 follow climbMotor1
     this.m_climbMotor2.setControl(new Follower(this.m_climbMotor1.getDeviceID(), MotorAlignmentValue.Aligned));
-  }
-
-  /**
-   * Gets new instance of Climb Subsystem
-   * @param ClimbHardware contains hardware for climb subsystem
-   * @return ClimbSubsystem object
-   */
-  public static ClimbSubsystem getInstance() {
-    if (s_climbInstance == null){
-      s_climbInstance = new ClimbSubsystem();
-    }
-    return s_climbInstance;
   }
 
   /**
