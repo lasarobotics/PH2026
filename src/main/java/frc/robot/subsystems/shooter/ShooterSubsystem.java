@@ -43,8 +43,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private ShooterSubsystem() {
     m_shooterMotorMaster = new TalonFX(Constants.Shooter.MASTER_SHOOTER_MOTOR_ID);
-    m_shooterMotorMaster = new TalonFX(Constants.Shooter.SLAVE_SHOOTER_ONE_MOTOR_ID);
-    m_shooterMotorMaster = new TalonFX(Constants.Shooter.SLAVE_SHOOTER_TWO_MOTOR_ID);
+    m_shooterMotorSlaveOne = new TalonFX(Constants.Shooter.SLAVE_SHOOTER_ONE_MOTOR_ID);
+    m_shooterMotorSlaveTwo = new TalonFX(Constants.Shooter.SLAVE_SHOOTER_TWO_MOTOR_ID);
     m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
 

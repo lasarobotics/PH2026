@@ -110,7 +110,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   }
 
   private HeadHoncho() {
-    super(HeadHonchoStates.REST);
+    super(HeadHonchoStates.NORMAL);
   }
 
     /**
