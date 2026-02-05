@@ -180,6 +180,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoDrive = new PIDController(1.75, 0.0, 0.0);
     s_headingController = new PIDController(3, 0.0, 0.5);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
+
+    // TODO: Fix this with real values
+    s_autoAimController = new ProfiledPIDController(0.0, 0.0, 0, null);
   }
 
   // TODO move all these bindings into headhoncho

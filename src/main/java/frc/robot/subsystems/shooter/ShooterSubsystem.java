@@ -81,7 +81,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * </ul>
    * <li>If not holding button, set shoot motor to hold speed
    * and stop indexer
-   * </ul
+   * </ul>
    * @param shooting If shoot button is held
    * @param passing If pass button is held
    */
