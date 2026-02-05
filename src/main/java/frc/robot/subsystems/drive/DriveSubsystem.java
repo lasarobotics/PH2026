@@ -15,7 +15,6 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
-import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -160,7 +159,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   public DriveSubsystem() {
     super(DriveStates.DRIVER_CONTROL);
 
-    if (DriverStation.getAlliance().toString().contains("red")) {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       s_alliancePoses = new Pose2d[]{Constants.Field.RED_TOWER};
     } else {
       s_alliancePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
