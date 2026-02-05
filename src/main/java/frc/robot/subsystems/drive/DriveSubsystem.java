@@ -18,7 +18,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -26,8 +25,6 @@ import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.LoopTimer;
 import frc.robot.generated.TunerConstants;
-import gg.questnav.questnav.PoseFrame;
-import gg.questnav.questnav.QuestNav;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
     public static record Hardware() {}
@@ -63,11 +60,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
                       Constants.Drive.MAX_ANGULAR_RATE
                           .times(-s_rotateRequest.getAsDouble())
                           .times(s_driveSpeedScalar)));
-        }
+
+           }
 
         @Override
         public SystemState nextState() {
           if (DriverStation.isAutonomous()) return AUTO;
+          if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+          if (s_requestedDriveState == DriveStates.CLIMB_ALIGN) return CLIMB_ALIGN;
+          
           return this;
         }
       },
@@ -101,6 +102,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         @Override
         public SystemState nextState() {
+          if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
+          if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+          if (s_requestedDriveState == DriveStates.CLIMB_ALIGN) return CLIMB_ALIGN;
+
           return this;
         }
       },
@@ -116,9 +121,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DriveSubsystem s_driveSubsystem;
   private static CommandSwerveDrivetrain s_drivetrain;
   private static SwerveRequest.FieldCentric s_drive;
-  private static QuestNav s_questNav;
-  private static Pose3d s_latestQuestPose = new Pose3d();
-  private static double s_latestQuestTimestamp = 0.0;
 
   private static DoubleSupplier s_driveRequest = () -> 0;
   private static DoubleSupplier s_strafeRequest = () -> 0;
@@ -128,12 +130,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private boolean m_hasAppliedOperatorPerspective = false;
 
-
   private static double s_driveSpeedScalar = Constants.Drive.FAST_SPEED_SCALAR;
 
   private static ProfiledPIDController s_autoAimController;
   private static PIDController s_autoDrive;
   private static PIDController s_headingController;
+
+  private static DriveStates s_requestedDriveState = DriveStates.NOTHING;
 
   private boolean m_shouldGoTo = false;
 
@@ -169,7 +172,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoDrive = new PIDController(1.75, 0.0, 0.0);
     s_headingController = new PIDController(3, 0.0, 0.5);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
-    s_questNav = new QuestNav();
   }
 
   // TODO move all these bindings into headhoncho
@@ -281,43 +283,25 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
   }
 
-  @Override
-  public void close() throws Exception {
-    s_drivetrain.close();
+  public void driveAutoAim() {
+    s_requestedDriveState = DriveStates.AUTO_AIM;
   }
 
-  private static void updateQuestPose() {
-    if (s_questNav == null) return;
-    s_questNav.commandPeriodic();
-    PoseFrame[] frames = s_questNav.getAllUnreadPoseFrames();
-    if (frames.length > 0) {
-      PoseFrame frame = frames[frames.length - 1];
-      if (frame.isTracking()) {
-        s_latestQuestPose = frame.questPose3d();
-        s_latestQuestTimestamp = frame.dataTimestamp();
-      }
-    }
-    Logger.recordOutput("Drive/QuestPose", s_latestQuestPose);
-    Logger.recordOutput("Drive/QuestPoseTimestamp", s_latestQuestTimestamp);
+  public void driveAutoClimb() {
+    s_requestedDriveState = DriveStates.CLIMB_ALIGN;
   }
 
-  public Pose3d getQuestPose() {
-    return s_latestQuestPose;
-  }
-
-  public double getQuestPoseTimestamp() {
-    return s_latestQuestTimestamp;
-  }
-
-  public boolean questIsTracking() {
-    return s_questNav != null && s_questNav.isTracking();
-  }
 
   public boolean atWantedRotation() {
     return AimUtil.getRobotHeading().isNear(
       s_drivetrain.getState().Pose.getRotation().getMeasure(),
       Constants.Drive.ROTATION_TOLERANCE
     );
+  }
+
+  @Override
+  public void close() throws Exception {
+    s_drivetrain.close();
   }
 
 }

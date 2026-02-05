@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
@@ -12,13 +13,14 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Value;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -117,6 +119,11 @@ public final class Constants {
     public static final int INTAKE_MOTOR_ID = 0;
     public static final int ARM_MOTOR_ID = 0;
     public static final int ARM_ENCODER_ID = 0;
+
+    // TODO: find values of intake positions
+    public static final Dimensionless INTAKE_SPEED = Value.of(0.6);
+    public static final Angle STOW_ANGLE = Degrees.of(0);
+    public static final Angle DEPLOY_ANGLE = Degrees.of(0);
   }
 
   public static class Hopper {

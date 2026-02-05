@@ -46,6 +46,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void hopperPeriodic() {
     boolean topB = (
+      // TODO: test if this is OR or AND
       canRangeBlocked(m_topRange1) ||
       canRangeBlocked(m_topRange2) ||
       canRangeBlocked(m_topRange3)

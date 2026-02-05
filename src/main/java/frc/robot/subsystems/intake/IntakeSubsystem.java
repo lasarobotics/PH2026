@@ -1,30 +1,20 @@
 package frc.robot.subsystems.intake;
 
-import static edu.wpi.first.units.Units.Value;
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Value;
 
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.TalonFX;
 
-import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.units.measure.Angle;
-
 import frc.robot.Constants;
 
 public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
-
-  // TODO maybe these should be in constants instead? -mw
-  // TODO: find values of intake positions
-  static final Dimensionless INTAKE_SPEED = Value.of(0.6);
-  static final Angle STOW_ANGLE = Degrees.of(0);
-  static final Angle DEPLOY_ANGLE = Degrees.of(0);
 
   private static IntakeSubsystem s_intakeInstance;
   private final TalonFX m_intakeMotor;
@@ -88,7 +78,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    *  Deploy the intake arm and start the intake motor
    */
   public void startIntake() {
-    deployArm();
+    deployIntake();
     startIntakeMotor();
     m_isIntaking = true;
   }
@@ -97,7 +87,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    *  Stow the intake arm and stop the intake motor
    */
   public void stopIntake() {
-    stowArm();
+    stowIntake();
     stopIntakeMotor();
     m_isIntaking = false;
   }
@@ -106,7 +96,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * Start intake of fuel using intake motor
    */
   private void startIntakeMotor() {
-    m_intakeMotor.set(INTAKE_SPEED.in(Value));
+    m_intakeMotor.set(Constants.Intake.INTAKE_SPEED.in(Value));
     m_isIntakeRunning = true;
   }
 
@@ -121,15 +111,15 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    *  Move the intake arm to the extended out position
    */
-  private void deployArm() {
-    m_armMotor.setControl(m_armPositionSetter.withPosition(DEPLOY_ANGLE));
+  private void deployIntake() {
+    m_armMotor.setControl(m_armPositionSetter.withPosition(Constants.Intake.DEPLOY_ANGLE));
   }
 
   /**
    *  Move the intake arm to the stowed position
    */
-  private void stowArm() {
-    m_armMotor.setControl(m_armPositionSetter.withPosition(STOW_ANGLE));
+  private void stowIntake() {
+    m_armMotor.setControl(m_armPositionSetter.withPosition(Constants.Intake.STOW_ANGLE));
   }
 
   @Override
