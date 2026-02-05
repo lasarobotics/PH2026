@@ -179,8 +179,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private static Pose2d[] s_alliancePoses;
 
-  private boolean m_shouldGoTo = false;
-
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
       s_driveSubsystem = new DriveSubsystem();
@@ -292,10 +290,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         );
         Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
 
-
-        if(Math.abs(distance) < 0.2 && Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()) < 0.1) {
-            m_shouldGoTo = false;
-        }
     }
 
 
@@ -349,11 +343,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @return true if robot is in alliance zone, false oterwise
    */
   public boolean inAllianceZone() {
-    if(DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       if (s_drivetrain.getState().Pose.getX() <= 4.0) {
         return true;
       } else {
-        if(s_drivetrain.getState().Pose.getX() >= 12.5) {
+        if (s_drivetrain.getState().Pose.getX() >= 12.5) {
           return true;
         }
       }
@@ -374,7 +368,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     
     if (Math.abs(distance) < acceptableDistanceError 
     && Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()) < acceptableRotationError) {
-      m_shouldGoTo = false;
       return true;
     } else {
       return false;
