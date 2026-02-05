@@ -15,6 +15,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
@@ -100,6 +102,12 @@ public final class Constants {
     public static final double HANG_TIME = (((
       Math.sqrt(Constants.Field.MAX_BALL_Y_POS)) * 2) + 
       Math.sqrt(Constants.Field.END_BALL_Y_POS) / Math.sqrt(Constants.Field.GRAVITY_VALUE));
+    public static final Pose2d BLUE_TOWER =
+        new Pose2d(
+            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(180));  
+    public static final Pose2d RED_TOWER =
+        new Pose2d(
+            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(180));  
   }
 
   public static class Vision {
