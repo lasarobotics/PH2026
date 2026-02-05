@@ -27,97 +27,95 @@ import frc.robot.LoopTimer;
 import frc.robot.generated.TunerConstants;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
-    public static record Hardware() {}
 
-    public enum DriveStates implements SystemState {
-      NOTHING {
-        @Override
-        public SystemState nextState() {
-          return this;
-        }
-      },
-      AUTO {
-        @Override 
-        public SystemState nextState() {
-          if (!DriverStation.isAutonomous()) return DRIVER_CONTROL;
-          return this;
-        }
-      },
-      DRIVER_CONTROL {
-        @Override
-        public void execute() {
-          s_drivetrain.setControl(
-              s_drive
-                  .withVelocityX(
-                      Constants.Drive.MAX_SPEED
-                          .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                          .times(s_driveSpeedScalar))
-                  .withVelocityY(
-                      Constants.Drive.MAX_SPEED
-                          .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                          .times(s_driveSpeedScalar))
-                  .withRotationalRate(
-                      Constants.Drive.MAX_ANGULAR_RATE
-                          .times(-s_rotateRequest.getAsDouble())
-                          .times(s_driveSpeedScalar)));
-
-           }
-
-        @Override
-        public SystemState nextState() {
-          if (DriverStation.isAutonomous()) return AUTO;
-          if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-          if (s_requestedDriveState == DriveStates.CLIMB_ALIGN) return CLIMB_ALIGN;
-          
-          return this;
-        }
-      },
-      AUTO_AIM {
-        @Override
-        public void initialize() {
-          s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
-          s_autoAimController.setConstraints(Constants.Drive.TURN_CONSTRAINTS);
-        }
-
-        @Override
-        public void execute() {
-          double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
-          double angle = AimUtil.getRobotHeading().in(Radians);
-          double output = s_autoAimController.calculate(currentAngle, angle);
-
-          s_drivetrain.setControl(
-            s_drive
-              .withVelocityX(
-                  Constants.Drive.MAX_SPEED
-                      .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                      .times(s_driveSpeedScalar))
-              .withVelocityY(
-                  Constants.Drive.MAX_SPEED
-                      .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                      .times(s_driveSpeedScalar))
-              .withRotationalRate(
-                output
-              ));
-        }
-
-        @Override
-        public SystemState nextState() {
-          if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
-          if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-          if (s_requestedDriveState == DriveStates.CLIMB_ALIGN) return CLIMB_ALIGN;
-
-          return this;
-        }
-      },
-      CLIMB_ALIGN {
-        // TODO implement when yfc pushes goto code
-        @Override
-        public SystemState nextState() {
-          return this;
-        }
+  public enum DriveStates implements SystemState {
+    NOTHING {
+      @Override
+      public SystemState nextState() {
+        return this;
       }
+    },
+    AUTO {
+      @Override 
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return DRIVER_CONTROL;
+        return this;
+      }
+    },
+    DRIVER_CONTROL {
+      @Override
+      public void execute() {
+        s_drivetrain.setControl(
+            s_drive
+                .withVelocityX(
+                    Constants.Drive.MAX_SPEED
+                        .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                        .times(s_driveSpeedScalar))
+                .withVelocityY(
+                    Constants.Drive.MAX_SPEED
+                        .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                        .times(s_driveSpeedScalar))
+                .withRotationalRate(
+                    Constants.Drive.MAX_ANGULAR_RATE
+                        .times(-s_rotateRequest.getAsDouble())
+                        .times(s_driveSpeedScalar)));
+
+          }
+
+      @Override
+      public SystemState nextState() {
+        if (DriverStation.isAutonomous()) return AUTO;
+        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN) return CLIMB_ALIGN;
+        
+        return this;
+      }
+    },
+    AUTO_AIM {
+      @Override
+      public void initialize() {
+        s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
+        s_autoAimController.setConstraints(Constants.Drive.TURN_CONSTRAINTS);
+      }
+
+      @Override
+      public void execute() {
+        double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
+        double angle = AimUtil.getRobotHeading().in(Radians);
+        double output = s_autoAimController.calculate(currentAngle, angle);
+
+        s_drivetrain.setControl(
+          s_drive
+            .withVelocityX(
+                Constants.Drive.MAX_SPEED
+                    .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                    .times(s_driveSpeedScalar))
+            .withVelocityY(
+                Constants.Drive.MAX_SPEED
+                    .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                    .times(s_driveSpeedScalar))
+            .withRotationalRate(
+              output
+            ));
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
+        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN) return CLIMB_ALIGN;
+
+        return this;
+      }
+    },
+    CLIMB_ALIGN {
+      // TODO implement when yfc pushes goto code
+      @Override
+      public SystemState nextState() {
+        return this;
       }
     }
+  }
 
   private static DriveSubsystem s_driveSubsystem;
   private static CommandSwerveDrivetrain s_drivetrain;
@@ -143,7 +141,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
-      s_driveSubsystem = new DriveSubsystem(initializeHardware());
+      s_driveSubsystem = new DriveSubsystem();
     }
     return s_driveSubsystem;
   }
@@ -156,7 +154,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return s_drivetrain;
   }
 
-  public DriveSubsystem(Hardware driveHardware) {
+  public DriveSubsystem() {
     super(DriveStates.DRIVER_CONTROL);
 
     s_drivetrain = TunerConstants.createDrivetrain();
@@ -203,59 +201,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_strafeRequest = strafeRequest;
     s_rotateRequest = rotateRequest;
   }
-
-  /**
-   * Initialize hardware devices for drive subsystem
-   * @return Hardware object containing all necessary devices for this subsystem
-   */
-  public static Hardware initializeHardware() {
-    Hardware driveHardware = new Hardware();
-    return driveHardware;
-  }
-
-  /**
-   * Auto-aligns to a specific target (in other words, goes to a specific target)
-   * @param target The target that you want to go to
-   */
-  private void goTo(Pose2d target) {
-    Logger.recordOutput("DriveSubsystem/Odometry/target", target);
-
-    Pose2d robotPose = s_drivetrain.getState().Pose;
-    Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
-
-    double distance = robotPose.getTranslation().getDistance(target.getTranslation());
-
-    Logger.recordOutput("DriveSubsystem/Odometry/distance", distance);
-
-    var directionOfTravel = newPosition.getAngle();
-
-    Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
-
-
-    var outputVelocity = 
-        Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2;
-
-    // how does it know to rotate the amount in the time it takes to get to target.
-
-    var rotationRate = 
-        s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians());
-
-    var xComponent = outputVelocity * directionOfTravel.getCos();
-    var yComponent = outputVelocity * directionOfTravel.getSin();
-
-    s_drivetrain.setControl(
-       s_drive
-          .withVelocityX(MetersPerSecond.of(xComponent))
-          .withVelocityY(MetersPerSecond.of(yComponent))
-          .withRotationalRate(rotationRate)
-        );
-        Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
-
-
-        if(Math.abs(distance) < 0.2 && Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()) < 0.1) {
-            m_shouldGoTo = false;
-        }
-    }
 
   /**
    * Auto-aligns to a specific target (in other words, goes to a specific target)
