@@ -4,11 +4,6 @@
 
 package frc.robot.subsystems.climb;
 
-import static edu.wpi.first.units.Units.Degrees;
-
-import org.lasarobotics.fsm.StateMachine;
-import org.lasarobotics.fsm.SystemState;
-
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -19,76 +14,18 @@ import com.ctre.phoenix6.controls.Follower;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.units.measure.Angle;
-
+import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-public class ClimbSubsystem extends StateMachine implements AutoCloseable {
-
-  // TODO: Find the values of climb constants
-  static final double CLIMB_SPEED = 0.0;
-  static final double CLIMB_SPEED_SLOW = CLIMB_SPEED * 0.2;
-  static final Angle CLIMB_ANGLE = Degrees.of(0);
-  static final Angle STOW_ANGLE = Degrees.of(0);
-
-  public enum ClimbStates implements SystemState {
-    NOTHING {
-      @Override
-      public ClimbStates nextState() {
-        return ClimbStates.NOTHING;
-      }
-    },
-    STOW {
-      @Override
-      public void initialize() { 
-        s_climbInstance.stow();
-      }
-
-      @Override
-      public void execute() {
-        if (!s_climbInstance.inStowPosition()) {
-          s_climbInstance.stow();
-        } else {
-          s_climbInstance.stopMotor();
-        }
-      }
-
-      @Override
-      public ClimbStates nextState() {
-        return s_climbInstance.nextState;
-      }
-    },
-    CLIMB {
-      @Override
-      public void initialize() {
-        s_climbInstance.climb();
-      }
-
-      @Override
-      public void execute() {
-        if(!s_climbInstance.inClimbPosition()){
-          s_climbInstance.climb();
-        } else {
-          s_climbInstance.stopMotor();
-        }
-      }
-
-      @Override
-      public ClimbStates nextState() {
-        return s_climbInstance.nextState;
-      }
-    }
-  }
+public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static ClimbSubsystem s_climbInstance;
   private final CANcoder m_climbEncoder;
   private final TalonFX m_climbMotor1;
   private final TalonFX m_climbMotor2;
-  private ClimbStates nextState;
 
   /** Creates a new ClimbSubsystem. */
   private ClimbSubsystem() {
-    super(ClimbStates.STOW);
-    nextState =  ClimbStates.STOW;
 
     this.m_climbEncoder = new CANcoder(Constants.Climb.ARM_ENCODER_ID);
     this.m_climbMotor1 = new TalonFX(Constants.Climb.CLIMB_MOTOR_1_ID);
@@ -118,18 +55,12 @@ public class ClimbSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
-   * Sets {@code nextState} instance variable to given {@code ClimbState}
-   * @param targetState The new state for {@code nextState}
-   */
-  public void setNextState(ClimbStates targetState) {
-    this.nextState = targetState;
-  }
-
-  /**
    * Stow the climber so it is inside the frame perimeter
    */
   public void stow() {
-    m_climbMotor1.set(-CLIMB_SPEED_SLOW);
+    while (!inStowPosition()) {
+      m_climbMotor1.set(-Constants.Climb.CLIMB_SPEED_SLOW);
+    }
   }
 
   /**
@@ -143,7 +74,9 @@ public class ClimbSubsystem extends StateMachine implements AutoCloseable {
    * Sets the motor output for climbing
    */
   public void climb() {
-    m_climbMotor1.set(CLIMB_SPEED);
+    while (!inClimbPosition()) {
+      m_climbMotor1.set(Constants.Climb.CLIMB_SPEED);
+    }
   }
 
   /**
@@ -151,7 +84,7 @@ public class ClimbSubsystem extends StateMachine implements AutoCloseable {
    * @return A boolean for whether or not the climber is in the stow position
    */
   public boolean inStowPosition() {
-    return s_climbInstance.getClimberAngle().lte(STOW_ANGLE);
+    return s_climbInstance.getClimberAngle().lte(Constants.Climb.STOW_ANGLE);
   }
 
   /**
@@ -159,7 +92,7 @@ public class ClimbSubsystem extends StateMachine implements AutoCloseable {
    * @return A boolean for whether or not the climber is in the climb position
    */
   public boolean inClimbPosition() {
-    return s_climbInstance.getClimberAngle().gte(CLIMB_ANGLE);
+    return s_climbInstance.getClimberAngle().gte(Constants.Climb.CLIMB_ANGLE);
   }
 
   /**
@@ -173,7 +106,8 @@ public class ClimbSubsystem extends StateMachine implements AutoCloseable {
   public void periodic() {
     // This method will be called once per scheduler run
     Logger.recordOutput(getName() + "/encoderAngle", s_climbInstance.getClimberAngle());
-    Logger.recordOutput(getName() + "/state", getState().toString());
+    Logger.recordOutput(getName() + "/inStowPosition", s_climbInstance.inStowPosition());
+    Logger.recordOutput(getName() + "/inClimbPosition", s_climbInstance.inClimbPosition());
   }
 
   @Override
