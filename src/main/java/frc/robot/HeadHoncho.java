@@ -94,13 +94,13 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     }
   }
 
-    private static HeadHoncho s_headHoncho;
-    private BooleanSupplier m_shootButton;
-    private BooleanSupplier m_passButton;
-    private BooleanSupplier m_intakeButtonDown;
-    private BooleanSupplier m_climbButton;
-    private BooleanSupplier m_cancelButton;
-    private BooleanSupplier m_goToToggle;
+  private static HeadHoncho s_headHoncho;
+  private BooleanSupplier m_shootButton;
+  private BooleanSupplier m_passButton;
+  private BooleanSupplier m_intakeButtonDown;
+  private BooleanSupplier m_climbButton;
+  private BooleanSupplier m_cancelButton;
+  private BooleanSupplier m_goToToggle;
 
   public static HeadHoncho getInstance() {
     if (s_headHoncho == null) {
@@ -113,26 +113,26 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     super(HeadHonchoStates.NORMAL);
   }
 
-    /**
-     * The bindings to control the robot.
-     * Should only be called once on startup.
-     * @param shootButton
-     * @param passButton
-     * @param intakeButton
-     */
-    public void configureBindings(
-        BooleanSupplier shootButton,
-        BooleanSupplier passButton,
-        BooleanSupplier intakeButton,
-        BooleanSupplier climbButton,
-        BooleanSupplier cancelButton
-    ) {
-        m_shootButton = shootButton;
-        m_passButton = passButton;
-        m_intakeButtonDown = intakeButton;
-        m_climbButton = climbButton;
-        m_cancelButton = cancelButton;
-    }
+  /**
+   * The bindings to control the robot.
+   * Should only be called once on startup.
+   * @param shootButton
+   * @param passButton
+   * @param intakeButton
+   */
+  public void configureBindings(
+    BooleanSupplier shootButton,
+    BooleanSupplier passButton,
+    BooleanSupplier intakeButton,
+    BooleanSupplier climbButton,
+    BooleanSupplier cancelButton
+  ) {
+    m_shootButton = shootButton;
+    m_passButton = passButton;
+    m_intakeButtonDown = intakeButton;
+    m_climbButton = climbButton;
+    m_cancelButton = cancelButton;
+  }
 
   // TODO impl
   public void close() {}
