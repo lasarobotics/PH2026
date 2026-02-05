@@ -116,6 +116,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           return this;
         }
       }
+      }
     }
 
   private static DriveSubsystem s_driveSubsystem;
@@ -169,6 +170,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
 
 
+
     s_autoDrive = new PIDController(1.75, 0.0, 0.0);
     s_headingController = new PIDController(3, 0.0, 0.5);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
@@ -210,6 +212,50 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     Hardware driveHardware = new Hardware();
     return driveHardware;
   }
+
+  /**
+   * Auto-aligns to a specific target (in other words, goes to a specific target)
+   * @param target The target that you want to go to
+   */
+  private void goTo(Pose2d target) {
+    Logger.recordOutput("DriveSubsystem/Odometry/target", target);
+
+    Pose2d robotPose = s_drivetrain.getState().Pose;
+    Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
+
+    double distance = robotPose.getTranslation().getDistance(target.getTranslation());
+
+    Logger.recordOutput("DriveSubsystem/Odometry/distance", distance);
+
+    var directionOfTravel = newPosition.getAngle();
+
+    Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
+
+
+    var outputVelocity = 
+        Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2;
+
+    // how does it know to rotate the amount in the time it takes to get to target.
+
+    var rotationRate = 
+        s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians());
+
+    var xComponent = outputVelocity * directionOfTravel.getCos();
+    var yComponent = outputVelocity * directionOfTravel.getSin();
+
+    s_drivetrain.setControl(
+       s_drive
+          .withVelocityX(MetersPerSecond.of(xComponent))
+          .withVelocityY(MetersPerSecond.of(yComponent))
+          .withRotationalRate(rotationRate)
+        );
+        Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
+
+
+        if(Math.abs(distance) < 0.2 && Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()) < 0.1) {
+            m_shouldGoTo = false;
+        }
+    }
 
   /**
    * Auto-aligns to a specific target (in other words, goes to a specific target)

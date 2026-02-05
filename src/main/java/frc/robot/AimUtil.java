@@ -124,11 +124,13 @@ public class AimUtil {
     Translation2d futurePos = currentRobotPose.getTranslation().plus(
       new Translation2d(
         currentRobotSpeeds.vxMetersPerSecond, 
-        currentRobotSpeeds.vyMetersPerSecond)
-        .times(latency + Constants.Field.HANG_TIME).plus(
-      new Translation2d(
-        currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
-        currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.sin(currentRobotHeading)
+        currentRobotSpeeds.vyMetersPerSecond
+      )
+      .times(latency + Constants.Field.HANG_TIME)
+      .plus(
+        new Translation2d(
+          currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
+          currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.sin(currentRobotHeading)
         )
       )
     );
