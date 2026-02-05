@@ -66,7 +66,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         if (DriverStation.isAutonomous()) return AUTO;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN) return CLIMB_ALIGN;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && s_driveSubsystem.inAllianceZone()) return CLIMB_ALIGN;
         
         return this;
       }
@@ -103,15 +103,55 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN) return CLIMB_ALIGN;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && s_driveSubsystem.inAllianceZone()) return CLIMB_ALIGN;
 
         return this;
       }
     },
     CLIMB_ALIGN {
-      // TODO implement when yfc pushes goto code
+      @Override
+      public void execute() {
+        s_driveSubsystem.goTo(s_alliancePoses[0]);
+      }
+
       @Override
       public SystemState nextState() {
+        if(s_driveSubsystem.atDestination(s_alliancePoses[0], 0.2, 0.1)) {
+          return SLOW_CLIMB_ALIGN;
+        }
+
+        // To maintain complete driver control, potentially delete though
+        if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
+        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+
+        return this;
+      }
+    }, 
+    SLOW_CLIMB_ALIGN {
+      @Override
+      public void initialize() {
+         s_drivetrain.setControl(
+            s_drive
+                .withVelocityX(
+                    Constants.Drive.MAX_SPEED
+                        .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                        .times(s_driveSpeedScalar))
+                .withVelocityY(
+                    Constants.Drive.MAX_SPEED
+                        .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                        .times(s_driveSpeedScalar))
+                .withRotationalRate(
+                    Constants.Drive.MAX_ANGULAR_RATE
+                        .times(-s_rotateRequest.getAsDouble())
+                        .times(s_driveSpeedScalar)));
+      }
+
+      @Override
+      public DriveStates nextState() {
+        if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
+        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && s_driveSubsystem.inAllianceZone()) return CLIMB_ALIGN;
+
         return this;
       }
     }
@@ -156,7 +196,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return s_drivetrain;
   }
 
-  public DriveSubsystem() {
+  private DriveSubsystem() {
     super(DriveStates.DRIVER_CONTROL);
 
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
@@ -216,6 +256,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   /**
    * Auto-aligns to a specific target (in other words, goes to a specific target)
    * @param target The target that you want to go to
+   * @return whether ropbot has reached target or not
    */
   private void goTo(Pose2d target) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
@@ -297,6 +338,35 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.DRIVER_CONTROL;
   }
 
+  public void setDriveSpeed(double newSpeed) {
+    s_driveSpeedScalar = newSpeed;
+  }
+
+  public boolean inAllianceZone() {
+    if(DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+      if (s_drivetrain.getState().Pose.getX() <= 4.0) {
+        return true;
+      } else {
+        if(s_drivetrain.getState().Pose.getX() >= 12.5) {
+          return true;
+        }
+      }
+    }
+    return false;
+  }
+
+  public boolean atDestination(Pose2d target, double acceptableDistanceError, double acceptableRotationError) {
+    Pose2d robotPose = s_drivetrain.getState().Pose;
+    double distance = robotPose.getTranslation().getDistance(target.getTranslation());
+    
+    if (Math.abs(distance) < acceptableDistanceError 
+    && Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()) < acceptableRotationError) {
+      m_shouldGoTo = false;
+      return true;
+    } else {
+      return false;
+    }
+  }
 
   public boolean atWantedRotation() {
     return AimUtil.getRobotHeading().isNear(
