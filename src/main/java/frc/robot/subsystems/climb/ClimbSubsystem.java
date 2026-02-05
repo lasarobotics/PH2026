@@ -30,12 +30,6 @@ public class ClimbSubsystem extends StateMachine implements AutoCloseable {
   static final Angle CLIMB_ANGLE = Degrees.of(0);
   static final Angle STOW_ANGLE = Degrees.of(0);
 
-  public static record Hardware (
-    TalonFX climbMotor1,
-    TalonFX climbMotor2,
-    CANcoder climbEncoder
-  ) {}
-
   public enum ClimbStates implements SystemState {
     NOTHING {
       @Override
@@ -92,13 +86,13 @@ public class ClimbSubsystem extends StateMachine implements AutoCloseable {
   private ClimbStates nextState;
 
   /** Creates a new ClimbSubsystem. */
-  private ClimbSubsystem(Hardware ClimbHardware) {
+  private ClimbSubsystem() {
     super(ClimbStates.STOW);
     nextState =  ClimbStates.STOW;
 
-    this.m_climbEncoder = ClimbHardware.climbEncoder;
-    this.m_climbMotor1 = ClimbHardware.climbMotor1;
-    this.m_climbMotor2 = ClimbHardware.climbMotor2;
+    this.m_climbEncoder = new CANcoder(Constants.Climb.ARM_ENCODER_ID);
+    this.m_climbMotor1 = new TalonFX(Constants.Climb.CLIMB_MOTOR_1_ID);
+    this.m_climbMotor2 = new TalonFX(Constants.Climb.CLIMB_MOTOR_2_ID);
 
     // TODO: Verify motor configs
     TalonFXConfiguration motorConfig = new TalonFXConfiguration();
@@ -112,26 +106,13 @@ public class ClimbSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
-   * Initalizes hardware contained in Climb Subsystem
-   * @return Hardware object with required hardware for Climb Subsystem
-   */
-  public static Hardware initializeHardware() {
-    Hardware climbHardware = new Hardware(
-      new TalonFX(Constants.Climb.CLIMB_MOTOR_1_ID),
-      new TalonFX(Constants.Climb.CLIMB_MOTOR_2_ID),
-      new CANcoder(Constants.Climb.ARM_ENCODER_ID)
-    );
-    return climbHardware;
-  }
-
-  /**
    * Gets new instance of Climb Subsystem
    * @param ClimbHardware contains hardware for climb subsystem
    * @return ClimbSubsystem object
    */
-  public static ClimbSubsystem getInstance(Hardware ClimbHardware) {
+  public static ClimbSubsystem getInstance() {
     if (s_climbInstance == null){
-      s_climbInstance = new ClimbSubsystem(ClimbHardware);
+      s_climbInstance = new ClimbSubsystem();
     }
     return s_climbInstance;
   }
