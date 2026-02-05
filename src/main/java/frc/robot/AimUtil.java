@@ -157,9 +157,7 @@ public class AimUtil {
       // Pythagorean sum of the X velocity and the Z velocity is the shooter
       LinearVelocity.ofBaseUnits(
         Math.sqrt(
-          Math.pow(
-            shooterVelocityVec.getX(), shooterVelocityVec.getY()
-          )
+          Math.pow(shooterVelocityVec.getX(), 2) + Math.pow(shooterVelocityVec.getY(), 2)
         ),
         MetersPerSecond
       ),
