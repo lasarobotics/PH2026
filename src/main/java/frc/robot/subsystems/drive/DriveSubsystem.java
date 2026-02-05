@@ -342,6 +342,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_driveSpeedScalar = newSpeed;
   }
 
+  /**
+   * Checks robot's alliance and then checks if robot is in its alliance zone
+   * @return true if robot is in alliance zone, false oterwise
+   */
   public boolean inAllianceZone() {
     if(DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       if (s_drivetrain.getState().Pose.getX() <= 4.0) {
@@ -355,6 +359,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return false;
   }
 
+  /**
+   * 
+   * @param target position robot is trying to reach
+   * @param acceptableDistanceError how much error is acceptable in terms of distance to the target
+   * @param acceptableRotationError how much error is acceptable in terms of angle relative to desired Pose2d
+   * @return true if robot is at destination, false otherwise
+   */
   public boolean atDestination(Pose2d target, double acceptableDistanceError, double acceptableRotationError) {
     Pose2d robotPose = s_drivetrain.getState().Pose;
     double distance = robotPose.getTranslation().getDistance(target.getTranslation());
