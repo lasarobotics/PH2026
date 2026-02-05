@@ -147,5 +147,11 @@ public final class Constants {
     public static final int CLIMB_MOTOR_1_ID = 0;
     public static final int CLIMB_MOTOR_2_ID = 0;
     public static final int ARM_ENCODER_ID = 0;
+
+    // TODO: Find the values of climb constants
+    public static final double CLIMB_SPEED = 0.0;
+    public static final double CLIMB_SPEED_SLOW = CLIMB_SPEED * 0.2;
+    public static final Angle CLIMB_ANGLE = Degrees.of(0);
+    public static final Angle STOW_ANGLE = Degrees.of(0);
   }
 }
