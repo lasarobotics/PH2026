@@ -282,6 +282,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.CLIMB_ALIGN;
   }
 
+  public void driverControl() {
+    s_requestedDriveState = DriveStates.DRIVER_CONTROL;
+  }
+
 
   public boolean atWantedRotation() {
     return AimUtil.getRobotHeading().isNear(
