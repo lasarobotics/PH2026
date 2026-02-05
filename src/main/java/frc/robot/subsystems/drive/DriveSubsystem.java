@@ -324,6 +324,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     } else {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
     }
+
+    Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
   }
 
   public void driveAutoAim() {

@@ -229,6 +229,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Checks that the robot can make it in if it shoots right now
    * and that the drivetrain is at the wanted rotation
+   * & within the alliance zone
    * @return If robot is in a good position to shoot
    */
   public boolean readyToShoot() {
@@ -239,10 +240,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       ) &&
       atShootSpeed() &&
       atHoodPosition() &&
-      DriveSubsystem.getInstance().atWantedRotation()
+      DriveSubsystem.getInstance().atWantedRotation() &&
+      DriveSubsystem.getInstance().inAllianceZone()
     );
   }
 
+  // TODO do we want to disallow passing from the alliance zone?
   /**
    * Checks that the robot can make it in the alliance zone if it shoots right now
    * and that the drivetrain is at the wanted rotation

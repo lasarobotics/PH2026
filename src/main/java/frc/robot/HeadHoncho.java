@@ -55,7 +55,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        if (s_headHoncho.m_climbButton.getAsBoolean()) return CLIMB;
+        if (
+          s_headHoncho.m_climbButton.getAsBoolean() &&
+          DriveSubsystem.getInstance().inAllianceZone()
+        ) return CLIMB;
 
         return this;
       }
@@ -74,10 +77,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        // TODO do the drive thing where it makes it go slow once at tower
-
         boolean climbButton = s_headHoncho.m_climbButton.getAsBoolean();
-        // TODO also check if drivetrain is in position
         if (climbButton && !climbButtonWasDown) {
           ClimbSubsystem.getInstance().climb();
         }
