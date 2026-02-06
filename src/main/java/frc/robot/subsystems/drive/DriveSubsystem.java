@@ -111,12 +111,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     CLIMB_ALIGN {
       @Override
       public void execute() {
-        s_driveSubsystem.goTo(s_alliancePoses[0], 0, Constants.Drive.MAX_SPEED.magnitude(), Constants.Drive.MAX_ANGULAR_RATE.magnitude());
+        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, Constants.Drive.MAX_SPEED.magnitude(), Constants.Drive.MAX_ANGULAR_RATE.magnitude());
       }
 
       @Override
       public SystemState nextState() {
-        if(s_driveSubsystem.atDestination(s_alliancePoses[0], 0.2, 0.1)) {
+        if(s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], 0.2, 0.1)) {
           return SLOW_CLIMB_ALIGN;
         }
 
@@ -165,6 +165,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DoubleSupplier s_strafeRequest = () -> 0;
   private static DoubleSupplier s_rotateRequest = () -> 0;
 
+  private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
+  private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
+
+  // add more when you get more WP destinations
+  private static int WP_CLIMB = 0;
+
   private static final Double DEADBAND_SCALAR = 0.085;
 
   private boolean m_hasAppliedOperatorPerspective = false;
@@ -198,9 +204,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     super(DriveStates.DRIVER_CONTROL);
 
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-      s_alliancePoses = new Pose2d[]{Constants.Field.RED_TOWER};
+      s_alliancePoses = redPoses;
     } else {
-      s_alliancePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
+      s_alliancePoses = bluePoses;
     }
 
     s_drivetrain = TunerConstants.createDrivetrain();
