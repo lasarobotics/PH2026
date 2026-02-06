@@ -116,8 +116,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        if(s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], 0.2, 0.1)) {
-          return SLOW_CLIMB_ALIGN;
+        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], 0.2, 0.1)) {
+          if (!DriverStation.isAutonomous()) {
+            return SLOW_CLIMB_ALIGN;
+          } else {
+            return SLOW_AUTO_CLIMB_ALIGN;
+          }
         }
 
         // To maintain complete driver control, potentially delete though
@@ -152,6 +156,22 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
         if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && s_driveSubsystem.inAllianceZone()) return CLIMB_ALIGN;
 
+        return this;
+      }
+    },
+    SLOW_AUTO_CLIMB_ALIGN {
+      @Override
+      public void execute() {
+        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, Constants.Drive.MAX_SPEED.magnitude()/4, Constants.Drive.MAX_ANGULAR_RATE.magnitude()/2);
+      }
+
+      @Override
+      public DriveStates nextState() {
+        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], 0.01, 0.01)) {
+          if (!DriverStation.isAutonomous()) {
+            return DRIVER_CONTROL;
+          }
+        }
         return this;
       }
     }
