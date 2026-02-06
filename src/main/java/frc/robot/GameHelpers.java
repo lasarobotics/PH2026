@@ -3,15 +3,58 @@ package frc.robot;
 import java.util.Optional;
 
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
-// TODO find a better way to do this
 class DriverStationException extends Exception {}
 
 public class GameHelpers {
+
+    private static double lastMatchTime = 21; // auto time + 1
+    private static Timer oneSecondTimer = new Timer();
+
+    /**
+     * Check match time and reset the oneSecondTimer
+     * if it's different from the last time it was checked.
+     * Should only be called in
+     * {@link frc.robot.Robot#robotPeriodic() robotPeriodic()}.
+     */
+    public static void periodicTimerUpdater() {
+        double time = DriverStation.getMatchTime();
+
+        // just rolled over
+        if (time != lastMatchTime) {
+            oneSecondTimer.reset();
+            oneSecondTimer.start();
+        }
+
+        lastMatchTime = time;
+    }
+
+    /**
+     * Returns the match time left in the current period
+     * (auto or teleop). Basically a more precise version
+     * of the builtin
+     * {@link edu.wpi.first.wpilibj.Timer#getMatchTime() getMatchTime()}.
+     * This is because the FMS counts down in seconds, which
+     * isn't precise enough to make the way that we're using it this
+     * year useful.
+     * @return
+     */
+    public static double matchTimeLeft() {
+        return lastMatchTime - oneSecondTimer.get();
+    }
+
+    /**
+     * Helper method that checks game specific message &
+     * alliances to see if current alliance won auto.
+     * @return True if the current alliance won auto.
+     * @throws DriverStationException if no alliance is available,
+     * or if gamedata is not available
+     */
     public static boolean wonAuto() throws DriverStationException {
         String gameData = DriverStation.getGameSpecificMessage();
-        // should never happen
+        // probably happens during auto
         if (gameData.length() != 1) {
             throw new DriverStationException();
         }
@@ -46,7 +89,7 @@ public class GameHelpers {
         }
 
         // if in practice mode/real field, always counts down
-        double time = DriverStation.getMatchTime();
+        double time = matchTimeLeft();
         // 140 seconds in match
         // there are less inactive periods than active ones overall, so we check those
         // Shift timings:
@@ -71,7 +114,7 @@ public class GameHelpers {
      * @return The amount of time left to score (in seconds)
      */
     public static double scoringTimeLeft() {
-        double time = DriverStation.getMatchTime();
+        double time = matchTimeLeft();
 
         if (DriverStation.isAutonomous()) {
             return Double.POSITIVE_INFINITY;
