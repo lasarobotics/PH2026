@@ -159,7 +159,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
     );
 
-    //TODO: figure out the alignment of the slave motors with respect to the master
+    // TODO update according to real robot
+    // Basically: two of the motors rotate in the same direction
+    // (according to Michael)
+    // once we decide on the master we can set it up but not yet -mw
     m_shooterMotorSlaveOne.setControl(
       new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
     );
@@ -245,18 +248,18 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
-  // TODO do we want to disallow passing from the alliance zone?
   /**
    * Checks that the robot can make it in the alliance zone if it shoots right now
-   * and that the drivetrain is at the wanted rotation
-   * (doesn't check if hub is active)
+   * and that the drivetrain is at the wanted rotation & not in the
+   * alliance zone. Doesn't check if hub is active.
    * @return If robot is in a good position to shoot
    */
   public boolean readyToPass() {
     return (
       atShootSpeed() &&
       atHoodPosition() &&
-      DriveSubsystem.getInstance().atWantedRotation()
+      DriveSubsystem.getInstance().atWantedRotation() &&
+      !DriveSubsystem.getInstance().inAllianceZone()
     );
   }
 

@@ -64,9 +64,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       }
     },
     CLIMB {
-      // assume true when starting state
-      boolean climbButtonWasDown = true;
-
       @Override
       public void initialize() {
         IntakeSubsystem.getInstance().startIntake();
@@ -77,12 +74,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        boolean climbButton = s_headHoncho.m_climbButton.getAsBoolean();
-        if (climbButton && !climbButtonWasDown) {
+        if (s_headHoncho.m_climbButton.getAsBoolean()) {
           ClimbSubsystem.getInstance().climb();
         }
-
-        climbButtonWasDown = climbButton;
       }
 
       @Override
@@ -116,9 +110,16 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   /**
    * The bindings to control the robot.
    * Should only be called once on startup.
-   * @param shootButton
-   * @param passButton
-   * @param intakeButton
+   * @param shootButton True if we currently want to shoot.
+   * @param passButton True if we currently want to pass.
+   * @param intakeButton True if we want to toggle the intake.
+   * As a result, should be a provider for if the button has
+   * just been pressed down. (e.g. () -> button.wasPressed())
+   * @param climbButton True if we want to do next climb action.
+   * Same as intakeButton; should be a provider for if button
+   * has just been pressed.
+   * @param cancelButton True if we want to go back from the climb
+   * to the normal state in HeadHoncho.
    */
   public void configureBindings(
     BooleanSupplier shootButton,

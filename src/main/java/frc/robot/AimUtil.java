@@ -135,6 +135,7 @@ public class AimUtil {
       )
     );
     
+    // TODO (important) account for passing?
     // Get your distance to the hub (using the future position)
     Translation2d goalLocation = Constants.Field.HUB_COORDINATES;
     Translation2d targetVec = goalLocation.minus(futurePos);
