@@ -111,13 +111,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     CLIMB_ALIGN {
       @Override
       public void execute() {
-        s_driveSubsystem.goTo(s_alliancePoses[0], 0);
+        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, Constants.Drive.MAX_SPEED.magnitude(), Constants.Drive.MAX_ANGULAR_RATE.magnitude());
       }
 
       @Override
       public SystemState nextState() {
-        if(s_driveSubsystem.atDestination(s_alliancePoses[0], 0.2, 0.1)) {
-          return SLOW_CLIMB_ALIGN;
+        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], 0.2, 0.1)) {
+          if (!DriverStation.isAutonomous()) {
+            return SLOW_CLIMB_ALIGN;
+          } else {
+            return SLOW_AUTO_CLIMB_ALIGN;
+          }
         }
 
         // To maintain complete driver control, potentially delete though
@@ -154,6 +158,22 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         return this;
       }
+    },
+    SLOW_AUTO_CLIMB_ALIGN {
+      @Override
+      public void execute() {
+        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, Constants.Drive.MAX_SPEED.magnitude()/4, Constants.Drive.MAX_ANGULAR_RATE.magnitude()/2);
+      }
+
+      @Override
+      public DriveStates nextState() {
+        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], 0.01, 0.01)) {
+          if (!DriverStation.isAutonomous()) {
+            return DRIVER_CONTROL;
+          }
+        }
+        return this;
+      }
     }
   }
 
@@ -164,6 +184,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DoubleSupplier s_driveRequest = () -> 0;
   private static DoubleSupplier s_strafeRequest = () -> 0;
   private static DoubleSupplier s_rotateRequest = () -> 0;
+
+  private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
+  private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
+
+  // add more when you get more WP destinations
+  private static int WP_CLIMB = 0;
 
   private static final Double DEADBAND_SCALAR = 0.085;
 
@@ -198,9 +224,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     super(DriveStates.DRIVER_CONTROL);
 
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-      s_alliancePoses = new Pose2d[]{Constants.Field.RED_TOWER};
+      s_alliancePoses = redPoses;
     } else {
-      s_alliancePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
+      s_alliancePoses = bluePoses;
     }
 
     s_drivetrain = TunerConstants.createDrivetrain();
@@ -258,7 +284,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param maxRotationRate max rate of rotation the robot can rotate at
    * @return whether ropbot has reached target or not
    */
-  private void goTo(Pose2d target, double maxVelocity, double maxRotationRate, double exitVelocity) {
+  private void goTo(Pose2d target, double exitVelocity, double maxVelocity, double maxRotationRate) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
@@ -294,49 +320,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     }
 
-
-  /**
-   * Auto-aligns to a specific target (in other words, goes to a specific target)
-   * @param target The target that you want to go to
-   * @return whether ropbot has reached target or not
-   */
-  private void goTo(Pose2d target, double exitVelocity) {
-    Logger.recordOutput("DriveSubsystem/Odometry/target", target);
-
-    Pose2d robotPose = s_drivetrain.getState().Pose;
-    Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
-
-    double distance = robotPose.getTranslation().getDistance(target.getTranslation());
-
-    Logger.recordOutput("DriveSubsystem/Odometry/distance", distance);
-
-    var directionOfTravel = newPosition.getAngle();
-
-    Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
-
-
-    var outputVelocity = 
-        Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, Constants.Drive.MAX_SPEED.magnitude());
-
-    // how does it know to rotate the amount in the time it takes to get to target.
-
-    var rotationRate = 
-        s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians());
-
-    var xComponent = outputVelocity * directionOfTravel.getCos();
-    var yComponent = outputVelocity * directionOfTravel.getSin();
-
-    s_drivetrain.setControl(
-       s_drive
-          .withVelocityX(MetersPerSecond.of(xComponent))
-          .withVelocityY(MetersPerSecond.of(yComponent))
-          .withRotationalRate(rotationRate)
-        );
-        Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
-
-    }
-
-  @Override
+    @Override
   public void periodic() {
 
     LoopTimer.addTimestamp(getName() + " Start");
