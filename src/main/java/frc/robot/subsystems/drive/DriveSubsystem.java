@@ -111,7 +111,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     CLIMB_ALIGN {
       @Override
       public void execute() {
-        s_driveSubsystem.goTo(s_alliancePoses[0], 0);
+        s_driveSubsystem.goTo(s_alliancePoses[0], 0, Constants.Drive.MAX_SPEED.magnitude(), Constants.Drive.MAX_ANGULAR_RATE.magnitude());
       }
 
       @Override
@@ -258,7 +258,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param maxRotationRate max rate of rotation the robot can rotate at
    * @return whether ropbot has reached target or not
    */
-  private void goTo(Pose2d target, double maxVelocity, double maxRotationRate, double exitVelocity) {
+  private void goTo(Pose2d target, double exitVelocity, double maxVelocity, double maxRotationRate) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
@@ -294,49 +294,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     }
 
-
-  /**
-   * Auto-aligns to a specific target (in other words, goes to a specific target)
-   * @param target The target that you want to go to
-   * @return whether ropbot has reached target or not
-   */
-  private void goTo(Pose2d target, double exitVelocity) {
-    Logger.recordOutput("DriveSubsystem/Odometry/target", target);
-
-    Pose2d robotPose = s_drivetrain.getState().Pose;
-    Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
-
-    double distance = robotPose.getTranslation().getDistance(target.getTranslation());
-
-    Logger.recordOutput("DriveSubsystem/Odometry/distance", distance);
-
-    var directionOfTravel = newPosition.getAngle();
-
-    Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
-
-
-    var outputVelocity = 
-        Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, Constants.Drive.MAX_SPEED.magnitude());
-
-    // how does it know to rotate the amount in the time it takes to get to target.
-
-    var rotationRate = 
-        s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians());
-
-    var xComponent = outputVelocity * directionOfTravel.getCos();
-    var yComponent = outputVelocity * directionOfTravel.getSin();
-
-    s_drivetrain.setControl(
-       s_drive
-          .withVelocityX(MetersPerSecond.of(xComponent))
-          .withVelocityY(MetersPerSecond.of(yComponent))
-          .withRotationalRate(rotationRate)
-        );
-        Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
-
-    }
-
-  @Override
+    @Override
   public void periodic() {
 
     LoopTimer.addTimestamp(getName() + " Start");
