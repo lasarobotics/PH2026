@@ -111,7 +111,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     CLIMB_ALIGN {
       @Override
       public void execute() {
-        s_driveSubsystem.goTo(s_alliancePoses[0]);
+        s_driveSubsystem.goTo(s_alliancePoses[0], 0);
       }
 
       @Override
@@ -258,7 +258,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param maxRotationRate max rate of rotation the robot can rotate at
    * @return whether ropbot has reached target or not
    */
-  private void goTo(Pose2d target, double maxVelocity, double maxRotationRate) {
+  private void goTo(Pose2d target, double maxVelocity, double maxRotationRate, double exitVelocity) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
@@ -274,7 +274,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
 
     var outputVelocity = 
-        Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2, maxVelocity);
+        Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, maxVelocity);
 
     // how does it know to rotate the amount in the time it takes to get to target.
 
@@ -300,7 +300,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param target The target that you want to go to
    * @return whether ropbot has reached target or not
    */
-  private void goTo(Pose2d target) {
+  private void goTo(Pose2d target, double exitVelocity) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
@@ -316,7 +316,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
 
     var outputVelocity = 
-        Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2;
+        Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, Constants.Drive.MAX_SPEED.magnitude());
 
     // how does it know to rotate the amount in the time it takes to get to target.
 
