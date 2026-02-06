@@ -254,6 +254,50 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   /**
    * Auto-aligns to a specific target (in other words, goes to a specific target)
    * @param target The target that you want to go to
+   * @param maxVelocity max velocity the robot can go
+   * @param maxRotationRate max rate of rotation the robot can rotate at
+   * @return whether ropbot has reached target or not
+   */
+  private void goTo(Pose2d target, double maxVelocity, double maxRotationRate) {
+    Logger.recordOutput("DriveSubsystem/Odometry/target", target);
+
+    Pose2d robotPose = s_drivetrain.getState().Pose;
+    Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
+
+    double distance = robotPose.getTranslation().getDistance(target.getTranslation());
+
+    Logger.recordOutput("DriveSubsystem/Odometry/distance", distance);
+
+    var directionOfTravel = newPosition.getAngle();
+
+    Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
+
+
+    var outputVelocity = 
+        Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2, maxVelocity);
+
+    // how does it know to rotate the amount in the time it takes to get to target.
+
+    var rotationRate = 
+        Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate);
+
+    var xComponent = outputVelocity * directionOfTravel.getCos();
+    var yComponent = outputVelocity * directionOfTravel.getSin();
+
+    s_drivetrain.setControl(
+       s_drive
+          .withVelocityX(MetersPerSecond.of(xComponent))
+          .withVelocityY(MetersPerSecond.of(yComponent))
+          .withRotationalRate(rotationRate)
+        );
+        Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
+
+    }
+
+
+  /**
+   * Auto-aligns to a specific target (in other words, goes to a specific target)
+   * @param target The target that you want to go to
    * @return whether ropbot has reached target or not
    */
   private void goTo(Pose2d target) {
@@ -291,7 +335,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
 
     }
-
 
   @Override
   public void periodic() {
