@@ -111,16 +111,19 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     CLIMB_ALIGN {
       @Override
       public void execute() {
-        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, Constants.Drive.MAX_SPEED.magnitude(), Constants.Drive.MAX_ANGULAR_RATE.magnitude());
+        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, DriveSubsystem.s_climbAlignSpeed, DriveSubsystem.s_climbRotationSpeed);
       }
 
       @Override
       public SystemState nextState() {
-        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], 0.2, 0.1)) {
+        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
           if (!DriverStation.isAutonomous()) {
-            return SLOW_CLIMB_ALIGN;
+            return SLOW_DRIVER_ALIGN;
           } else {
-            return SLOW_AUTO_CLIMB_ALIGN;
+            DriveSubsystem.s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude()/4;
+            DriveSubsystem.s_climbRotationSpeed = Constants.Drive.MAX_SPEED.magnitude()/2;
+            DriveSubsystem.s_climbAlignDistanceError = 0.01;
+            DriveSubsystem.s_climbAlignRotationError = 0.01;
           }
         }
 
@@ -131,9 +134,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         return this;
       }
     }, 
-    SLOW_CLIMB_ALIGN {
+    SLOW_DRIVER_ALIGN {
       @Override
-      public void initialize() {
+      public void execute() {
          s_drivetrain.setControl(
             s_drive
                 .withVelocityX(
@@ -158,22 +161,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         return this;
       }
-    },
-    SLOW_AUTO_CLIMB_ALIGN {
-      @Override
-      public void execute() {
-        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, Constants.Drive.MAX_SPEED.magnitude()/4, Constants.Drive.MAX_ANGULAR_RATE.magnitude()/2);
-      }
-
-      @Override
-      public DriveStates nextState() {
-        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], 0.01, 0.01)) {
-          if (!DriverStation.isAutonomous()) {
-            return DRIVER_CONTROL;
-          }
-        }
-        return this;
-      }
     }
   }
 
@@ -196,6 +183,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private boolean m_hasAppliedOperatorPerspective = false;
 
   private static double s_driveSpeedScalar = Constants.Drive.FAST_SPEED_SCALAR;
+
+  private static double s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude();
+  private static double s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.magnitude();
+  private static double s_climbAlignDistanceError = 0.2;
+  private static double s_climbAlignRotationError = 0.1;
 
   private static ProfiledPIDController s_autoAimController;
   private static PIDController s_autoDrive;
