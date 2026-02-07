@@ -61,7 +61,7 @@ public final class Constants {
     public static final double SHOOTER_HOLD_SPEED = 0;
 
     public static final double SHOOTER_SPEED_TOLERANCE = 0; // TODO
-    public static final double HOOD_POSITION_TOLERANCE = 0; // TODO
+    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(0); // TODO
 
     public static final double SHOOTER_TIME_MARGIN = 0; // TODO
 

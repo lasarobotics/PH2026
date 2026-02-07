@@ -2,7 +2,6 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Rotations;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -101,7 +100,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     adjustHood();
 
     if (shooting || passing) {
-      shoot();
+      runShooter();
       boolean shootReady = readyToShoot();
       boolean passReady = readyToPass();
       Logger.recordOutput(getName() + "/readyToShoot", shootReady);
@@ -109,7 +108,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
       if ((shootReady && shooting) ||
           (passReady && passing)) {
-        index();
+        runIndexer();
       } else {
         stopIndexer();
       }
@@ -142,7 +141,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * to the (constant)
    * {@link Constants.Shooter#indexerHoldSpeed indexer hold speed}.
    */
-  public void index() {
+  public void runIndexer() {
     m_indexerMotor.setControl(
       m_indexerRequest.withVelocity(Constants.Shooter.INDEXER_MOTOR_SPEED)
     );
@@ -172,7 +171,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * to the desired shooting speed
    * according to {@link #wantedShooterSpeed()}
    */
-  public void shoot() {
+  public void runShooter() {
     m_shooterMotorMaster.setControl(
       m_shooterRequest.withVelocity(wantedShooterSpeed())
     );
@@ -202,17 +201,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Set the setpoint of the {@link #m_hoodMotor hood motor}
    * to the desired hood position
-   * according to {@link #wantedHoodPosition()}
+   * according to {@link frc.robot.AimUtil#getExitAngle()()}
    */
   public void adjustHood() {
     m_hoodMotor.setControl(
-      m_hoodRequest.withPosition(wantedHoodPosition())
+      m_hoodRequest.withPosition(AimUtil.getExitAngle())
     );
   }
 
   public boolean atHoodPosition() {
     return m_hoodMotor.getPosition().isNear(
-      wantedHoodPosition(),
+      AimUtil.getExitAngle(),
       Constants.Shooter.HOOD_POSITION_TOLERANCE
     );
   }
@@ -264,25 +263,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     double rotationsPerSecond =
       radiansPerSecond / (2 * Math.PI);
     return rotationsPerSecond;
-  }
-
-  // TODO implement
-  // return a number of rotations
-  public double wantedHoodPosition() {
-    Angle theta = AimUtil.getExitAngle();
-    return 0;
-  }
-
-  /**
-   * Converts a given angle to the number of rotations
-   * the hood motor would be at at that angle
-   * @param angle The angle to convert
-   * @return The number of rotations
-   */
-  public double hoodAngleToRotations(Angle angle) {
-    double base = angle.in(Rotations);
-    double rotations = base * Constants.Shooter.HOOD_TO_MOTOR_RATIO;
-    return rotations;
   }
 
   @Override
