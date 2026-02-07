@@ -111,6 +111,7 @@ public final class Constants {
     public static final Pose2d RED_TOWER =
         new Pose2d(
             new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(180));  
+    
   }
 
   public static class Vision {

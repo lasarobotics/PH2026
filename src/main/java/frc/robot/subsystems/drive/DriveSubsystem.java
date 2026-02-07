@@ -174,7 +174,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
   private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
 
-  // add more when you get more WP destinations
+  //TODO: add more when you get more WP destinations
   private static int WP_CLIMB = 0;
 
   private static final Double DEADBAND_SCALAR = 0.085;
@@ -219,6 +219,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     } else {
       s_alliancePoses = bluePoses;
     }
+
+    Logger.recordOutput("DriveSubsystem/alliance", DriverStation.getAlliance().toString());
+
 
     s_drivetrain = TunerConstants.createDrivetrain();
 
@@ -359,12 +362,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    */
   public boolean inAllianceZone() {
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-      if (s_drivetrain.getState().Pose.getX() <= 4.0) {
+      if (s_drivetrain.getState().Pose.getX() >= 12.5) {
         return true;
-      } else {
-        if (s_drivetrain.getState().Pose.getX() >= 12.5) {
+      } else if (s_drivetrain.getState().Pose.getX() <= 4.0) {
           return true;
-        }
       }
     }
     return false;
