@@ -86,6 +86,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
   private static HeadHoncho s_headHoncho;
   private BooleanSupplier m_shootButton;
+  private BooleanSupplier m_dumbShootButton;
+  private BooleanSupplier m_forceShootButton;
   private BooleanSupplier m_passButton;
   private BooleanSupplier m_intakeButtonHasFallen;
   private BooleanSupplier m_climbButtonHasFallen;
@@ -111,10 +113,22 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     return m_passButton.getAsBoolean();
   }
 
+  public boolean wantToDumbShoot() {
+    return m_passButton.getAsBoolean();
+  }
+
+  public boolean wantToForceShoot() {
+    return m_passButton.getAsBoolean();
+  }
+
   /**
    * The bindings to control the robot.
    * Should only be called once on startup.
    * @param shootButton True if we currently want to shoot.
+   * @param dumbShootButton True if we currently want to
+   * do a dumb shoot (constant hood position & speed).
+   * @param forceShootButton True if we want to override
+   * shooter checks & force run the indexer.
    * @param passButton True if we currently want to pass.
    * @param intakeButton True if we want to toggle the intake.
    * As a result, should be a provider for if the button has
@@ -127,12 +141,16 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    */
   public void configureBindings(
     BooleanSupplier shootButton,
+    BooleanSupplier dumbShootButton,
+    BooleanSupplier forceShootButton,
     BooleanSupplier passButton,
     BooleanSupplier intakeButton,
     BooleanSupplier climbButton,
     BooleanSupplier cancelButton
   ) {
     m_shootButton = shootButton;
+    m_dumbShootButton = dumbShootButton;
+    m_forceShootButton = forceShootButton;
     m_passButton = passButton;
     m_intakeButtonHasFallen = intakeButton;
     m_climbButtonHasFallen = climbButton;

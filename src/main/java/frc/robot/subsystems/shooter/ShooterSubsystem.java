@@ -277,6 +277,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // and stop indexer
     boolean shooting = HeadHoncho.getInstance().wantToShoot();
     boolean passing = HeadHoncho.getInstance().wantToPass();
+    boolean dumbShooting = HeadHoncho.getInstance().wantToDumbShoot();
+    boolean forceShooting = HeadHoncho.getInstance().wantToForceShoot();
     Logger.recordOutput(getName() + "/wantToShoot", shooting);
     Logger.recordOutput(getName() + "/wantToPass", passing);
 
@@ -300,9 +302,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         );
         m_zeroingHood = false;
       }
-    } else {
-      adjustHood();
     }
+
+    if (dumbShooting) {
+      // TODO
+    }
+
+    // also TODO force shooting
+
+    adjustHood();
 
     if (shooting || passing) {
       runShooter();
