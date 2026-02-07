@@ -23,7 +23,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
-import frc.robot.LoopTimer;
 import frc.robot.generated.TunerConstants;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
@@ -314,9 +313,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     @Override
   public void periodic() {
-
-    LoopTimer.addTimestamp(getName() + " Start");
-
     /*
      * Periodically try to apply the operator perspective.
      * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
