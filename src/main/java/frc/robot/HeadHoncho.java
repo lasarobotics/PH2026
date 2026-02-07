@@ -38,10 +38,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
         boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
 
-        ShooterSubsystem.getInstance().shooterPeriodic(
-          shootButton, passButton
-        );
-
         if (shootButton || passButton) {
           DriveSubsystem.getInstance().driveAutoAim();
         } else {
@@ -105,6 +101,14 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
   private HeadHoncho() {
     super(HeadHonchoStates.NORMAL);
+  }
+
+  public boolean wantToShoot() {
+    return m_shootButton.getAsBoolean();
+  }
+
+  public boolean wantToPass() {
+    return m_passButton.getAsBoolean();
   }
 
   /**

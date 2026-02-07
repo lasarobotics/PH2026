@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.GameHelpers;
+import frc.robot.HeadHoncho;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
@@ -75,46 +76,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorFollowerTwo.setControl(
       new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Opposed)
     );
-  }
-
-  /**
-   * Periodic shooter logic. Basically:
-   * <ul>
-   * <li>Always adjust hood
-   * <li>If holding shoot/pass button:
-   * <ul>
-     * <li>Set shoot motor to shoot speed
-     * <li>Toggle indexer motor based on if ready to shoot/pass
-   * </ul>
-   * <li>If not holding button, set shoot motor to hold speed
-   * and stop indexer
-   * </ul>
-   * @param shooting If shoot button is held
-   * @param passing If pass button is held
-   */
-  public void shooterPeriodic(boolean shooting, boolean passing) {
-    Logger.recordOutput(getName() + "/wantToShoot", shooting);
-    Logger.recordOutput(getName() + "/wantToPass", passing);
-    
-    adjustHood();
-
-    if (shooting || passing) {
-      runShooter();
-      boolean shootReady = readyToShoot();
-      boolean passReady = readyToPass();
-      Logger.recordOutput(getName() + "/readyToShoot", shootReady);
-      Logger.recordOutput(getName() + "/readyToPass", passReady);
-
-      if ((shootReady && shooting) ||
-          (passReady && passing)) {
-        runIndexer();
-      } else {
-        stopIndexer();
-      }
-    } else {
-      holdShooter();
-      stopIndexer();
-    }
   }
 
   /**
@@ -277,6 +238,38 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       atShootSpeed());
     Logger.recordOutput(getName() + "/atHoodPosition",
       atHoodPosition());
+
+    // Periodic shooter logic. Basically:
+    // Always adjust hood
+    // If holding shoot/pass button:
+    //    - Set shoot motor to shoot speed
+    //    - Toggle indexer motor based on if ready to shoot/pass
+    // If not holding button, set shoot motor to hold speed
+    // and stop indexer
+    boolean shooting = HeadHoncho.getInstance().wantToShoot();
+    boolean passing = HeadHoncho.getInstance().wantToPass();
+    Logger.recordOutput(getName() + "/wantToShoot", shooting);
+    Logger.recordOutput(getName() + "/wantToPass", passing);
+    
+    adjustHood();
+
+    if (shooting || passing) {
+      runShooter();
+      boolean shootReady = readyToShoot();
+      boolean passReady = readyToPass();
+      Logger.recordOutput(getName() + "/readyToShoot", shootReady);
+      Logger.recordOutput(getName() + "/readyToPass", passReady);
+
+      if ((shootReady && shooting) ||
+          (passReady && passing)) {
+        runIndexer();
+      } else {
+        stopIndexer();
+      }
+    } else {
+      holdShooter();
+      stopIndexer();
+    }
   }
 
   @Override
