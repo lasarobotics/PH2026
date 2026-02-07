@@ -98,12 +98,12 @@ public class GameHelpers {
         // S3: 80-55
         // S4: 55-30
         if (wonAuto) {
-            boolean s1 = time <= 130 && time >= 105;
-            boolean s3 = time <= 80 && time >= 55;
+            boolean s1 = 105 <= time && time <= 130;
+            boolean s3 = 55 <= time && time <= 80;
             return (!s1 && !s3);
         } else {
-            boolean s2 = time <= 105 && time >= 80;
-            boolean s4 = time <= 55 && time >= 30;
+            boolean s2 = 80 <= time && time <= 105;
+            boolean s4 = 30 <= time && time <= 55;
             return (!s2 && !s4);
         }
     }
