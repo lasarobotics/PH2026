@@ -101,6 +101,13 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Sets intake motor running in reverse
+   */
+  private void reverseIntakeMotor() {
+    m_intakeMotor.set(-Constants.Intake.INTAKE_SPEED.in(Value));
+  }
+
+  /**
    * Stop intake of fuel using intake motor
    */
   private void stopIntakeMotor() {
