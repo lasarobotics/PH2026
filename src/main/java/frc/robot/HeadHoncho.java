@@ -48,7 +48,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
           DriveSubsystem.getInstance().driverControl();
         }
 
-        if (s_headHoncho.m_intakeButtonDown.getAsBoolean()) {
+        if (s_headHoncho.m_intakeButtonHasFallen.getAsBoolean()) {
           IntakeSubsystem.getInstance().toggleIntake();
         }
       }
@@ -56,7 +56,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       @Override
       public SystemState nextState() {
         if (
-          s_headHoncho.m_climbButton.getAsBoolean() &&
+          s_headHoncho.m_climbButtonHasFallen.getAsBoolean() &&
           DriveSubsystem.getInstance().inAllianceZone()
         ) return CLIMB;
 
@@ -74,7 +74,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        if (s_headHoncho.m_climbButton.getAsBoolean()) {
+        if (s_headHoncho.m_climbButtonHasFallen.getAsBoolean()) {
           ClimbSubsystem.getInstance().climb();
         }
       }
@@ -91,8 +91,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private static HeadHoncho s_headHoncho;
   private BooleanSupplier m_shootButton;
   private BooleanSupplier m_passButton;
-  private BooleanSupplier m_intakeButtonDown;
-  private BooleanSupplier m_climbButton;
+  private BooleanSupplier m_intakeButtonHasFallen;
+  private BooleanSupplier m_climbButtonHasFallen;
   private BooleanSupplier m_cancelButton;
   private BooleanSupplier m_goToToggle;
 
@@ -130,11 +130,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   ) {
     m_shootButton = shootButton;
     m_passButton = passButton;
-    m_intakeButtonDown = intakeButton;
-    m_climbButton = climbButton;
+    m_intakeButtonHasFallen = intakeButton;
+    m_climbButtonHasFallen = climbButton;
     m_cancelButton = cancelButton;
   }
 
-  // TODO impl
   public void close() {}
 }

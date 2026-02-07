@@ -128,9 +128,10 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     }
 
     // This method will be called once per scheduler run
-    Logger.recordOutput(getName() + "/encoderAngle", s_climbInstance.getClimberAngle());
-    Logger.recordOutput(getName() + "/inStowPosition", s_climbInstance.inStowPosition());
-    Logger.recordOutput(getName() + "/inClimbPosition", s_climbInstance.inClimbPosition());
+    Logger.recordOutput(getName() + "/encoderAngle", getClimberAngle());
+    Logger.recordOutput(getName() + "/inStowPosition", inStowPosition());
+    Logger.recordOutput(getName() + "/inClimbPosition", inClimbPosition());
+    Logger.recordOutput(getName() + "/isClimbing", m_isClimbing);
   }
 
   @Override
