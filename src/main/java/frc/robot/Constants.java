@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -22,6 +23,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -60,6 +62,19 @@ public final class Constants {
     // middle of how fast we generally shoot
     public static final double SHOOTER_HOLD_SPEED = 0;
 
+    // TODO maybe negative? find value
+    // This is the voltage that the hood goes at whole zeroing
+    public static final double HOOD_ZERO_VOLTAGE = 1;
+    // TODO find actual value
+    // This should be something around the maximum current of the motor
+    public static final Current HOOD_STALL_CURRENT = Amps.of(40);
+    // TODO find value
+    // Tolerance for detecting if hood motor has stalled
+    public static final Current HOOD_ZERO_CURRENT_TOLERANCE = Amps.of(0.1);
+    // TODO find value
+    // Tolerance for detecting if hood speed is zero
+    public static final double HOOD_ZERO_SPEED_TOLERANCE = 0.1;
+
     public static final double SHOOTER_SPEED_TOLERANCE = 0; // TODO
     public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(0); // TODO
 
@@ -68,10 +83,9 @@ public final class Constants {
     public static final double HOOD_TO_MOTOR_RATIO = 0; // TODO
 
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
+    public static final double FLYWHEEL_RADIUS = 0.0508;
 
     public static final double SHOOTER_OFFSET = 0.0; //TODO change
-
-    public static final double FLYWHEEL_RADIUS = 0.0508;
   }
 
   public static class Drive {

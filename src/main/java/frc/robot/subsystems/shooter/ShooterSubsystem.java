@@ -33,6 +33,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private final MotionMagicVelocityVoltage m_indexerRequest;
   private final MotionMagicVoltage m_hoodRequest;
 
+  private boolean m_zeroingHood = false;
+
   public static ShooterSubsystem getInstance() {
     if (s_shooterSubsystem == null) {
       s_shooterSubsystem = new ShooterSubsystem();
@@ -90,7 +92,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Stop the {@link #m_indexerMotor indexer motor}.
    */
-  public void stopIndexer() {
+  private void stopIndexer() {
     m_indexerMotor.setControl(
       m_indexerRequest.withVelocity(0)
     );
@@ -101,7 +103,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * to the (constant)
    * {@link Constants.Shooter#indexerHoldSpeed indexer hold speed}.
    */
-  public void runIndexer() {
+  private void runIndexer() {
     m_indexerMotor.setControl(
       m_indexerRequest.withVelocity(Constants.Shooter.INDEXER_MOTOR_SPEED)
     );
@@ -110,7 +112,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Stop the {@link #m_shooterMotorLeader shooter motors} (coast to 0).
    */
-  public void stopShooter() {
+  private void stopShooter() {
     m_shooterMotorLeader.setVoltage(0);
   }
 
@@ -120,7 +122,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * {@link Constants.Shooter#SHOOTER_HOLD_SPEED shooter hold speed}
    * and let the others coast.
    */
-  public void holdShooter() {
+  private void holdShooter() {
     m_shooterMotorLeader.setControl(
       m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
     );
@@ -131,7 +133,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * to the desired shooting speed
    * according to {@link #wantedShooterSpeed()}
    */
-  public void runShooter() {
+  private void runShooter() {
     m_shooterMotorLeader.setControl(
       m_shooterRequest.withVelocity(wantedShooterSpeed())
     );
@@ -142,7 +144,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return If the master shooter motor is {@link Constants.Shooter#SHOOTER_SPEED_TOLERANCE near}
    * the desired speed according to {@link #wantedShooterSpeed()}
    */
-  public boolean atShootSpeed() {
+  private boolean atShootSpeed() {
     return m_shooterMotorLeader.getVelocity().isNear(
       wantedShooterSpeed(),
       Constants.Shooter.SHOOTER_SPEED_TOLERANCE
@@ -151,25 +153,52 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Sets the target position of the hood to the current hood position
-   * (i.e. stop the hood)
+   * (i.e. stop the hood). Does not do anything if hood is currently
+   * in the process of zeroing.
    */
-  public void stopHood() {
+  private void stopHood() {
+    if (m_zeroingHood) {
+      return;
+    }
     double pos = m_hoodMotor.getPosition().getValueAsDouble();
     m_hoodMotor.setControl(m_hoodRequest.withPosition(pos));
   }
 
   /**
    * Set the setpoint of the {@link #m_hoodMotor hood motor}
-   * to the desired hood position
-   * according to {@link frc.robot.AimUtil#getExitAngle()()}
+   * to the desired hood position according to
+   * {@link frc.robot.AimUtil#getExitAngle() getExitAngle()}.
+   * Does not do anything if hood is currently
+   * in the process of zeroing.
    */
-  public void adjustHood() {
+  private void adjustHood() {
+    if (m_zeroingHood) {
+      return;
+    }
     m_hoodMotor.setControl(
       m_hoodRequest.withPosition(AimUtil.getExitAngle())
     );
   }
 
-  public boolean atHoodPosition() {
+  /**
+   * Starts the hood zeroing process. Other operations to
+   * hood cannot be made until this process is done. It
+   * comprises setting a constant voltage, and then
+   * stopping and zeroing once a hard stop is detected.
+   */
+  public void zeroHood() {
+    m_zeroingHood = true;
+    m_hoodMotor.setVoltage(Constants.Shooter.HOOD_ZERO_VOLTAGE);
+  }
+
+  /**
+   * Checks if the hood position is near the exit angle
+   * provided by getExitAngle(). Tolerance is determined by
+   * {@link frc.robot.Constants.Shooter#HOOD_POSITION_TOLERANCE
+   * a constant}.
+   * @return If the check succeeds
+   */
+  private boolean atHoodPosition() {
     return m_hoodMotor.getPosition().isNear(
       AimUtil.getExitAngle(),
       Constants.Shooter.HOOD_POSITION_TOLERANCE
@@ -182,7 +211,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * & within the alliance zone
    * @return If robot is in a good position to shoot
    */
-  public boolean readyToShoot() {
+  private boolean readyToShoot() {
     return (
       (
         GameHelpers.scoringTimeLeft() - Constants.Field.HANG_TIME
@@ -201,7 +230,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * alliance zone. Doesn't check if hub is active.
    * @return If robot is in a good position to shoot
    */
-  public boolean readyToPass() {
+  private boolean readyToPass() {
     return (
       atShootSpeed() &&
       atHoodPosition() &&
@@ -215,7 +244,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * and convert to rotations per second.
    * @return The wanted rotations per second
    */
-  public double wantedShooterSpeed() {
+  private double wantedShooterSpeed() {
     LinearVelocity ballVelocity = AimUtil.getBallVelocity();
     double radiansPerSecond =
       2 * ballVelocity.in(MetersPerSecond)
@@ -250,8 +279,30 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     boolean passing = HeadHoncho.getInstance().wantToPass();
     Logger.recordOutput(getName() + "/wantToShoot", shooting);
     Logger.recordOutput(getName() + "/wantToPass", passing);
-    
-    adjustHood();
+
+    if (m_zeroingHood) {
+      // If the current is near the stall current
+      // and the speed is near zero,
+      // finish zeroing 
+      if (
+        m_hoodMotor.getTorqueCurrent().isNear(
+          Constants.Shooter.HOOD_STALL_CURRENT,
+          Constants.Shooter.HOOD_ZERO_CURRENT_TOLERANCE
+        ) &&
+        m_hoodMotor.getVelocity().isNear(
+          0,
+          Constants.Shooter.HOOD_ZERO_SPEED_TOLERANCE
+        )
+      ) {
+        m_hoodMotor.setPosition(0.0);
+        m_hoodMotor.setControl(
+          m_hoodRequest.withPosition(0)
+        );
+        m_zeroingHood = false;
+      }
+    } else {
+      adjustHood();
+    }
 
     if (shooting || passing) {
       runShooter();
