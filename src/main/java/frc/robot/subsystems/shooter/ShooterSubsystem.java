@@ -68,6 +68,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorSlaveTwo.getConfigurator().apply(shooterThreeConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
     m_hoodMotor.getConfigurator().apply(hoodConfig);
+
+    // Master motor should be the one that goes in a different
+    // direction than the other two
+    m_shooterMotorSlaveOne.setControl(
+      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Opposed)
+    );    
+    m_shooterMotorSlaveTwo.setControl(
+      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Opposed)
+    );
   }
 
   /**
@@ -144,8 +153,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void stopShooter() {
     m_shooterMotorMaster.setVoltage(0);
-    m_shooterMotorSlaveOne.setVoltage(0);
-    m_shooterMotorSlaveTwo.setVoltage(0);
   }
 
   /**
@@ -158,17 +165,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorMaster.setControl(
       m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
     );
-
-    // TODO update according to real robot
-    // Basically: two of the motors rotate in the same direction
-    // (according to Michael)
-    // once we decide on the master we can set it up but not yet -mw
-    m_shooterMotorSlaveOne.setControl(
-      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
-    );
-    m_shooterMotorSlaveTwo.setControl(
-      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
-    );
   }
 
   /**
@@ -179,14 +175,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public void shoot() {
     m_shooterMotorMaster.setControl(
       m_shooterRequest.withVelocity(wantedShooterSpeed())
-    );
-
-    //TODO: figure out the alignment of the slave motors with respect to the master
-    m_shooterMotorSlaveOne.setControl(
-      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
-    );
-    m_shooterMotorSlaveTwo.setControl(
-      new Follower(m_shooterMotorMaster.getDeviceID(), MotorAlignmentValue.Aligned)
     );
   }
 

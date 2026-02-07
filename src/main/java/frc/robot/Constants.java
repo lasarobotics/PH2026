@@ -44,6 +44,8 @@ public final class Constants {
 
   public static class Shooter {
     public static final int MASTER_SHOOTER_MOTOR_ID = 0; // TODO
+    // NOTE: Slave motors should spin in the same direction
+    // (opposite to that of the master)
     public static final int SLAVE_SHOOTER_ONE_MOTOR_ID = 0; // TODO
     public static final int SLAVE_SHOOTER_TWO_MOTOR_ID = 0; // TODO
     public static final int INDEXER_MOTOR_ID = 0; // TODO
