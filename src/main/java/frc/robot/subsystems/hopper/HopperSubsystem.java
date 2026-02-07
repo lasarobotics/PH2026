@@ -44,7 +44,8 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    * Periodic function to refresh the class variables of HopperSubsystem.
    * Should only be called from {@link frc.robot.Robot#robotPeriodic() Robot.java}.
    */
-  public void hopperPeriodic() {
+  @Override
+  public void periodic() {
     boolean topB = (
       // TODO: test if this is OR or AND
       canRangeBlocked(m_topRange1) ||
