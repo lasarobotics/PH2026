@@ -12,6 +12,7 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.AimUtil;
@@ -30,7 +31,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TalonFX m_hoodMotor;
 
   private final MotionMagicVelocityVoltage m_shooterRequest;
-  private final MotionMagicVelocityVoltage m_indexerRequest;
   private final MotionMagicVoltage m_hoodRequest;
 
   private boolean m_zeroingHood = false;
@@ -50,7 +50,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
 
     m_shooterRequest = new MotionMagicVelocityVoltage(0);
-    m_indexerRequest = new MotionMagicVelocityVoltage(0);
     m_hoodRequest = new MotionMagicVoltage(0);
 
     // TODO set up configs
@@ -93,9 +92,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Stop the {@link #m_indexerMotor indexer motor}.
    */
   private void stopIndexer() {
-    m_indexerMotor.setControl(
-      m_indexerRequest.withVelocity(0)
-    );
+    m_indexerMotor.setVoltage(0);
   }
 
   /**
@@ -104,9 +101,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * {@link Constants.Shooter#indexerHoldSpeed indexer hold speed}.
    */
   private void runIndexer() {
-    m_indexerMotor.setControl(
-      m_indexerRequest.withVelocity(Constants.Shooter.INDEXER_MOTOR_SPEED)
-    );
+    m_indexerMotor.setVoltage(Constants.Shooter.INDEXER_MOTOR_SPEED);
   }
 
   /**
@@ -176,7 +171,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       return;
     }
     m_hoodMotor.setControl(
-      m_hoodRequest.withPosition(AimUtil.getExitAngle())
+      m_hoodRequest.withPosition(wantedHoodPosition())
     );
   }
 
@@ -192,6 +187,19 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Checks the shooter speed, hood position, and robot orientation to see if they
+   * match the ones wanted by AimUtil.
+   * @return True if all the checks pass.
+   */
+  private boolean shooterReady() {
+    return (
+      atShootSpeed() &&
+      atHoodPosition() &&
+      DriveSubsystem.getInstance().atWantedRotation()
+    );
+  }
+
+  /**
    * Checks if the hood position is near the exit angle
    * provided by getExitAngle(). Tolerance is determined by
    * {@link frc.robot.Constants.Shooter#HOOD_POSITION_TOLERANCE
@@ -200,51 +208,23 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private boolean atHoodPosition() {
     return m_hoodMotor.getPosition().isNear(
-      AimUtil.getExitAngle(),
+      wantedHoodPosition(),
       Constants.Shooter.HOOD_POSITION_TOLERANCE
     );
   }
 
   /**
-   * Checks that the robot can make it in if it shoots right now
-   * and that the drivetrain is at the wanted rotation
-   * & within the alliance zone
-   * @return If robot is in a good position to shoot
-   */
-  private boolean readyToShoot() {
-    return (
-      (
-        GameHelpers.scoringTimeLeft() - Constants.Field.HANG_TIME
-        >= Constants.Shooter.SHOOTER_TIME_MARGIN
-      ) &&
-      atShootSpeed() &&
-      atHoodPosition() &&
-      DriveSubsystem.getInstance().atWantedRotation() &&
-      DriveSubsystem.getInstance().inAllianceZone()
-    );
-  }
-
-  /**
-   * Checks that the robot can make it in the alliance zone if it shoots right now
-   * and that the drivetrain is at the wanted rotation & not in the
-   * alliance zone. Doesn't check if hub is active.
-   * @return If robot is in a good position to shoot
-   */
-  private boolean readyToPass() {
-    return (
-      atShootSpeed() &&
-      atHoodPosition() &&
-      DriveSubsystem.getInstance().atWantedRotation() &&
-      !DriveSubsystem.getInstance().inAllianceZone()
-    );
-  }
-
-  /**
    * Get the current wanted ball velocity from AimUtil
-   * and convert to rotations per second.
+   * and convert to rotations per second. If the
+   * dumb shoot button is being held, return the
+   * constant dumb speed instead.
    * @return The wanted rotations per second
    */
   private double wantedShooterSpeed() {
+    if (HeadHoncho.getInstance().wantToDumbShoot()) {
+      return Constants.Shooter.DUMB_SHOOTER_SPEED;
+    }
+
     LinearVelocity ballVelocity = AimUtil.getBallVelocity();
     double radiansPerSecond =
       2 * ballVelocity.in(MetersPerSecond)
@@ -252,6 +232,20 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     double rotationsPerSecond =
       radiansPerSecond / (2 * Math.PI);
     return rotationsPerSecond;
+  }
+
+  /**
+   * Returns the exit angle wanted by AimUtil, unless
+   * the driver wants to dumb shoot, in which case this
+   * method returns the constant dumb hood position.
+   * @return The angle that the hood should be at.
+   */
+  private Angle wantedHoodPosition() {
+    if (HeadHoncho.getInstance().wantToDumbShoot()) {
+      return Constants.Shooter.DUMB_HOOD_POSITION;
+    }
+
+    return AimUtil.getExitAngle();
   }
 
   @Override
@@ -267,12 +261,22 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       atShootSpeed());
     Logger.recordOutput(getName() + "/atHoodPosition",
       atHoodPosition());
+    Logger.recordOutput(getName() + "/wantedShooterSpeed",
+      wantedShooterSpeed());
+    Logger.recordOutput(getName() + "/wantedHoodPosition",
+      wantedHoodPosition());
 
     // Periodic shooter logic. Basically:
+    // IF ZEROING HOOD
+    // stop shooter & indexer
+    // do the hood checks
+    // IF HOLDING A SHOOT BUTTON
+    // (pass/shoot/forceshoot/dumbshoot)
     // Always adjust hood
     // If holding shoot/pass button:
     //    - Set shoot motor to shoot speed
     //    - Toggle indexer motor based on if ready to shoot/pass
+    //    - Indexer is always turned on if 
     // If not holding button, set shoot motor to hold speed
     // and stop indexer
     boolean shooting = HeadHoncho.getInstance().wantToShoot();
@@ -281,11 +285,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     boolean forceShooting = HeadHoncho.getInstance().wantToForceShoot();
     Logger.recordOutput(getName() + "/wantToShoot", shooting);
     Logger.recordOutput(getName() + "/wantToPass", passing);
+    Logger.recordOutput(getName() + "/wantToDumbShoot", dumbShooting);
+    Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
 
     if (m_zeroingHood) {
+      stopShooter();
+      stopIndexer();
       // If the current is near the stall current
       // and the speed is near zero,
-      // finish zeroing 
+      // finish zeroing
       if (
         m_hoodMotor.getTorqueCurrent().isNear(
           Constants.Shooter.HOOD_STALL_CURRENT,
@@ -296,38 +304,57 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
           Constants.Shooter.HOOD_ZERO_SPEED_TOLERANCE
         )
       ) {
+        // reset position & set goal position to current one
         m_hoodMotor.setPosition(0.0);
         m_hoodMotor.setControl(
           m_hoodRequest.withPosition(0)
         );
         m_zeroingHood = false;
       }
-    }
+    } else {
+      adjustHood();
 
-    if (dumbShooting) {
-      // TODO
-    }
+      if (shooting || passing || forceShooting || dumbShooting) {
+        runShooter();
+        // TODO: Is this the right way to do the ready to shoot checks?
+        // It feels kinda messy, because this is basically unpacking
+        // two different methods
+        boolean shooterIsReady = shooterReady();
+        boolean readyToShoot = (
+          shooterIsReady &&
+          DriveSubsystem.getInstance().inAllianceZone() &&
+          (
+            // TODO maybe unpack this (time) into its own method?
+            GameHelpers.scoringTimeLeft() - Constants.Field.HANG_TIME
+            >= Constants.Shooter.SHOOTER_TIME_MARGIN
+          )
+        );
+        boolean readyToPass = (
+          shooterIsReady && 
+          !DriveSubsystem.getInstance().inAllianceZone()
+        );
 
-    // also TODO force shooting
+        Logger.recordOutput(getName() + "/shooterIsReady", shooterIsReady);
+        Logger.recordOutput(getName() + "/readyToShoot", readyToShoot);
+        Logger.recordOutput(getName() + "/readyToPass", readyToPass);
 
-    adjustHood();
-
-    if (shooting || passing) {
-      runShooter();
-      boolean shootReady = readyToShoot();
-      boolean passReady = readyToPass();
-      Logger.recordOutput(getName() + "/readyToShoot", shootReady);
-      Logger.recordOutput(getName() + "/readyToPass", passReady);
-
-      if ((shootReady && shooting) ||
-          (passReady && passing)) {
-        runIndexer();
+        if ((readyToShoot && shooting) ||
+            (readyToPass && passing) ||
+            forceShooting ||
+            // TODO do we want dumbshoot to force indexing
+            // or do we want it to also check shootReady
+            // BTW: wantedHoodPosition & wantedShooterSpeed
+            // return the dumb constants if the dumb shooting
+            // button is held
+            dumbShooting) {
+          runIndexer();
+        } else {
+          stopIndexer();
+        }
       } else {
+        holdShooter();
         stopIndexer();
       }
-    } else {
-      holdShooter();
-      stopIndexer();
     }
   }
 

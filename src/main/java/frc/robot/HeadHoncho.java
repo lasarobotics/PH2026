@@ -62,6 +62,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     CLIMB {
       @Override
       public void initialize() {
+        // TODO should the intake be stopped? since that means retracting hopper
+        // or does it need to actively empty it if full
         IntakeSubsystem.getInstance().startIntake();
         ShooterSubsystem.getInstance().stopEverything();
         DriveSubsystem.getInstance().driveAutoClimb();
@@ -114,11 +116,11 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   }
 
   public boolean wantToDumbShoot() {
-    return m_passButton.getAsBoolean();
+    return m_dumbShootButton.getAsBoolean();
   }
 
   public boolean wantToForceShoot() {
-    return m_passButton.getAsBoolean();
+    return m_forceShootButton.getAsBoolean();
   }
 
   /**

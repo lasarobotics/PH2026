@@ -54,6 +54,7 @@ public final class Constants {
     public static final int HOOD_MOTOR_ID = 0; // TODO
 
     // TODO find value for this
+    // voltage
     public static final double INDEXER_MOTOR_SPEED = 0;
 
     // TODO find value for this
@@ -86,6 +87,12 @@ public final class Constants {
     public static final double FLYWHEEL_RADIUS = 0.0508;
 
     public static final double SHOOTER_OFFSET = 0.0; //TODO change
+
+    // TODO find actual value
+    // Probably going to be pretty high? Unknown
+    public static final Angle DUMB_HOOD_POSITION = Degrees.of(80);
+    // TODO find actual value
+    public static final double DUMB_SHOOTER_SPEED = 0;
   }
 
   public static class Drive {
