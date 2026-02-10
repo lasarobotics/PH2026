@@ -253,6 +253,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       m_hoodMotor.getPosition().getValueAsDouble());
     Logger.recordOutput(getName() + "/atShootSpeed",
       atShootSpeed());
+    Logger.recordOutput(getName() + "/shooterReady",
+      shooterReady());
     Logger.recordOutput(getName() + "/atHoodPosition",
       atHoodPosition());
     Logger.recordOutput(getName() + "/wantedShooterSpeed",
