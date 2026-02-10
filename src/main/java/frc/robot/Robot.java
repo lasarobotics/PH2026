@@ -64,8 +64,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       CommandScheduler.getInstance().schedule(m_autonomousCommand);
     }
-
-    ShooterSubsystem.getInstance().zeroHood();
   }
 
   /** This function is called periodically during autonomous. */
@@ -81,8 +79,6 @@ public class Robot extends TimedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
-
-    ShooterSubsystem.getInstance().zeroHood();
   }
 
   /** This function is called periodically during operator control. */

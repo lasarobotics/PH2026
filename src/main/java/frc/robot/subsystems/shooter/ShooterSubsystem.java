@@ -5,11 +5,14 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 
 import edu.wpi.first.units.measure.Angle;
@@ -29,6 +32,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TalonFX m_shooterMotorFollowerTwo;
   private TalonFX m_indexerMotor;
   private TalonFX m_hoodMotor;
+  private CANcoder m_hoodCanCoder;
 
   private final MotionMagicVelocityVoltage m_shooterRequest;
   private final MotionMagicVoltage m_hoodRequest;
@@ -46,6 +50,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID);
     m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
+    m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
     m_shooterRequest = new MotionMagicVelocityVoltage(0);
     m_hoodRequest = new MotionMagicVoltage(0);
@@ -60,12 +65,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
 
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
+    hoodConfig.Feedback.FeedbackRemoteSensorID = m_hoodCanCoder.getDeviceID();
+    hoodConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+
+    CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
 
     m_shooterMotorLeader.getConfigurator().apply(shooterOneConfig);
     m_shooterMotorFollowerOne.getConfigurator().apply(shooterTwoConfig);
     m_shooterMotorFollowerTwo.getConfigurator().apply(shooterThreeConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
     m_hoodMotor.getConfigurator().apply(hoodConfig);
+    m_hoodCanCoder.getConfigurator().apply(canCoderConfig);
 
     // Master motor should be the one that goes in a different
     // direction than the other two
@@ -110,7 +120,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Set the speed of one {@link #m_shooterMotorLeader shooter motor}
+   * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
    * to the (constant)
    * {@link Constants.Shooter#SHOOTER_HOLD_SPEED shooter hold speed}
    * and let the others coast.
@@ -173,7 +183,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return (
       atShootSpeed() &&
       atHoodPosition() &&
-      DriveSubsystem.getInstance().atWantedRotation()
+      // dumb shoot shouldn't care about robot orientation
+      // but we still want to check shooter speed &
+      // hood position before indexing
+      (
+        HeadHoncho.getInstance().wantToDumbShoot() ||
+        DriveSubsystem.getInstance().atWantedRotation()
+      )
     );
   }
 
@@ -185,7 +201,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return If the check succeeds
    */
   private boolean atHoodPosition() {
-    return m_hoodMotor.getPosition().isNear(
+    return m_hoodCanCoder.getAbsolutePosition().isNear(
       wantedHoodPosition(),
       Constants.Shooter.HOOD_POSITION_TOLERANCE
     );
@@ -266,15 +282,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     if (shooting || passing || forceShooting || dumbShooting) {
       runShooter();
-      // TODO: Is this the right way to do the ready to shoot checks?
-      // It feels kinda messy, because this is basically unpacking
-      // two different methods
+
       boolean shooterIsReady = shooterReady();
       boolean readyToShoot = (
         shooterIsReady &&
         DriveSubsystem.getInstance().inAllianceZone() &&
         (
-          // TODO maybe unpack this (time) into its own method?
           GameHelpers.scoringTimeLeft() - Constants.Field.HANG_TIME
           >= Constants.Shooter.SHOOTER_TIME_MARGIN
         )
@@ -290,13 +303,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
       if ((readyToShoot && shooting) ||
           (readyToPass && passing) ||
-          forceShooting ||
-          // TODO do we want dumbshoot to force indexing
-          // or do we want it to also check shootReady
           // BTW: wantedHoodPosition & wantedShooterSpeed
-          // return the dumb constants if the dumb shooting
-          // button is held
-          dumbShooting) {
+          // return the dumb constants and readyToShoot
+          // doesn't check orientation if the dumb
+          // shooting button is held
+          (readyToShoot && dumbShooting) ||
+          forceShooting
+      ) {
         runIndexer();
       } else {
         stopIndexer();

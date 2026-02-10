@@ -52,6 +52,7 @@ public final class Constants {
     public static final int FOLLOWER_SHOOTER_TWO_MOTOR_ID = 0; // TODO
     public static final int INDEXER_MOTOR_ID = 0; // TODO
     public static final int HOOD_MOTOR_ID = 0; // TODO
+    public static final int HOOD_CANCODER_ID = 0; // TODO
 
     // TODO find value for this
     // voltage
@@ -61,6 +62,9 @@ public final class Constants {
     // set shooter motor to constant speed
     // ideally, this will be somewhere in the
     // middle of how fast we generally shoot
+    // shooter spreadsheet indicates that 2800
+    // is about right (for ymax = 2.5m)
+    // https://docs.google.com/spreadsheets/d/1W-cpAlIJaHPbepHAKy7-uNkREk7_ITiVmTQvAB0_ZDM/edit
     public static final double SHOOTER_HOLD_SPEED = 0;
 
     // TODO maybe negative? find value
