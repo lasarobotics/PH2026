@@ -33,8 +33,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private final MotionMagicVelocityVoltage m_shooterRequest;
   private final MotionMagicVoltage m_hoodRequest;
 
-  private boolean m_zeroingHood = false;
-
   public static ShooterSubsystem getInstance() {
     if (s_shooterSubsystem == null) {
       s_shooterSubsystem = new ShooterSubsystem();
@@ -147,14 +145,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Sets the target position of the hood to the current hood position
-   * (i.e. stop the hood). Does not do anything if hood is currently
-   * in the process of zeroing.
+   * Sets the target position of the hood to the
+   * current hood position (i.e. stop the hood).
    */
   private void stopHood() {
-    if (m_zeroingHood) {
-      return;
-    }
     double pos = m_hoodMotor.getPosition().getValueAsDouble();
     m_hoodMotor.setControl(m_hoodRequest.withPosition(pos));
   }
@@ -163,27 +157,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Set the setpoint of the {@link #m_hoodMotor hood motor}
    * to the desired hood position according to
    * {@link frc.robot.AimUtil#getExitAngle() getExitAngle()}.
-   * Does not do anything if hood is currently
-   * in the process of zeroing.
    */
   private void adjustHood() {
-    if (m_zeroingHood) {
-      return;
-    }
     m_hoodMotor.setControl(
       m_hoodRequest.withPosition(wantedHoodPosition())
     );
-  }
-
-  /**
-   * Starts the hood zeroing process. Other operations to
-   * hood cannot be made until this process is done. It
-   * comprises setting a constant voltage, and then
-   * stopping and zeroing once a hard stop is detected.
-   */
-  public void zeroHood() {
-    m_zeroingHood = true;
-    m_hoodMotor.setVoltage(Constants.Shooter.HOOD_ZERO_VOLTAGE);
   }
 
   /**
@@ -267,16 +245,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       wantedHoodPosition());
 
     // Periodic shooter logic. Basically:
-    // IF ZEROING HOOD
-    // stop shooter & indexer
-    // do the hood checks
-    // IF HOLDING A SHOOT BUTTON
-    // (pass/shoot/forceshoot/dumbshoot)
     // Always adjust hood
-    // If holding shoot/pass button:
+    // If holding shoot button:
+    // (pass/shoot/forceshoot/dumbshoot)
     //    - Set shoot motor to shoot speed
     //    - Toggle indexer motor based on if ready to shoot/pass
-    //    - Indexer is always turned on if 
+    //    - Indexer is always turned on if forceshoot is held
     // If not holding button, set shoot motor to hold speed
     // and stop indexer
     boolean shooting = HeadHoncho.getInstance().wantToShoot();
@@ -288,73 +262,48 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/wantToDumbShoot", dumbShooting);
     Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
 
-    if (m_zeroingHood) {
-      stopShooter();
-      stopIndexer();
-      // If the current is near the stall current
-      // and the speed is near zero,
-      // finish zeroing
-      if (
-        m_hoodMotor.getTorqueCurrent().isNear(
-          Constants.Shooter.HOOD_STALL_CURRENT,
-          Constants.Shooter.HOOD_ZERO_CURRENT_TOLERANCE
-        ) &&
-        m_hoodMotor.getVelocity().isNear(
-          0,
-          Constants.Shooter.HOOD_ZERO_SPEED_TOLERANCE
+    adjustHood();
+
+    if (shooting || passing || forceShooting || dumbShooting) {
+      runShooter();
+      // TODO: Is this the right way to do the ready to shoot checks?
+      // It feels kinda messy, because this is basically unpacking
+      // two different methods
+      boolean shooterIsReady = shooterReady();
+      boolean readyToShoot = (
+        shooterIsReady &&
+        DriveSubsystem.getInstance().inAllianceZone() &&
+        (
+          // TODO maybe unpack this (time) into its own method?
+          GameHelpers.scoringTimeLeft() - Constants.Field.HANG_TIME
+          >= Constants.Shooter.SHOOTER_TIME_MARGIN
         )
-      ) {
-        // reset position & set goal position to current one
-        m_hoodMotor.setPosition(0.0);
-        m_hoodMotor.setControl(
-          m_hoodRequest.withPosition(0)
-        );
-        m_zeroingHood = false;
-      }
-    } else {
-      adjustHood();
+      );
+      boolean readyToPass = (
+        shooterIsReady && 
+        !DriveSubsystem.getInstance().inAllianceZone()
+      );
 
-      if (shooting || passing || forceShooting || dumbShooting) {
-        runShooter();
-        // TODO: Is this the right way to do the ready to shoot checks?
-        // It feels kinda messy, because this is basically unpacking
-        // two different methods
-        boolean shooterIsReady = shooterReady();
-        boolean readyToShoot = (
-          shooterIsReady &&
-          DriveSubsystem.getInstance().inAllianceZone() &&
-          (
-            // TODO maybe unpack this (time) into its own method?
-            GameHelpers.scoringTimeLeft() - Constants.Field.HANG_TIME
-            >= Constants.Shooter.SHOOTER_TIME_MARGIN
-          )
-        );
-        boolean readyToPass = (
-          shooterIsReady && 
-          !DriveSubsystem.getInstance().inAllianceZone()
-        );
+      Logger.recordOutput(getName() + "/shooterIsReady", shooterIsReady);
+      Logger.recordOutput(getName() + "/readyToShoot", readyToShoot);
+      Logger.recordOutput(getName() + "/readyToPass", readyToPass);
 
-        Logger.recordOutput(getName() + "/shooterIsReady", shooterIsReady);
-        Logger.recordOutput(getName() + "/readyToShoot", readyToShoot);
-        Logger.recordOutput(getName() + "/readyToPass", readyToPass);
-
-        if ((readyToShoot && shooting) ||
-            (readyToPass && passing) ||
-            forceShooting ||
-            // TODO do we want dumbshoot to force indexing
-            // or do we want it to also check shootReady
-            // BTW: wantedHoodPosition & wantedShooterSpeed
-            // return the dumb constants if the dumb shooting
-            // button is held
-            dumbShooting) {
-          runIndexer();
-        } else {
-          stopIndexer();
-        }
+      if ((readyToShoot && shooting) ||
+          (readyToPass && passing) ||
+          forceShooting ||
+          // TODO do we want dumbshoot to force indexing
+          // or do we want it to also check shootReady
+          // BTW: wantedHoodPosition & wantedShooterSpeed
+          // return the dumb constants if the dumb shooting
+          // button is held
+          dumbShooting) {
+        runIndexer();
       } else {
-        holdShooter();
         stopIndexer();
       }
+    } else {
+      holdShooter();
+      stopIndexer();
     }
   }
 
