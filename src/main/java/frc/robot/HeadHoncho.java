@@ -47,6 +47,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         if (s_headHoncho.m_intakeButtonHasFallen.getAsBoolean()) {
           IntakeSubsystem.getInstance().toggleIntake();
         }
+
+        if (s_headHoncho.m_reverseIntakeButton.getAsBoolean()) {
+          IntakeSubsystem.getInstance().reverseIntake();
+        }
       }
 
       @Override
@@ -94,6 +98,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_intakeButtonHasFallen;
   private BooleanSupplier m_climbButtonHasFallen;
   private BooleanSupplier m_cancelButton;
+  private BooleanSupplier m_reverseIntakeButton;
   private BooleanSupplier m_goToToggle;
 
   public static HeadHoncho getInstance() {
@@ -148,7 +153,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     BooleanSupplier passButton,
     BooleanSupplier intakeButton,
     BooleanSupplier climbButton,
-    BooleanSupplier cancelButton
+    BooleanSupplier cancelButton,
+    BooleanSupplier reverseIntakeButton
   ) {
     m_shootButton = shootButton;
     m_dumbShootButton = dumbShootButton;
@@ -157,6 +163,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_intakeButtonHasFallen = intakeButton;
     m_climbButtonHasFallen = climbButton;
     m_cancelButton = cancelButton;
+    m_reverseIntakeButton = reverseIntakeButton;
   }
 
   public void close() {}

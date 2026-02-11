@@ -93,6 +93,13 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   *  Reverse the intaking direction
+   */
+  public void reverseIntake() {
+    reverseIntakeMotor();
+  }
+
+  /**
    * Start intake of fuel using intake motor
    */
   private void startIntakeMotor() {
@@ -105,6 +112,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void reverseIntakeMotor() {
     m_intakeMotor.set(-Constants.Intake.INTAKE_SPEED.in(Value));
+    m_isIntakeRunning = true;
   }
 
   /**
