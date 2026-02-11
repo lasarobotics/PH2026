@@ -49,15 +49,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
                 .withVelocityX(
                     Constants.Drive.MAX_SPEED
                         .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
+                        .times(Constants.Drive.FAST_SPEED_SCALAR))
                 .withVelocityY(
                     Constants.Drive.MAX_SPEED
                         .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
+                        .times(Constants.Drive.FAST_SPEED_SCALAR))
                 .withRotationalRate(
                     Constants.Drive.MAX_ANGULAR_RATE
                         .times(-s_rotateRequest.getAsDouble())
-                        .times(s_driveSpeedScalar)));
+                        .times(Constants.Drive.FAST_SPEED_SCALAR)));
 
           }
 
@@ -88,11 +88,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             .withVelocityX(
                 Constants.Drive.MAX_SPEED
                     .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                    .times(s_driveSpeedScalar))
+                    .times(Constants.Drive.FAST_SPEED_SCALAR))
             .withVelocityY(
                 Constants.Drive.MAX_SPEED
                     .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                    .times(s_driveSpeedScalar))
+                    .times(Constants.Drive.FAST_SPEED_SCALAR))
             .withRotationalRate(
               output
             ));
@@ -116,13 +116,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       @Override
       public SystemState nextState() {
         if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
-          if (!DriverStation.isAutonomous()) {
+          DriveSubsystem.s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude()/4;
+          DriveSubsystem.s_climbRotationSpeed = Constants.Drive.MAX_SPEED.magnitude()/2;
+          DriveSubsystem.s_climbAlignDistanceError = 0.01;
+          DriveSubsystem.s_climbAlignRotationError = 0.01;
+
+          if (!DriverStation.isAutonomous() && s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
             return SLOW_DRIVER_ALIGN;
-          } else {
-            DriveSubsystem.s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude()/4;
-            DriveSubsystem.s_climbRotationSpeed = Constants.Drive.MAX_SPEED.magnitude()/2;
-            DriveSubsystem.s_climbAlignDistanceError = 0.01;
-            DriveSubsystem.s_climbAlignRotationError = 0.01;
           }
         }
 
@@ -141,15 +141,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
                 .withVelocityX(
                     Constants.Drive.MAX_SPEED
                         .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
+                        .times(Constants.Drive.FAST_SPEED_SCALAR))
                 .withVelocityY(
                     Constants.Drive.MAX_SPEED
                         .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
+                        .times(Constants.Drive.FAST_SPEED_SCALAR))
                 .withRotationalRate(
                     Constants.Drive.MAX_ANGULAR_RATE
                         .times(-s_rotateRequest.getAsDouble())
-                        .times(s_driveSpeedScalar)));
+                        .times(Constants.Drive.FAST_SPEED_SCALAR)));
       }
 
       @Override
@@ -180,8 +180,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static final Double DEADBAND_SCALAR = 0.085;
 
   private boolean m_hasAppliedOperatorPerspective = false;
-
-  private static double s_driveSpeedScalar = Constants.Drive.FAST_SPEED_SCALAR;
 
   private static double s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude();
   private static double s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.magnitude();
@@ -296,8 +294,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     var outputVelocity = 
         Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, maxVelocity);
 
-    // how does it know to rotate the amount in the time it takes to get to target.
-
     var rotationRate = 
         Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate);
 
@@ -352,10 +348,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.DRIVER_CONTROL;
   }
 
-  public void setDriveSpeed(double newSpeed) {
-    s_driveSpeedScalar = newSpeed;
-  }
-
   /**
    * Checks robot's alliance and then checks if robot is in its alliance zone
    * @return true if robot is in alliance zone, false oterwise
@@ -364,9 +356,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       if (s_drivetrain.getState().Pose.getX() >= 12.5) {
         return true;
-      } else if (s_drivetrain.getState().Pose.getX() <= 4.0) {
-          return true;
       }
+    } else if (s_drivetrain.getState().Pose.getX() <= 4.0) {
+          return true;
     }
     return false;
   }

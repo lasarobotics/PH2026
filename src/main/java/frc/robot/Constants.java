@@ -132,10 +132,23 @@ public final class Constants {
       Math.sqrt(Constants.Field.END_BALL_Y_POS) / Math.sqrt(Constants.Field.GRAVITY_VALUE));
     public static final Pose2d BLUE_TOWER =
         new Pose2d(
-            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(180));  
+            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(-90));  
+    public static final Pose2d BLUE_TOWER_DEPOT_SIDE =
+        new Pose2d(
+            new Translation2d(Meters.of(0.513), Meters.of(4.729)), Rotation2d.fromDegrees(0));  
+    public static final Pose2d BLUE_TOWER_OUTPOST_SIDE =
+        new Pose2d(
+            new Translation2d(Meters.of(0.513), Meters.of(2.729)), Rotation2d.fromDegrees(0));  
     public static final Pose2d RED_TOWER =
         new Pose2d(
-            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(180));  
+            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(-90)); 
+    public static final Pose2d RED_TOWER_DEPOT_SIDE =
+        new Pose2d(
+            new Translation2d(Meters.of(16.07), Meters.of(3.43)), Rotation2d.fromDegrees(0));  
+    public static final Pose2d RED_TOWER_OUTPOST_SIDE =
+        new Pose2d(
+            new Translation2d(Meters.of(16.07), Meters.of(5.33)), Rotation2d.fromDegrees(0));  
+
     
   }
 
