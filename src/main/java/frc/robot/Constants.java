@@ -188,7 +188,6 @@ public final class Constants {
 
     // TODO: Find the values of climb constants
     public static final double CLIMB_SPEED = 0.0;
-    public static final double CLIMB_SPEED_SLOW = CLIMB_SPEED * 0.2;
     public static final Angle CLIMB_ANGLE = Degrees.of(0);
     public static final Angle STOW_ANGLE = Degrees.of(0);
   }
