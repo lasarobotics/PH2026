@@ -145,6 +145,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    * has just been pressed.
    * @param cancelButton True if we want to go back from the climb
    * to the normal state in HeadHoncho.
+   * @param reverseIntakeButton True if we want to reverse the intake motor
    */
   public void configureBindings(
     BooleanSupplier shootButton,
