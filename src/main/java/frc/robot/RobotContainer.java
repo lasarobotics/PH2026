@@ -51,7 +51,8 @@ public class RobotContainer {
       // do climb stuff when button is pressed
       () -> m_driverController.getHID().getAButtonPressed(),
       m_driverController.a(),
-      m_driverController.a()
+      m_driverController.a(),
+      () -> m_driverController.getHID().getAButtonPressed()
     );
   }
 
