@@ -34,7 +34,7 @@ public class AimUtil {
     double targetHeight
   ) {
     double y_max = Constants.Field.MAX_BALL_Y_POS;
-    double y_end = Constants.Field.HUB_Y_POS;
+    double y_end = targetHeight;
     double g = Constants.Field.GRAVITY_VALUE;
 
     double x_vel = distance * (Math.sqrt(g))/((Math.sqrt(2 * y_max)) + Math.sqrt(y_max - y_end));
@@ -63,10 +63,28 @@ public class AimUtil {
     Pose2d currentRobotPose = driveState.Pose;
     AngularVelocity currentAngularVelocity = AngularVelocity.ofBaseUnits(driveState.Speeds.omegaRadiansPerSecond, RadiansPerSecond);
 
-    ShooterMathResults results = runShooterMathHub(
+    Translation2d targetCoordinates;
+    double targetHeight;
+    if (HeadHoncho.getInstance().wantToPass()) {
+      // TODO do passing stuff
+      targetCoordinates = new Translation2d();
+      targetHeight = 0;
+    } else {
+      // TODO have multiple hub positions
+      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+        targetCoordinates = Constants.Field.HUB_COORDINATES;
+      } else {
+        targetCoordinates = Constants.Field.HUB_COORDINATES;
+      }
+      targetHeight = Constants.Field.HUB_Y_POS;
+    }
+
+    ShooterMathResults results = runShooterMath(
       currentRobotSpeeds,
       currentRobotPose,
-      currentAngularVelocity
+      currentAngularVelocity,
+      targetCoordinates,
+      targetHeight
     );
 
     ballVelocity = results.ballVelocity();
@@ -110,7 +128,7 @@ public class AimUtil {
     ChassisSpeeds currentRobotSpeeds,
     Pose2d currentRobotPose,
     AngularVelocity currentAngularVelocity,
-    Translation2d goalLocation,
+    Translation2d targetPos,
     double targetHeight
   ) {
 
@@ -132,7 +150,6 @@ public class AimUtil {
         currentRobotSpeeds.vyMetersPerSecond
       )
       .times(latency + hangTime)
-      .times(latency + hangTime)
       .plus(
         new Translation2d(
           currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
@@ -142,7 +159,7 @@ public class AimUtil {
     );
     
     // Get your distance to the target (using the future position)
-    Translation2d targetVec = goalLocation.minus(futurePos);
+    Translation2d targetVec = targetPos.minus(futurePos);
     double dist = targetVec.getNorm();
 
     // Get your stationary shooter velocity 2d vector
