@@ -66,9 +66,7 @@ public class AimUtil {
     ShooterMathResults results = runShooterMathHub(
       currentRobotSpeeds,
       currentRobotPose,
-      currentAngularVelocity,
-      targetCoordinates,
-      targetHeight
+      currentAngularVelocity
     );
 
     ballVelocity = results.ballVelocity();
@@ -118,14 +116,6 @@ public class AimUtil {
 
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
-
-    double hangTime = (
-      (
-        Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
-        Math.sqrt(Constants.Field.MAX_BALL_Y_POS -
-                  targetHeight)
-      ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
-    );
 
     double hangTime = (
       (
