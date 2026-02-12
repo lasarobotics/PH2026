@@ -6,20 +6,6 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
-/**
- * HopperSubsystem doesn't actually have any motors,
- * it's just a collection of CANranges.
- * The CANranges are split into two groups: top and
- * bottom. The subsystem exposes two methods to check
- * the top and bottom rows collectively. For the rest
- * of this description, I'm going to refer to the
- * CANranges in the top row as TOP (and TOP being
- * active referring to the collective) and the CANrange
- * (singular) in the bottom row as BOTTOM. For each
- * of these, we say that they've been "activated" if
- * they've been blocked for at least a certain threshold
- * of time (which is defined in Constants).
- */
 public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static HopperSubsystem s_hopperSubsystem;
@@ -28,8 +14,8 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
   private CANrange m_topRange3;
   private CANrange m_bottomRange;
 
-  private boolean m_topBlocked;
-  private boolean m_bottomBlocked;
+  private boolean m_topPrevious;
+  private boolean m_bottomPrevious;
   private Timer m_topTimer;
   private Timer m_bottomTimer;
 
@@ -56,34 +42,43 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    */
   @Override
   public void periodic() {
-    boolean topB = (
+    // Check the top row as a collective
+    boolean topCurrent = (
       // TODO: test if this is OR or AND
       canRangeBlocked(m_topRange1) ||
       canRangeBlocked(m_topRange2) ||
       canRangeBlocked(m_topRange3)
     );
-    boolean bottomB = (
+    // Only one canrange on the bottom
+    boolean bottomCurrent = (
       canRangeBlocked(m_bottomRange)
     );
 
-    if (topB && !m_topBlocked) {
+    // This logic applies for both top and bottom:
+    // If it's blocked in real life but the variable
+    // doesn't have it as blocked, consider that
+    // a rising edge & start the timer
+    // If the opposite is true (not blocked in real
+    // life and the variable does have it as blocked),
+    // stop & reset the timer
+    if (topCurrent && !m_topPrevious) {
       m_topTimer.start();
     }
-    if (!topB && m_topBlocked) {
+    if (!topCurrent && m_topPrevious) {
       m_topTimer.stop();
       m_topTimer.reset();
     }
 
-    if (bottomB && !m_bottomBlocked) {
+    if (bottomCurrent && !m_bottomPrevious) {
       m_bottomTimer.start();
     }
-    if (!bottomB && m_bottomBlocked) {
+    if (!bottomCurrent && m_bottomPrevious) {
       m_bottomTimer.stop();
       m_bottomTimer.reset();
     }
 
-    m_topBlocked = topB;
-    m_bottomBlocked = bottomB;
+    m_topPrevious = topCurrent;
+    m_bottomPrevious = bottomCurrent;
   }
 
   /**
@@ -93,7 +88,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    * the desired amount of time, false otherwise
    */
   public boolean getTopRow() {
-    return m_topBlocked &&
+    return m_topPrevious &&
       m_topTimer.hasElapsed(Constants.Hopper.DELAY_TIME);
   }
 
@@ -104,7 +99,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    * the desired amount of time, false otherwise
    */
   public boolean getBottomRow() {
-    return m_bottomBlocked &&
+    return m_bottomPrevious &&
       m_bottomTimer.hasElapsed(Constants.Hopper.DELAY_TIME);
   }
 
