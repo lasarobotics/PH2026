@@ -290,7 +290,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         shooterIsReady &&
         DriveSubsystem.getInstance().inAllianceZone() &&
         (
-          GameHelpers.scoringTimeLeft() - Constants.Field.HANG_TIME
+          GameHelpers.scoringTimeLeft() - Constants.Field.HUB_HANG_TIME
           >= Constants.Shooter.SHOOTER_TIME_MARGIN
         )
       );
