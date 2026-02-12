@@ -204,4 +204,8 @@ public final class Constants {
     public static final Angle CLIMB_ANGLE = Degrees.of(0);
     public static final Angle STOW_ANGLE = Degrees.of(0);
   }
+
+  public static class SmartDashboard {
+    public static final String SMARTDASHBOARD_CLIMB_CHOOSER_NAME = "Auto Climb Position";
+  }
 }

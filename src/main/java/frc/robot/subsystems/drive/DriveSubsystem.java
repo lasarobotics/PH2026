@@ -21,6 +21,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
@@ -346,6 +347,19 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   public void driverControl() {
     s_requestedDriveState = DriveStates.DRIVER_CONTROL;
+  }
+
+  /**
+   * Get SendableChooser for options for climbing in auto
+   * @return SendableChooser with climb options
+   */
+  public SendableChooser<String> getClimbChooser() {
+    // TODO: Put usable values instead of getName() with each option
+    SendableChooser<String> chooser = new SendableChooser<>();
+    chooser.setDefaultOption("Left", getName());
+    chooser.addOption("Center", getName());
+    chooser.addOption("Right", getName());
+    return chooser;
   }
 
   /**
