@@ -13,6 +13,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class AimUtil {
@@ -23,12 +25,16 @@ public class AimUtil {
 
   /**
    * 
-   * @param distance Linear distance from hub
+   * @param distance Linear distance from target
+   * @param targetHeight Final y position of ball
    * @return Value of X velocity of the ball when shot stationary
    */
-  public static double getVelocityXStationary(double distance) {
+  private static double getVelocityXStationary(
+    double distance,
+    double targetHeight
+  ) {
     double y_max = Constants.Field.MAX_BALL_Y_POS;
-    double y_end = Constants.Field.END_BALL_Y_POS;
+    double y_end = targetHeight;
     double g = Constants.Field.GRAVITY_VALUE;
 
     double x_vel = distance * (Math.sqrt(g))/((Math.sqrt(2 * y_max)) + Math.sqrt(y_max - y_end));
@@ -38,38 +44,12 @@ public class AimUtil {
   /**
    * @return Value of Y velocity of the ball when shot stationary
    */
-  public static double getVelocityYStationary() {
+  private static double getVelocityYStationary() {
     double y_max = Constants.Field.MAX_BALL_Y_POS;
     double g = Constants.Field.GRAVITY_VALUE;
 
     double y_vel = Math.sqrt(y_max * 2 * g);
     return y_vel;
-  }
-
-  /**
-   * @return Speed of the ball needed to shoot while stationary
-   * from the current position
-   */
-  public static double getVelocitySpeedStationary() {
-    SwerveDriveState driveState = DriveSubsystem.getDrivetrain().getState();
-    Pose2d robotPose = driveState.Pose;
-
-    return getVelocityFromPose(robotPose);
-  }
-
-  /**
-   * @param robotPose Your current robot pose
-   * @return Speed of the ball needed to shoot while stationary
-   */
-  public static double getVelocityFromPose(Pose2d robotPose) {
-    Translation2d goalLocation = Constants.Field.HUB_COORDINATES;
-    Translation2d targetVec = goalLocation.minus(robotPose.getTranslation());
-    double dist = targetVec.getNorm();
-    
-    double x_vel = getVelocityXStationary(dist);
-    double y_vel = getVelocityYStationary();
-    
-    return Math.sqrt(Math.pow(x_vel, 2) + Math.pow(y_vel, 2));
   }
 
   /**
@@ -83,16 +63,33 @@ public class AimUtil {
     Pose2d currentRobotPose = driveState.Pose;
     AngularVelocity currentAngularVelocity = AngularVelocity.ofBaseUnits(driveState.Speeds.omegaRadiansPerSecond, RadiansPerSecond);
 
+    Translation2d targetCoordinates;
+    double targetHeight;
+    if (HeadHoncho.getInstance().wantToPass()) {
+      // TODO do passing stuff
+      targetCoordinates = new Translation2d();
+      targetHeight = 0;
+    } else {
+      // TODO have multiple hub positions
+      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+        targetCoordinates = Constants.Field.HUB_COORDINATES;
+      } else {
+        targetCoordinates = Constants.Field.HUB_COORDINATES;
+      }
+      targetHeight = Constants.Field.HUB_Y_POS;
+    }
+
     ShooterMathResults results = runShooterMath(
       currentRobotSpeeds,
       currentRobotPose,
-      currentAngularVelocity
+      currentAngularVelocity,
+      targetCoordinates,
+      targetHeight
     );
 
     ballVelocity = results.ballVelocity();
     exitAngle = results.exitAngle();
     robotHeading = results.robotHeading();
-
   }
 
   public record ShooterMathResults(
@@ -108,17 +105,29 @@ public class AimUtil {
    * @param currentRobotPose driveState.Pose
    * @param currentAngularVelocity driveState.Speeds.omegaRadiansPerSecond
    * (as an AngularVelocity object)
+   * @param targetPos The position of the target
+   * @param targetHeight The final height the ball should be at
    * @return A ShooterMathResults record with the wanted exit angle,
    * ball velocity, and robot heading
    */
-  public static ShooterMathResults runShooterMath(
+  private static ShooterMathResults runShooterMath(
     ChassisSpeeds currentRobotSpeeds,
     Pose2d currentRobotPose,
-    AngularVelocity currentAngularVelocity
+    AngularVelocity currentAngularVelocity,
+    Translation2d targetPos,
+    double targetHeight
   ) {
 
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
+
+    double hangTime = (
+      (
+        Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
+        Math.sqrt(Constants.Field.MAX_BALL_Y_POS -
+                  targetHeight)
+      ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
+    );
 
     // Project your movement forward 
     Translation2d futurePos = currentRobotPose.getTranslation().plus(
@@ -126,7 +135,7 @@ public class AimUtil {
         currentRobotSpeeds.vxMetersPerSecond, 
         currentRobotSpeeds.vyMetersPerSecond
       )
-      .times(latency + Constants.Field.HANG_TIME)
+      .times(latency + hangTime)
       .plus(
         new Translation2d(
           currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
@@ -135,16 +144,15 @@ public class AimUtil {
       )
     );
     
-    // TODO (important) account for passing?
-    // Get your distance to the hub (using the future position)
-    Translation2d goalLocation = Constants.Field.HUB_COORDINATES;
-    Translation2d targetVec = goalLocation.minus(futurePos);
+    // Get your distance to the target (using the future position)
+    Translation2d targetVec = targetPos.minus(futurePos);
     double dist = targetVec.getNorm();
 
     // Get your stationary shooter velocity 2d vector
     Translation2d shooterVelocityVec = new Translation2d(
-      getVelocityXStationary(dist),
-      getVelocityYStationary());
+      getVelocityXStationary(dist, targetHeight),
+      getVelocityYStationary()
+    );
     
     return new ShooterMathResults(
       // the arctangent of the Y velocity and the X velocity is the shooterAngle
@@ -188,13 +196,5 @@ public class AimUtil {
   public static Angle getRobotHeading() {
     return robotHeading;
   }
-
-  /**
-   * @return Returns the speed of the flywheel needed to shoot
-   */
-  public static double getFlyWheelRadiansPerSecond() {
-    return (2 * ballVelocity.in(MetersPerSecond))/Constants.Shooter.FLYWHEEL_RADIUS;
-  }
-
 }
 
