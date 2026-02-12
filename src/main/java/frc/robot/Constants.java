@@ -124,6 +124,7 @@ public final class Constants {
   public static class Field {
     public static final double MAX_BALL_Y_POS = 2.8;
     public static final double HUB_Y_POS = 1.83;
+    public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
     public static final Translation2d HUB_COORDINATES = new Translation2d(4.619, 4.049);
     public static final double HUB_HANG_TIME = (

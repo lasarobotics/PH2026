@@ -34,7 +34,7 @@ public class AimUtil {
     double targetHeight
   ) {
     double y_max = Constants.Field.MAX_BALL_Y_POS;
-    double y_end = targetHeight;
+    double y_end = Constants.Field.HUB_Y_POS;
     double g = Constants.Field.GRAVITY_VALUE;
 
     double x_vel = distance * (Math.sqrt(g))/((Math.sqrt(2 * y_max)) + Math.sqrt(y_max - y_end));
@@ -63,23 +63,7 @@ public class AimUtil {
     Pose2d currentRobotPose = driveState.Pose;
     AngularVelocity currentAngularVelocity = AngularVelocity.ofBaseUnits(driveState.Speeds.omegaRadiansPerSecond, RadiansPerSecond);
 
-    Translation2d targetCoordinates;
-    double targetHeight;
-    if (HeadHoncho.getInstance().wantToPass()) {
-      // TODO do passing stuff
-      targetCoordinates = new Translation2d();
-      targetHeight = 0;
-    } else {
-      // TODO have multiple hub positions
-      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-        targetCoordinates = Constants.Field.HUB_COORDINATES;
-      } else {
-        targetCoordinates = Constants.Field.HUB_COORDINATES;
-      }
-      targetHeight = Constants.Field.HUB_Y_POS;
-    }
-
-    ShooterMathResults results = runShooterMath(
+    ShooterMathResults results = runShooterMathHub(
       currentRobotSpeeds,
       currentRobotPose,
       currentAngularVelocity,
@@ -98,6 +82,20 @@ public class AimUtil {
     Angle robotHeading
   ){}
 
+  public static ShooterMathResults runShooterMathHub(
+    ChassisSpeeds currentRobotSpeeds,
+    Pose2d currentRobotPose,
+    AngularVelocity currentAngularVelocity
+  ) {
+    return runShooterMath(
+      currentRobotSpeeds,
+      currentRobotPose,
+      currentAngularVelocity,
+      Constants.Field.HUB_COORDINATES,
+      Constants.Field.HUB_Y_POS
+    );
+  }
+
   /**
    * Given a chassis speeds, position, and angular velocity, calculate the
    * optimal shooting parameters to get a ball in the hub.
@@ -114,12 +112,20 @@ public class AimUtil {
     ChassisSpeeds currentRobotSpeeds,
     Pose2d currentRobotPose,
     AngularVelocity currentAngularVelocity,
-    Translation2d targetPos,
+    Translation2d goalLocation,
     double targetHeight
   ) {
 
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
+
+    double hangTime = (
+      (
+        Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
+        Math.sqrt(Constants.Field.MAX_BALL_Y_POS -
+                  targetHeight)
+      ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
+    );
 
     double hangTime = (
       (
@@ -136,6 +142,7 @@ public class AimUtil {
         currentRobotSpeeds.vyMetersPerSecond
       )
       .times(latency + hangTime)
+      .times(latency + hangTime)
       .plus(
         new Translation2d(
           currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
@@ -145,7 +152,7 @@ public class AimUtil {
     );
     
     // Get your distance to the target (using the future position)
-    Translation2d targetVec = targetPos.minus(futurePos);
+    Translation2d targetVec = goalLocation.minus(futurePos);
     double dist = targetVec.getNorm();
 
     // Get your stationary shooter velocity 2d vector
