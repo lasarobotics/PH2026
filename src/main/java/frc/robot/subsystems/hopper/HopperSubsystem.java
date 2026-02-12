@@ -6,15 +6,27 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
+/**
+ * HopperSubsystem doesn't actually have any motors,
+ * it's just a collection of CANranges.
+ * The CANranges are split into two groups: top and
+ * bottom. The subsystem exposes two methods to check
+ * the top and bottom rows collectively. For the rest
+ * of this description, I'm going to refer to the
+ * CANranges in the top row as TOP (and TOP being
+ * active referring to the collective) and the CANrange
+ * (singular) in the bottom row as BOTTOM. For each
+ * of these, we say that they've been "activated" if
+ * they've been blocked for at least a certain threshold
+ * of time (which is defined in Constants).
+ */
 public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static HopperSubsystem s_hopperSubsystem;
   private CANrange m_topRange1;
   private CANrange m_topRange2;
   private CANrange m_topRange3;
-  private CANrange m_bottomRange1;
-  private CANrange m_bottomRange2;
-  private CANrange m_bottomRange3;
+  private CANrange m_bottomRange;
 
   private boolean m_topBlocked;
   private boolean m_bottomBlocked;
@@ -32,9 +44,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
     m_topRange1 = new CANrange(Constants.Hopper.CANRANGE_TOP_ONE_ID);
     m_topRange2 = new CANrange(Constants.Hopper.CANRANGE_TOP_TWO_ID);
     m_topRange3 = new CANrange(Constants.Hopper.CANRANGE_TOP_THREE_ID);
-    m_bottomRange1 = new CANrange(Constants.Hopper.CANRANGE_BOTTOM_ONE_ID);
-    m_bottomRange2 = new CANrange(Constants.Hopper.CANRANGE_BOTTOM_TWO_ID);
-    m_bottomRange3 = new CANrange(Constants.Hopper.CANRANGE_BOTTOM_THREE_ID);
+    m_bottomRange = new CANrange(Constants.Hopper.CANRANGE_BOTTOM_ID);
 
     m_topTimer = new Timer();
     m_bottomTimer = new Timer();
@@ -53,9 +63,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
       canRangeBlocked(m_topRange3)
     );
     boolean bottomB = (
-      canRangeBlocked(m_bottomRange1) ||
-      canRangeBlocked(m_bottomRange2) ||
-      canRangeBlocked(m_bottomRange3)
+      canRangeBlocked(m_bottomRange)
     );
 
     if (topB && !m_topBlocked) {
@@ -115,9 +123,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void close() {
-    m_bottomRange1.close();
-    m_bottomRange2.close();
-    m_bottomRange3.close();
+    m_bottomRange.close();
     m_topRange1.close();
     m_topRange2.close();
     m_topRange3.close();
