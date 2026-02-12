@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -13,6 +15,8 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class AimUtil {
@@ -20,6 +24,21 @@ public class AimUtil {
   private static LinearVelocity ballVelocity = MetersPerSecond.of(0);
   private static Angle exitAngle = Degrees.of(45);
   private static Angle robotHeading = Radians.of(0);
+  private static Translation2d[] s_alliancePoses;
+
+  private static final Translation2d[] redPoses = new Translation2d[]{Constants.Field.HUB_COORDINATES};
+  private static final Translation2d[] bluePoses = new Translation2d[]{Constants.Field.HUB_COORDINATES};
+
+  private static final int HUB_WP = 0;
+
+  private AimUtil() {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+      s_alliancePoses = redPoses;
+    } else {
+      s_alliancePoses = bluePoses;
+    }
+    Logger.recordOutput("AimUtil/percieved_alliance", DriverStation.getAlliance().toString());
+  }
 
   /**
    * 
