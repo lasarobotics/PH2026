@@ -28,7 +28,7 @@ public class AimUtil {
    */
   public static double getVelocityXStationary(double distance) {
     double y_max = Constants.Field.MAX_BALL_Y_POS;
-    double y_end = Constants.Field.END_BALL_Y_POS;
+    double y_end = Constants.Field.HUB_Y_POS;
     double g = Constants.Field.GRAVITY_VALUE;
 
     double x_vel = distance * (Math.sqrt(g))/((Math.sqrt(2 * y_max)) + Math.sqrt(y_max - y_end));
@@ -83,7 +83,7 @@ public class AimUtil {
     Pose2d currentRobotPose = driveState.Pose;
     AngularVelocity currentAngularVelocity = AngularVelocity.ofBaseUnits(driveState.Speeds.omegaRadiansPerSecond, RadiansPerSecond);
 
-    ShooterMathResults results = runShooterMath(
+    ShooterMathResults results = runShooterMathHub(
       currentRobotSpeeds,
       currentRobotPose,
       currentAngularVelocity
@@ -92,7 +92,6 @@ public class AimUtil {
     ballVelocity = results.ballVelocity();
     exitAngle = results.exitAngle();
     robotHeading = results.robotHeading();
-
   }
 
   public record ShooterMathResults(
@@ -100,6 +99,20 @@ public class AimUtil {
     LinearVelocity ballVelocity,
     Angle robotHeading
   ){}
+
+  public static ShooterMathResults runShooterMathHub(
+    ChassisSpeeds currentRobotSpeeds,
+    Pose2d currentRobotPose,
+    AngularVelocity currentAngularVelocity
+  ) {
+    return runShooterMath(
+      currentRobotSpeeds,
+      currentRobotPose,
+      currentAngularVelocity,
+      Constants.Field.HUB_COORDINATES,
+      Constants.Field.HUB_Y_POS
+    );
+  }
 
   /**
    * Given a chassis speeds, position, and angular velocity, calculate the
@@ -114,11 +127,21 @@ public class AimUtil {
   public static ShooterMathResults runShooterMath(
     ChassisSpeeds currentRobotSpeeds,
     Pose2d currentRobotPose,
-    AngularVelocity currentAngularVelocity
+    AngularVelocity currentAngularVelocity,
+    Translation2d goalLocation,
+    double targetHeight
   ) {
 
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
+
+    double hangTime = (
+      (
+        Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
+        Math.sqrt(Constants.Field.MAX_BALL_Y_POS -
+                  targetHeight)
+      ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
+    );
 
     // Project your movement forward 
     Translation2d futurePos = currentRobotPose.getTranslation().plus(
@@ -126,7 +149,7 @@ public class AimUtil {
         currentRobotSpeeds.vxMetersPerSecond, 
         currentRobotSpeeds.vyMetersPerSecond
       )
-      .times(latency + Constants.Field.HANG_TIME)
+      .times(latency + hangTime)
       .plus(
         new Translation2d(
           currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
@@ -135,9 +158,7 @@ public class AimUtil {
       )
     );
     
-    // TODO (important) account for passing?
-    // Get your distance to the hub (using the future position)
-    Translation2d goalLocation = Constants.Field.HUB_COORDINATES;
+    // Get your distance to the target (using the future position)
     Translation2d targetVec = goalLocation.minus(futurePos);
     double dist = targetVec.getNorm();
 

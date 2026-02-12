@@ -123,13 +123,16 @@ public final class Constants {
 
   public static class Field {
     public static final double MAX_BALL_Y_POS = 2.8;
-    public static final double END_BALL_Y_POS = 1.83;
+    public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
     public static final Translation2d HUB_COORDINATES = new Translation2d(4.619, 4.049);
-    // TODO: Math looks off, I think parentheses should make it so that the sum of the roots is divided by root g -ck
-    public static final double HANG_TIME = (((
-      Math.sqrt(Constants.Field.MAX_BALL_Y_POS)) * 2) + 
-      Math.sqrt(Constants.Field.END_BALL_Y_POS) / Math.sqrt(Constants.Field.GRAVITY_VALUE));
+    public static final double HUB_HANG_TIME = (
+      (
+        Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
+        Math.sqrt(Constants.Field.MAX_BALL_Y_POS -
+                  Constants.Field.HUB_Y_POS)
+      ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
+    );
     public static final Pose2d BLUE_TOWER =
         new Pose2d(
             new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(180));  
