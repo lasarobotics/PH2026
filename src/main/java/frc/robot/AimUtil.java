@@ -13,8 +13,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class AimUtil {
@@ -22,6 +20,9 @@ public class AimUtil {
   private static LinearVelocity ballVelocity = MetersPerSecond.of(0);
   private static Angle exitAngle = Degrees.of(45);
   private static Angle robotHeading = Radians.of(0);
+
+  private static Translation2d targetPosition;
+  private static double targetHeight;
 
   /**
    * 
@@ -53,6 +54,23 @@ public class AimUtil {
   }
 
   /**
+   * Set the target position that the AimUtil method uses
+   * for the periodic updateShooterConstants calculation.
+   * @param targetPos x and y position of the target on the
+   * field
+   * @param targetH final height that the ball should be at
+   */
+  public static void setTarget(
+    Translation2d targetPos,
+    double targetH
+  ) {
+    targetPosition = targetPos;
+    targetHeight = targetH;
+
+    AimUtil.updateShooterConstants();
+  }
+
+  /**
    * What this method does it calculates the ball speed, robot heading, and shooter angle needed to shoot
    * even while moving at an arbitary position on the field. It then sets the member variables of this class to those values
    * (you can then call the related get methods of this file to get stuff you need)
@@ -63,27 +81,15 @@ public class AimUtil {
     Pose2d currentRobotPose = driveState.Pose;
     AngularVelocity currentAngularVelocity = AngularVelocity.ofBaseUnits(driveState.Speeds.omegaRadiansPerSecond, RadiansPerSecond);
 
-    Translation2d targetCoordinates;
-    double targetHeight;
-    if (HeadHoncho.getInstance().wantToPass()) {
-      // TODO do passing stuff
-      targetCoordinates = new Translation2d();
-      targetHeight = 0;
-    } else {
-      // TODO have multiple hub positions
-      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-        targetCoordinates = Constants.Field.HUB_COORDINATES;
-      } else {
-        targetCoordinates = Constants.Field.HUB_COORDINATES;
-      }
-      targetHeight = Constants.Field.HUB_Y_POS;
+    if (targetPosition == null) {
+      return;
     }
 
     ShooterMathResults results = runShooterMath(
       currentRobotSpeeds,
       currentRobotPose,
       currentAngularVelocity,
-      targetCoordinates,
+      targetPosition,
       targetHeight
     );
 
