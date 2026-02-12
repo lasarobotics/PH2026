@@ -62,9 +62,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     CLIMB {
       @Override
       public void initialize() {
-        // TODO should the intake be stopped? since that means retracting hopper
-        // or does it need to actively empty it if full
-        IntakeSubsystem.getInstance().startIntake();
+        // The hopper can retract while full
+        // it just spews balls out
+        IntakeSubsystem.getInstance().stopIntake();
         ShooterSubsystem.getInstance().stopEverything();
         DriveSubsystem.getInstance().driveAutoClimb();
         ClimbSubsystem.getInstance().stow();
