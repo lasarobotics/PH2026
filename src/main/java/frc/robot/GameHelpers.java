@@ -135,7 +135,7 @@ public class GameHelpers {
         if (wonNumber == -1) {
             return Double.MAX_VALUE;
         }
-        boolean wonAuto = wonNumber == 1;
+        boolean wonAuto = (wonNumber == 1);
 
         // start > end, timer counts down
         double[][] activeIntervals = wonAuto
