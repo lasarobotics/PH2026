@@ -245,22 +245,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     super.periodic();
-    Logger.recordOutput(getName() + "/shooterSpeed",
-      m_shooterMotorLeader.get());
-    Logger.recordOutput(getName() + "/indexerSpeed",
-      m_indexerMotor.get());
-    Logger.recordOutput(getName() + "/hoodPosition",
-      m_hoodMotor.getPosition().getValueAsDouble());
-    Logger.recordOutput(getName() + "/atShootSpeed",
-      atShootSpeed());
-    Logger.recordOutput(getName() + "/shooterReady",
-      shooterReady());
-    Logger.recordOutput(getName() + "/atHoodPosition",
-      atHoodPosition());
-    Logger.recordOutput(getName() + "/wantedShooterSpeed",
-      wantedShooterSpeed());
-    Logger.recordOutput(getName() + "/wantedHoodPosition",
-      wantedHoodPosition());
 
     // Periodic shooter logic. Basically:
     // Always adjust hood
@@ -320,6 +304,23 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       holdShooter();
       stopIndexer();
     }
+    
+    Logger.recordOutput(getName() + "/shooterSpeed",
+      m_shooterMotorLeader.get());
+    Logger.recordOutput(getName() + "/indexerSpeed",
+      m_indexerMotor.get());
+    Logger.recordOutput(getName() + "/hoodPosition",
+      m_hoodMotor.getPosition().getValueAsDouble());
+    Logger.recordOutput(getName() + "/atShootSpeed",
+      atShootSpeed());
+    Logger.recordOutput(getName() + "/shooterReady",
+      shooterReady());
+    Logger.recordOutput(getName() + "/atHoodPosition",
+      atHoodPosition());
+    Logger.recordOutput(getName() + "/wantedShooterSpeed",
+      wantedShooterSpeed());
+    Logger.recordOutput(getName() + "/wantedHoodPosition",
+      wantedHoodPosition());
   }
 
   @Override
