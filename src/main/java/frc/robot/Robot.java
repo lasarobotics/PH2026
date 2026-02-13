@@ -55,9 +55,6 @@ public class Robot extends LoggedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
 
-    // NOTE: it is VERY important that periodicTimerUpdater() runs first
-    // so we have (mostly) accurate time for other things
-    GameHelpers.periodicTimerUpdater();
     AimUtil.updateShooterConstants();
     CommandScheduler.getInstance().run();
   }
@@ -93,6 +90,8 @@ public class Robot extends LoggedRobot {
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+
+    GameHelpers.zeroTimer();
   }
 
   /** This function is called periodically during operator control. */

@@ -10,45 +10,20 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class GameHelpers {
 
-  private static double lastMatchTime = 21; // auto time + 1
-  private static Timer oneSecondTimer = new Timer();
+  private static Timer timer = new Timer();
 
-  /**
-   * Check match time and reset the oneSecondTimer
-   * if it's different from the last time it was checked.
-   * Should only be called in
-   * {@link frc.robot.Robot#robotPeriodic() robotPeriodic()}.
-   * This method *should* always stay synced to the
-   * current match time pretty closely because
-   * it's run at the start of robotPeriodic.
-   */
-  public static void periodicTimerUpdater() {
-    double time = DriverStation.getMatchTime();
-
-    // just rolled over
-    if (time != lastMatchTime) {
-      oneSecondTimer.reset();
-      oneSecondTimer.start();
-    }
-
-    lastMatchTime = time;
-
-    Logger.recordOutput("GameHelpers/oneSecondTimer", oneSecondTimer.get());
-    Logger.recordOutput("GameHelpers/lastMatchTime", lastMatchTime);
+  public static void zeroTimer() {
+    timer.reset();
+    timer.start();
   }
 
   /**
    * Returns the match time left in the current period
-   * (auto or teleop). Basically a more precise version
-   * of the builtin
-   * {@link edu.wpi.first.wpilibj.DriverStation#getMatchTime() getMatchTime()}.
-   * This is because the FMS counts down in seconds, which
-   * isn't precise enough to make the way that we're using it this
-   * year useful.
+   * (only works for teleop)
    * @return The time left in the match (in seconds)
    */
   public static double matchTimeLeft() {
-    return lastMatchTime - oneSecondTimer.get();
+    return 140 - timer.get();
   }
 
   /**
