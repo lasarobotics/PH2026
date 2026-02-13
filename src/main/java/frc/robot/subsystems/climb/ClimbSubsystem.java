@@ -55,7 +55,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Stow the climber so it is inside the frame perimeter
    */
-  public void stow() {
+  public void stowClimber() {
     m_isClimbing = false;
   }
 
@@ -69,7 +69,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Set the motor output for climbing
    */
-  public void climb() {
+  public void extendClimber() {
     m_isClimbing = true;
   }
 
