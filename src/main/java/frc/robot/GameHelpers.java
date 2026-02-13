@@ -131,7 +131,6 @@ public class GameHelpers {
       }
       // at this point, we know we aren't in the current interval
       // but what if we went past the previous?
-      if (i == 0) continue; // don't want any index out of bounds errors
       // the thinking is this:
       // imagine the a & bs (etc) as the starts and ends
       // of active periods and the X as where we are
@@ -141,11 +140,13 @@ public class GameHelpers {
       // to see if we're less than its lower bound
       // and if we are (i.e. we're past the previous interval)
       // we subtract that from the game time to get ✨ negative time ✨
-      double prevEnd = activeIntervals[i - 1][1];
-      // the interval[0] check is to make sure that we're actually
-      // in the range between this one and the previous
-      if (interval[0] <= time && time <= prevEnd) {
-        return time - prevEnd;
+      if (i != 0) { // don't want any index out of bounds errors
+        double prevEnd = activeIntervals[i - 1][1];
+        // the interval[0] check is to make sure that we're actually
+        // in the range between this one and the previous
+        if (interval[0] <= time && time <= prevEnd) {
+          return time - prevEnd;
+        }
       }
     }
 
