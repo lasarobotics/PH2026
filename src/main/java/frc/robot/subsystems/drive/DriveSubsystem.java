@@ -21,12 +21,10 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
-import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
-
+import frc.robot.Robot;
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   public enum DriveStates implements SystemState {
@@ -112,18 +110,18 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     CLIMB_ALIGN {
       @Override
       public void execute() {
-        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, DriveSubsystem.s_climbAlignSpeed, DriveSubsystem.s_climbRotationSpeed);
+        s_driveSubsystem.goTo(s_climbPosition, 0, DriveSubsystem.s_climbAlignSpeed, DriveSubsystem.s_climbRotationSpeed);
       }
 
       @Override
       public SystemState nextState() {
-        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
+        if (s_driveSubsystem.atDestination(s_climbPosition, DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
           DriveSubsystem.s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude()/4;
           DriveSubsystem.s_climbRotationSpeed = Constants.Drive.MAX_SPEED.magnitude()/2;
           DriveSubsystem.s_climbAlignDistanceError = 0.01;
           DriveSubsystem.s_climbAlignRotationError = 0.01;
 
-          if (!DriverStation.isAutonomous() && s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
+          if (!DriverStation.isAutonomous() && s_driveSubsystem.atDestination(s_climbPosition, DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
             return SLOW_DRIVER_ALIGN;
           }
         }
@@ -196,6 +194,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private static Pose2d[] s_alliancePoses;
 
+  public static Pose2d s_climbPosition;
+
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
       s_driveSubsystem = new DriveSubsystem();
@@ -241,6 +241,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     // TODO: Fix this with real values
     s_autoAimController = new ProfiledPIDController(0.0, 0.0, 0, null);
+
+    // TODO: Initialize the climb position to left
+    s_climbPosition = new Pose2d(); 
   }
 
   // TODO move all these bindings into headhoncho
@@ -351,19 +354,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
-   * Get SendableChooser for options for climbing in auto
-   * @return SendableChooser with climb options
-   */
-  public SendableChooser<String> getClimbChooser() {
-    // TODO: Put usable values instead of getName() with each option
-    SendableChooser<String> chooser = new SendableChooser<>();
-    chooser.setDefaultOption("Left", getName());
-    chooser.addOption("Center", getName());
-    chooser.addOption("Right", getName());
-    return chooser;
-  }
-
-  /**
    * Checks robot's alliance and then checks if robot is in its alliance zone
    * @return true if robot is in alliance zone, false oterwise
    */
@@ -400,6 +390,28 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       s_drivetrain.getState().Pose.getRotation().getMeasure(),
       Constants.Drive.ROTATION_TOLERANCE
     );
+  }
+
+  /**
+   * Set the target position for drivetrain for climbing
+   * Defaults to left side if provided String does not match any climb spot
+   * @param selectedValue A String of either "Left", "Right", or "Center" indicating where to climb
+   */
+  public void setClimbPosition(String selectedValue) {
+    switch (selectedValue) {
+      case "Right":
+        // TODO: Make this set the position to the right climb pose
+        s_climbPosition = new Pose2d();
+        break;
+      case "Center":
+        // TODO: Make this set the position to the center climb pose
+        s_climbPosition = new Pose2d();
+        break;
+      default:
+        // TODO: Make this set the position to the left climb pose
+        s_climbPosition = new Pose2d();
+        break;
+    }
   }
 
   @Override

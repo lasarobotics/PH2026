@@ -22,6 +22,7 @@ public class RobotContainer {
   // TODO
 
   private final DriveSubsystem DRIVE_SUBSYSTEM = DriveSubsystem.getInstance();
+  private final HeadHoncho HEAD_HONCHO = HeadHoncho.getInstance();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -31,7 +32,7 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_CLIMB_CHOOSER_NAME, DRIVE_SUBSYSTEM.getClimbChooser());
+    SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_CLIMB_CHOOSER_NAME, HEAD_HONCHO.getClimbChooser());
   }
 
   /**
@@ -46,7 +47,7 @@ public class RobotContainer {
   private void configureBindings() {
 
     // TODO figure out actual bindings
-    HeadHoncho.getInstance().configureBindings(
+    HEAD_HONCHO.configureBindings(
       m_driverController.a(),
       m_driverController.b(),
       m_driverController.b(),

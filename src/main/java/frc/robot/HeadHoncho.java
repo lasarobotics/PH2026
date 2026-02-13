@@ -10,6 +10,8 @@ import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+
 public class HeadHoncho extends StateMachine implements AutoCloseable {
   
   public enum HeadHonchoStates implements SystemState {
@@ -96,6 +98,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_cancelButton;
   private BooleanSupplier m_goToToggle;
 
+  private SendableChooser<String> m_climbChooser;
+
   public static HeadHoncho getInstance() {
     if (s_headHoncho == null) {
       s_headHoncho = new HeadHoncho();
@@ -105,6 +109,20 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
   private HeadHoncho() {
     super(HeadHonchoStates.NORMAL);
+
+    // Set up SendableChooser to get where to climb in auto
+    m_climbChooser = new SendableChooser<>();
+    m_climbChooser.setDefaultOption("Left", getName());
+    m_climbChooser.addOption("Center", getName());
+    m_climbChooser.addOption("Right", getName());
+  }
+
+  /**
+   * Get the sendable chooser for climb auto options
+   * @return A SendableChooser containing climb options
+   */
+  public SendableChooser<String> getClimbChooser() {
+    return m_climbChooser;
   }
 
   public boolean wantToShoot() {
