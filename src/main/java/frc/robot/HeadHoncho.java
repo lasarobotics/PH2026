@@ -115,6 +115,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_climbChooser.setDefaultOption("Left", getName());
     m_climbChooser.addOption("Center", getName());
     m_climbChooser.addOption("Right", getName());
+
+    // Update DriveSubsystem when the climbChooser changes
+    m_climbChooser.onChange(DriveSubsystem::setClimbPosition);
   }
 
   /**

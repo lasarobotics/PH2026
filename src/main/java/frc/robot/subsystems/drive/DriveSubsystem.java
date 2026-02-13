@@ -397,7 +397,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * Defaults to left side if provided String does not match any climb spot
    * @param selectedValue A String of either "Left", "Right", or "Center" indicating where to climb
    */
-  public void setClimbPosition(String selectedValue) {
+  public static void setClimbPosition(String selectedValue) {
     switch (selectedValue) {
       case "Right":
         // TODO: Make this set the position to the right climb pose
