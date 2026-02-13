@@ -24,6 +24,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
+import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
@@ -213,13 +214,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private DriveSubsystem() {
     super(DriveStates.DRIVER_CONTROL);
 
-    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+    if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       s_alliancePoses = redPoses;
     } else {
       s_alliancePoses = bluePoses;
     }
 
-    Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
+    Logger.recordOutput("DriveSubsystem/percieved_alliance", Robot.getAlliance().toString());
 
 
     s_drivetrain = TunerConstants.createDrivetrain();
@@ -322,7 +323,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
      */
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", true);
-      if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
+      if (Robot.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
         s_drivetrain.setOperatorPerspectiveForward(
             CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
       } else {
@@ -367,9 +368,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @return true if robot is in alliance zone, false oterwise
    */
   public boolean inAllianceZone() {
-    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) && s_drivetrain.getState().Pose.getX() >= 12.5) {
+    if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) && s_drivetrain.getState().Pose.getX() >= 12.5) {
         return true;
-    } else if (DriverStation.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) && s_drivetrain.getState().Pose.getX() <= 4.0) {
+    } else if (Robot.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) && s_drivetrain.getState().Pose.getX() <= 4.0) {
       return true;
     }
     return false;

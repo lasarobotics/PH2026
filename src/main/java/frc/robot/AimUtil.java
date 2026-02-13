@@ -13,7 +13,6 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
@@ -71,7 +70,7 @@ public class AimUtil {
       targetHeight = 0;
     } else {
       // TODO have multiple hub positions
-      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+      if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
         targetCoordinates = Constants.Field.HUB_COORDINATES;
       } else {
         targetCoordinates = Constants.Field.HUB_COORDINATES;
