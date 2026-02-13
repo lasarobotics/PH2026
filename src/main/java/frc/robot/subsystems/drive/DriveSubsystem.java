@@ -160,6 +160,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         return this;
       }
+    },
+    OVER_BUMP {
+      @Override
+      public void execute() {
+        return;
+      }
+
+      @Override
+      public SystemState nextState() {
+        return this;
+      }
     }
   }
 
