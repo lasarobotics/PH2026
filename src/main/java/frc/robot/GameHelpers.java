@@ -5,8 +5,8 @@ import java.util.Optional;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 
 public class GameHelpers {
 
@@ -34,6 +34,7 @@ public class GameHelpers {
    */
   public static int wonAuto() {
     String gameData = DriverStation.getGameSpecificMessage();
+    Logger.recordOutput("GameHelpers/gameData", gameData);
     // probably happens during auto
     if (gameData.length() != 1) {
       return -1;
@@ -46,8 +47,10 @@ public class GameHelpers {
       return -1;
     }
 
-    boolean wonAuto = (autoAlliance == 'B' && currentAlliance.get().equals(Alliance.Blue)) ||
-              (autoAlliance == 'R' && currentAlliance.get().equals(Alliance.Red));
+    boolean wonAuto = (
+      (autoAlliance == 'B' && currentAlliance.get().equals(Alliance.Blue)) ||
+      (autoAlliance == 'R' && currentAlliance.get().equals(Alliance.Red))
+    );
     return wonAuto ? 1 : 0;
   }
 
@@ -78,11 +81,13 @@ public class GameHelpers {
     if (wonAuto) {
       boolean s1 = 105 <= time && time <= 130;
       boolean s3 = 55 <= time && time <= 80;
-      return (!s1 && !s3);
+      // not in either inactive period
+      return (!(s1 || s3));
     } else {
       boolean s2 = 80 <= time && time <= 105;
       boolean s4 = 30 <= time && time <= 55;
-      return (!s2 && !s4);
+      // not in either inactive period
+      return (!(s2 || s4));
     }
   }
 
