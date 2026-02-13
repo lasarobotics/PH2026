@@ -5,6 +5,7 @@
 package frc.robot;
 
 import org.littletonrobotics.junction.LoggedRobot;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -57,6 +58,10 @@ public class Robot extends LoggedRobot {
 
     AimUtil.updateShooterConstants();
     CommandScheduler.getInstance().run();
+
+    // TODO remove for competition
+    Logger.recordOutput("GameHelpers/matchTimeLeft", GameHelpers.matchTimeLeft());
+    Logger.recordOutput("GameHelpers/scoringTimeLeft", GameHelpers.scoringTimeLeft());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
