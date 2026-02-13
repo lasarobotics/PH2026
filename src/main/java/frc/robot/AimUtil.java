@@ -64,6 +64,13 @@ public class AimUtil {
     Translation2d targetPos,
     double targetH
   ) {
+    if (
+      targetPos.equals(targetPosition) &&
+      targetH == targetHeight
+    ) {
+      return;
+    }
+
     targetPosition = targetPos;
     targetHeight = targetH;
 

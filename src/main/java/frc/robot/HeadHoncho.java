@@ -5,6 +5,10 @@ import java.util.function.BooleanSupplier;
 import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -37,6 +41,15 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
         boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
+
+        if (passButton) {
+          AimUtil.setTarget(wantedPassPosition(), 0);
+        } else {
+          AimUtil.setTarget(
+            wantedShootPosition(),
+            Constants.Field.HUB_Y_POS
+          );
+        }
 
         if (shootButton || passButton) {
           DriveSubsystem.getInstance().driveAutoAim();
@@ -121,6 +134,32 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
   public boolean wantToForceShoot() {
     return m_forceShootButton.getAsBoolean();
+  }
+
+  private static Translation2d wantedShootPosition() {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+      // red alliance
+      return Constants.Field.RED_HUB_COORDINATES;
+    } else {
+      // blue alliance
+      return Constants.Field.BLUE_HUB_COORDINATES;
+    }
+  }
+
+  private static Translation2d wantedPassPosition() {
+    Pose2d pose = DriveSubsystem.getDrivetrain().getState().Pose;
+    boolean bottomHalfOfField = pose.getY() <= Constants.Field.HALF_FIELD_Y_POS;
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+      // red alliance
+      return bottomHalfOfField ?
+        Constants.Field.RED_BOTTOM_PASS_COORDINATES :
+        Constants.Field.RED_TOP_PASS_COORDINATES;
+    } else {
+      // blue alliance
+      return bottomHalfOfField ?
+        Constants.Field.BLUE_BOTTOM_PASS_COORDINATES :
+        Constants.Field.BLUE_TOP_PASS_COORDINATES;
+    }
   }
 
   /**
