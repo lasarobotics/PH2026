@@ -97,6 +97,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_climbButtonHasFallen;
   private BooleanSupplier m_cancelButton;
   private BooleanSupplier m_goToToggle;
+  private BooleanSupplier m_resetOdometry;
 
   private SendableChooser<String> m_climbChooser;
 
@@ -144,6 +145,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     return m_forceShootButton.getAsBoolean();
   }
 
+  public boolean wantToResetOdometry() {
+    return m_resetOdometry.getAsBoolean();
+  }
+
   /**
    * The bindings to control the robot.
    * Should only be called once on startup.
@@ -169,7 +174,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     BooleanSupplier passButton,
     BooleanSupplier intakeButton,
     BooleanSupplier climbButton,
-    BooleanSupplier cancelButton
+    BooleanSupplier cancelButton,
+    BooleanSupplier resetOdomButton
   ) {
     m_shootButton = shootButton;
     m_dumbShootButton = dumbShootButton;
@@ -178,6 +184,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_intakeButtonHasFallen = intakeButton;
     m_climbButtonHasFallen = climbButton;
     m_cancelButton = cancelButton;
+    m_resetOdometry = resetOdomButton;
   }
 
   public void close() {}

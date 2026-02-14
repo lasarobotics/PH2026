@@ -512,6 +512,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
+   * resets pose of robot
+   */
+  public void zeroOdometry() {
+    s_drivetrain.resetPose();
+  }
+
+  /**
    * Set the target position for drivetrain for climbing
    * Defaults to left side if provided String does not match any climb spot
    * @param selectedValue A String of either "Left", "Right", or "Center" indicating where to climb
