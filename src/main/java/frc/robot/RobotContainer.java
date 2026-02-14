@@ -45,19 +45,25 @@ public class RobotContainer {
 
     // TODO figure out actual bindings
     HeadHoncho.getInstance().configureBindings(
+      // shoot button
       m_driverController.a(),
+      // dumbshoot button
       m_driverController.b(),
+      // forceshoot button
       m_driverController.b(),
+      // pass button
       m_driverController.a(),
+      // cancel button
       m_driverController.a(),
+      // reverse intake button
       m_driverController.a(),
-      // hold right trigger for OVER_RAMP
+      // over ramp button
       () -> m_driverController.getHID().getRightTriggerAxis() > 0.5,
-      // toggle intake when button is pressed
+      // intake fallen trigger
       () -> m_driverController.getHID().getAButtonPressed(),
-      // do climb stuff when button is pressed
+      // climb fallen trigger
       () -> m_driverController.getHID().getAButtonPressed(),
-      // go between normal & rest button is pressed
+      // rest fallen trigger
       () -> m_driverController.getHID().getAButtonPressed()
     );
 
