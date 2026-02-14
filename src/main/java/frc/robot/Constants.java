@@ -125,9 +125,8 @@ public final class Constants {
     public static final double MAX_BALL_Y_POS = 2.8;
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
-    // TODO actually get positions for different alliances
-    public static final Translation2d RED_HUB_COORDINATES = new Translation2d(4.619, 4.049);
     public static final Translation2d BLUE_HUB_COORDINATES = new Translation2d(4.619, 4.049);
+    public static final Translation2d RED_HUB_COORDINATES = new Translation2d(11.925, 4.049);
     public static final double HUB_HANG_TIME = (
       (
         Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
@@ -142,10 +141,10 @@ public final class Constants {
       new Pose2d(
         new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(180));
     
-    public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d();
-    public static final Translation2d RED_TOP_PASS_COORDINATES = new Translation2d();
-    public static final Translation2d BLUE_BOTTOM_PASS_COORDINATES = new Translation2d();
-    public static final Translation2d BLUE_TOP_PASS_COORDINATES = new Translation2d();
+    public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d(14.231, 2.235);
+    public static final Translation2d RED_TOP_PASS_COORDINATES = new Translation2d(14.231, 6.235);
+    public static final Translation2d BLUE_BOTTOM_PASS_COORDINATES = new Translation2d(2.051, 2.235);
+    public static final Translation2d BLUE_TOP_PASS_COORDINATES = new Translation2d(2.051, 6.235);
 
     // meters
     public static final double HALF_FIELD_Y_POS = 4.022;
