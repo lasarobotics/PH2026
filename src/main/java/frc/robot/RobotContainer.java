@@ -46,12 +46,13 @@ public class RobotContainer {
       m_driverController.b(),
       m_driverController.b(),
       m_driverController.a(),
+      m_driverController.a(),
+      m_driverController.a(),
       // toggle intake when button is pressed
       () -> m_driverController.getHID().getAButtonPressed(),
       // do climb stuff when button is pressed
       () -> m_driverController.getHID().getAButtonPressed(),
-      m_driverController.a(),
-      m_driverController.a(),
+      // go between normal & rest button is pressed
       () -> m_driverController.getHID().getAButtonPressed()
     );
   }
