@@ -122,6 +122,8 @@ public final class Constants {
   }
 
   public static class Field {
+    public static final double BLUE_ZONE_X = 3.964;
+    public static final double RED_ZONE_X = 12.549;
     public static final double MAX_BALL_Y_POS = 2.8;
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
@@ -138,19 +140,19 @@ public final class Constants {
             new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(-90));  
     public static final Pose2d BLUE_TOWER_DEPOT_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(0.513), Meters.of(4.729)), Rotation2d.fromDegrees(0));  
+            new Translation2d(Meters.of(1.6), Meters.of(3.9)), Rotation2d.fromDegrees(-90));  
     public static final Pose2d BLUE_TOWER_OUTPOST_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(0.513), Meters.of(2.729)), Rotation2d.fromDegrees(0));  
+            new Translation2d(Meters.of(1.6), Meters.of(2.954)), Rotation2d.fromDegrees(-90));  
     public static final Pose2d RED_TOWER =
         new Pose2d(
-            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(-90)); 
+            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(90)); 
     public static final Pose2d RED_TOWER_DEPOT_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(16.07), Meters.of(3.43)), Rotation2d.fromDegrees(0));  
+            new Translation2d(Meters.of(14.919), Meters.of(4.2)), Rotation2d.fromDegrees(90));  
     public static final Pose2d RED_TOWER_OUTPOST_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(16.07), Meters.of(5.33)), Rotation2d.fromDegrees(0));  
+            new Translation2d(Meters.of(14.919), Meters.of(5.1)), Rotation2d.fromDegrees(90));  
 
     
   }
