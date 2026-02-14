@@ -355,6 +355,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
   }
 
+    /** Set up stuff for limelight */
+  public void limeLightSetup() {
+    LimelightHelpers.SetRobotOrientation(
+        "limelight1", s_drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+
+    LimelightHelpers.SetRobotOrientation(
+        "limelight1", s_drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+  }  
+
 
   // TODO move all these bindings into headhoncho
   /*
