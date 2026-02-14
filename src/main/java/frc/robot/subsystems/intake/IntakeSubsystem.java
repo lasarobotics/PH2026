@@ -100,6 +100,18 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Check if the hopper is fully extended.
+   * @return True if arm motor is at fully
+   * extended setpoint within a certain tolerance.
+   */
+  public boolean hopperDeployed() {
+    return m_armMotor.getPosition().getValue().isNear(
+      Constants.Intake.DEPLOY_ANGLE,
+      Constants.Intake.DEPLOY_TOLERANCE
+    );
+  }
+
+  /**
    * Start intake of fuel using intake motor
    */
   private void startIntakeMotor() {
@@ -127,14 +139,18 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    *  Move the intake arm to the extended out position
    */
   private void deployIntake() {
-    m_armMotor.setControl(m_armPositionSetter.withPosition(Constants.Intake.DEPLOY_ANGLE));
+    m_armMotor.setControl(
+      m_armPositionSetter.withPosition(Constants.Intake.DEPLOY_ANGLE)
+    );
   }
 
   /**
    *  Move the intake arm to the stowed position
    */
   private void stowIntake() {
-    m_armMotor.setControl(m_armPositionSetter.withPosition(Constants.Intake.STOW_ANGLE));
+    m_armMotor.setControl(
+      m_armPositionSetter.withPosition(Constants.Intake.STOW_ANGLE)
+    );
   }
 
   @Override

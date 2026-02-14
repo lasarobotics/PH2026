@@ -2,34 +2,21 @@ package frc.robot.subsystems.hopper;
 
 import com.ctre.phoenix6.hardware.CANrange;
 
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.subsystems.intake.IntakeSubsystem;
 
-/**
- * HopperSubsystem doesn't actually have any motors,
- * it's just a collection of CANranges.
- * The CANranges are split into two groups: top and
- * bottom. The subsystem exposes two methods to check
- * the top and bottom rows collectively. For the rest
- * of this description, I'm going to refer to the
- * CANranges in the top row as TOP (and TOP being
- * active referring to the collective) and the CANrange
- * (singular) in the bottom row as BOTTOM. For each
- * of these, we say that they've been "activated" if
- * they've been blocked for at least a certain threshold
- * of time (which is defined in Constants).
- */
 public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static HopperSubsystem s_hopperSubsystem;
   private CANrange m_topRange1;
   private CANrange m_topRange2;
-  private CANrange m_topRange3;
   private CANrange m_bottomRange;
 
-  private boolean m_topBlocked;
-  private boolean m_bottomBlocked;
+  private boolean m_topPrevious;
+  private boolean m_bottomPrevious;
   private Timer m_topTimer;
   private Timer m_bottomTimer;
 
@@ -43,7 +30,6 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
   private HopperSubsystem() {
     m_topRange1 = new CANrange(Constants.Hopper.CANRANGE_TOP_ONE_ID);
     m_topRange2 = new CANrange(Constants.Hopper.CANRANGE_TOP_TWO_ID);
-    m_topRange3 = new CANrange(Constants.Hopper.CANRANGE_TOP_THREE_ID);
     m_bottomRange = new CANrange(Constants.Hopper.CANRANGE_BOTTOM_ID);
 
     m_topTimer = new Timer();
@@ -56,34 +42,58 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    */
   @Override
   public void periodic() {
-    boolean topB = (
+    // If the hopper isn't FULLY deployed, use the closed distance
+    // to check if the top CANranges are blocked
+    // (the canranges are on the hopper, so the distance changes)
+    Distance topDistance = 
+      !IntakeSubsystem.getInstance().hopperDeployed() ?
+        Constants.Hopper.TOP_BLOCKED_DISTANCE_CLOSED :
+        Constants.Hopper.TOP_BLOCKED_DISTANCE_OPEN;
+    // Check the top row as a collective
+    boolean topCurrent = (
       // TODO: test if this is OR or AND
-      canRangeBlocked(m_topRange1) ||
-      canRangeBlocked(m_topRange2) ||
-      canRangeBlocked(m_topRange3)
+      canRangeBlocked(
+        m_topRange1,
+        topDistance
+      ) ||
+      canRangeBlocked(
+        m_topRange2,
+        topDistance
+      )
     );
-    boolean bottomB = (
-      canRangeBlocked(m_bottomRange)
+    // Only one canrange on the bottom
+    boolean bottomCurrent = (
+      canRangeBlocked(
+        m_bottomRange,
+        Constants.Hopper.BOTTOM_BLOCKED_DISTANCE
+      )
     );
 
-    if (topB && !m_topBlocked) {
+    // This logic applies for both top and bottom:
+    // If it's blocked in real life but the variable
+    // doesn't have it as blocked, consider that
+    // a rising edge & start the timer
+    // If the opposite is true (not blocked in real
+    // life and the variable does have it as blocked),
+    // stop & reset the timer
+    if (topCurrent && !m_topPrevious) {
       m_topTimer.start();
     }
-    if (!topB && m_topBlocked) {
+    if (!topCurrent && m_topPrevious) {
       m_topTimer.stop();
       m_topTimer.reset();
     }
 
-    if (bottomB && !m_bottomBlocked) {
+    if (bottomCurrent && !m_bottomPrevious) {
       m_bottomTimer.start();
     }
-    if (!bottomB && m_bottomBlocked) {
+    if (!bottomCurrent && m_bottomPrevious) {
       m_bottomTimer.stop();
       m_bottomTimer.reset();
     }
 
-    m_topBlocked = topB;
-    m_bottomBlocked = bottomB;
+    m_topPrevious = topCurrent;
+    m_bottomPrevious = bottomCurrent;
   }
 
   /**
@@ -93,7 +103,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    * the desired amount of time, false otherwise
    */
   public boolean getTopRow() {
-    return m_topBlocked &&
+    return m_topPrevious &&
       m_topTimer.hasElapsed(Constants.Hopper.DELAY_TIME);
   }
 
@@ -104,7 +114,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    * the desired amount of time, false otherwise
    */
   public boolean getBottomRow() {
-    return m_bottomBlocked &&
+    return m_bottomPrevious &&
       m_bottomTimer.hasElapsed(Constants.Hopper.DELAY_TIME);
   }
 
@@ -115,9 +125,9 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
    * @return true if the measured value is less than or equal to the
    * constant distance
    */
-  private boolean canRangeBlocked(CANrange range) {
+  private boolean canRangeBlocked(CANrange range, Distance distance) {
     return range.getDistance().getValue().lte(
-      Constants.Hopper.BLOCKED_DISTANCE
+      distance
     );
   }
 
@@ -126,6 +136,5 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
     m_bottomRange.close();
     m_topRange1.close();
     m_topRange2.close();
-    m_topRange3.close();
   }
 }

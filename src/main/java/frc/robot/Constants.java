@@ -328,17 +328,29 @@ public final class Constants {
     public static final Dimensionless INTAKE_SPEED = Value.of(0.6);
     public static final Angle STOW_ANGLE = Degrees.of(0);
     public static final Angle DEPLOY_ANGLE = Degrees.of(0);
+
+    // Tolerance of check for hopper being deployed
+    public static final double DEPLOY_TOLERANCE = 0; // TODO
   }
 
   public static class Hopper {
     // TODO find these
     public static final int CANRANGE_TOP_ONE_ID = 0;
     public static final int CANRANGE_TOP_TWO_ID = 0;
-    public static final int CANRANGE_TOP_THREE_ID = 0;
     public static final int CANRANGE_BOTTOM_ID = 0;
 
-    // TODO update to be not 5 inches
-    public static final Distance BLOCKED_DISTANCE = Inches.of(5);
+    // 18 inches is wall to wall where bottom canrange is
+    // so 17 inches for extra tolerance
+    public static final Distance BOTTOM_BLOCKED_DISTANCE = Inches.of(17);
+    // 32.5 inches from climber tube to hopper wall when fully extended
+    // We want a bunch of margin & this is for like fully full
+    // so 29 is probably alright
+    // TODO double check
+    public static final Distance TOP_BLOCKED_DISTANCE_OPEN = Inches.of(29);
+    // 17 inches from climb tube to approx. hopper closed position
+    // so 14 probably good
+    // TODO double check
+    public static final Distance TOP_BLOCKED_DISTANCE_CLOSED = Inches.of(14);
 
     // TODO adjust maybe
     public static final Time DELAY_TIME = Seconds.of(0.5);
