@@ -11,11 +11,13 @@ import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
+import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -26,6 +28,8 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
+import frc.robot.LimelightHelpers;
+import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
@@ -51,16 +55,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             s_drive
                 .withVelocityX(
                     Constants.Drive.MAX_SPEED
-                        .times(Math.pow(s_driveRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
+                        .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                        .times(Constants.Drive.FAST_SPEED_SCALAR))
                 .withVelocityY(
                     Constants.Drive.MAX_SPEED
-                        .times(Math.pow(s_strafeRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
+                        .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                        .times(Constants.Drive.FAST_SPEED_SCALAR))
                 .withRotationalRate(
                     Constants.Drive.MAX_ANGULAR_RATE
                         .times(-s_rotateRequest.getAsDouble())
-                        .times(s_driveSpeedScalar)));
+                        .times(Constants.Drive.FAST_SPEED_SCALAR)));
 
           }
 
@@ -100,12 +104,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           s_drive
             .withVelocityX(
                 Constants.Drive.MAX_SPEED
-                    .times(Math.pow(s_driveRequest.getAsDouble(), 1))
-                    .times(s_driveSpeedScalar))
+                    .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                    .times(Constants.Drive.FAST_SPEED_SCALAR))
             .withVelocityY(
                 Constants.Drive.MAX_SPEED
-                    .times(Math.pow(s_strafeRequest.getAsDouble(), 1))
-                    .times(s_driveSpeedScalar))
+                    .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                    .times(Constants.Drive.FAST_SPEED_SCALAR))
             .withRotationalRate(
               output
             ));
@@ -131,8 +135,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     },
     CLIMB_ALIGN {
       @Override
+      public void initialize() {
+        s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude();
+        s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.magnitude();
+        s_climbAlignDistanceError = 0.2;
+        s_climbAlignRotationError = 0.1;
+      }
+      
+      @Override
       public void execute() {
-        s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB], 0, DriveSubsystem.s_climbAlignSpeed, DriveSubsystem.s_climbRotationSpeed);
+        s_driveSubsystem.goTo(s_climbPosition, 0, DriveSubsystem.s_climbAlignSpeed, DriveSubsystem.s_climbRotationSpeed);
       }
 
       @Override
@@ -146,14 +158,14 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           return OVER_RAMP;
         }
 
-        if (subsystem.atDestination(s_alliancePoses[WP_CLIMB], DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
-          if (!DriverStation.isAutonomous()) {
+        if (subsystem.atDestination(s_climbPosition, DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
+          DriveSubsystem.s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude()/4;
+          DriveSubsystem.s_climbRotationSpeed = Constants.Drive.MAX_SPEED.magnitude()/2;
+          DriveSubsystem.s_climbAlignDistanceError = 0.01;
+          DriveSubsystem.s_climbAlignRotationError = 0.01;
+
+          if (!DriverStation.isAutonomous() && s_driveSubsystem.atDestination(s_climbPosition, DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
             return SLOW_DRIVER_ALIGN;
-          } else {
-            DriveSubsystem.s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude()/4;
-            DriveSubsystem.s_climbRotationSpeed = Constants.Drive.MAX_SPEED.magnitude()/2;
-            DriveSubsystem.s_climbAlignDistanceError = 0.01;
-            DriveSubsystem.s_climbAlignRotationError = 0.01;
           }
         }
 
@@ -171,16 +183,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             s_drive
                 .withVelocityX(
                     Constants.Drive.MAX_SPEED
-                        .times(Math.pow(s_driveRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
+                        .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                        .times(Constants.Drive.FAST_SPEED_SCALAR))
                 .withVelocityY(
                     Constants.Drive.MAX_SPEED
-                        .times(Math.pow(s_strafeRequest.getAsDouble(), 1))
-                        .times(s_driveSpeedScalar))
+                        .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                        .times(Constants.Drive.FAST_SPEED_SCALAR))
                 .withRotationalRate(
                     Constants.Drive.MAX_ANGULAR_RATE
                         .times(-s_rotateRequest.getAsDouble())
-                        .times(s_driveSpeedScalar)));
+                        .times(Constants.Drive.FAST_SPEED_SCALAR)));
       }
 
       @Override
@@ -265,8 +277,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private boolean m_hasAppliedOperatorPerspective = false;
 
-  private static double s_driveSpeedScalar = Constants.Drive.FAST_SPEED_SCALAR;
-
   private static double s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude();
   private static double s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.magnitude();
   private static double s_climbAlignDistanceError = 0.2;
@@ -279,6 +289,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DriveStates s_requestedDriveState = DriveStates.NOTHING;
 
   private static Pose2d[] s_alliancePoses;
+
+  public static Pose2d s_climbPosition;
+
+  //camera vars
+  protected final Thread m_limelight_thread;
+
+  private static boolean s_shooterCameraSeesTag = false;
+  private static boolean s_climberCameraSeesTag = false;
+  private static boolean s_backCameraSeesTag = false;
+
 
   private static final double[] OVER_RAMP_STAGE_MAX_SPEED_MPS = {1.75, 1.67, 0.75};
   private static final double OVER_RAMP_STAGE_TIMEOUT_SEC = 2.5;
@@ -315,13 +335,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private DriveSubsystem() {
     super(DriveStates.DRIVER_CONTROL);
 
-    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+    if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       s_alliancePoses = redPoses;
     } else {
       s_alliancePoses = bluePoses;
     }
 
-    Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
+    Logger.recordOutput("DriveSubsystem/percieved_alliance", Robot.getAlliance().toString());
 
 
     s_drivetrain = TunerConstants.createDrivetrain();
@@ -342,7 +362,110 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     // TODO: Fix this with real values
     s_autoAimController = new ProfiledPIDController(0.0, 0.0, 0, null);
+
+    // TODO: Initialize the climb position to left
+    s_climbPosition = new Pose2d(); 
+
+    //init limelight thread
+    m_limelight_thread = new Thread(this::limelight_thread_func);
+    m_limelight_thread.setDaemon(true);
+    m_limelight_thread.start();
   }
+
+
+   /**
+   * Function to set up the LimeLights on the robot 
+   */
+  public void limelight_thread_func() {
+    String[] limelights = {"limelight-shooter", "limelight-climber", "limelight-back"};
+
+    while (true) {
+      for (String limelight : limelights) {
+        LimelightHelpers.SetIMUMode(limelight, DriverStation.isDisabled() ? 1 : 3);
+        LimelightHelpers.setLimelightNTDouble(
+            limelight, "throttle_set", DriverStation.isDisabled() ? 200 : 0);
+        LimelightHelpers.SetRobotOrientation(
+            limelight, s_drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+
+         Logger.recordOutput(
+             getName() + "/" + limelight + "/botpose",
+             LimelightHelpers.getBotPose3d_wpiBlue(limelight));
+        double[] poseEntry =
+            LimelightHelpers.getLimelightNTDoubleArray(limelight, "botpose_orb_wpiblue");
+         Logger.recordOutput(
+             getName() + "/" + limelight + "/botpose_orb", LimelightHelpers.toPose3D(poseEntry));
+        LimelightHelpers.PoseEstimate pose_estimate =
+            LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelight);
+
+        if (pose_estimate == null) {
+          if (limelight == "limelight-shooter") {
+            s_shooterCameraSeesTag = false;
+          }
+          if (limelight == "limelight-climber") {
+            s_climberCameraSeesTag = false;
+          }
+          if (limelight == "limelight-back") {
+            s_backCameraSeesTag = false;
+          }
+          continue;
+        }
+        boolean doRejectUpdate = false;
+        if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
+          int[] validIds = {6, 7, 8, 9, 10, 11};
+          LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
+        } else {
+          int[] validIds = {17, 18, 19, 20, 21, 22};
+          LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
+        }
+        if (s_drivetrain.getState().Speeds.omegaRadiansPerSecond > 2 * Math.PI) {
+          doRejectUpdate = true;
+        }
+        // if (new Translation2d(s_drivetrain.getState().Speeds.vxMetersPerSecond, s_drivetrain.getState().Speeds.vyMetersPerSecond).getDistance(new Translation2d(0, 0)) > 2.0) {
+        //   doRejectUpdate = true;
+        // }
+
+        if (pose_estimate.tagCount == 0) {
+          doRejectUpdate = true;
+        }
+
+        if (Double.isNaN(pose_estimate.pose.getX()) || Double.isNaN(pose_estimate.pose.getY()) || Double.isNaN(pose_estimate.pose.getRotation().getDegrees())) {
+          doRejectUpdate = true;
+        }
+
+        if (!doRejectUpdate) {
+          s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+          s_drivetrain.addVisionMeasurement(
+              pose_estimate.pose, Utils.fpgaToCurrentTime(pose_estimate.timestampSeconds));
+          // Logger.recordOutput(getName() + "/" + limelight + "/botpose_orb", pose_estimate.pose);
+        }
+        if (limelight == "limelight-shooter") {
+          s_shooterCameraSeesTag = !doRejectUpdate;
+        }
+        if (limelight == "limelight-climber") {
+          s_climberCameraSeesTag = !doRejectUpdate;
+				}
+        if (limelight == "limelight-back") {
+          s_backCameraSeesTag = !doRejectUpdate;
+        }
+      }
+      try {
+        Thread.sleep(15);
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        // e.printStackTrace();
+      }
+    }
+  }
+
+    /** Set up stuff for limelight */
+  public void limeLightSetup() {
+    LimelightHelpers.SetRobotOrientation(
+        "limelight1", s_drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+
+    LimelightHelpers.SetRobotOrientation(
+        "limelight1", s_drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
+  }  
+
 
   // TODO move all these bindings into headhoncho
   /*
@@ -397,8 +520,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     var outputVelocity = 
         Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, maxVelocity);
 
-    // how does it know to rotate the amount in the time it takes to get to target.
-
     var rotationRate = 
         Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate);
 
@@ -426,7 +547,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
      */
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", true);
-      if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
+      if (Robot.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
         s_drivetrain.setOperatorPerspectiveForward(
             CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
       } else {
@@ -453,21 +574,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.DRIVER_CONTROL;
   }
 
-  public void setDriveSpeed(double newSpeed) {
-    s_driveSpeedScalar = newSpeed;
-  }
-
   /**
    * Checks robot's alliance and then checks if robot is in its alliance zone
    * @return true if robot is in alliance zone, false oterwise
    */
   public boolean inAllianceZone() {
-    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-      if (s_drivetrain.getState().Pose.getX() >= 12.5) {
+    if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) && s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X) {
         return true;
-      } else if (s_drivetrain.getState().Pose.getX() <= 4.0) {
-          return true;
-      }
+    } else if (Robot.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) && s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X) {
+      return true;
     }
     return false;
   }
@@ -496,6 +611,28 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       s_drivetrain.getState().Pose.getRotation().getMeasure(),
       Constants.Drive.ROTATION_TOLERANCE
     );
+  }
+
+  /**
+   * Set the target position for drivetrain for climbing
+   * Defaults to left side if provided String does not match any climb spot
+   * @param selectedValue A String of either "Left", "Right", or "Center" indicating where to climb
+   */
+  public static void setClimbPosition(String selectedValue) {
+    switch (selectedValue) {
+      case "Right":
+        // TODO: Make this set the position to the right climb pose
+        s_climbPosition = new Pose2d();
+        break;
+      case "Center":
+        // TODO: Make this set the position to the center climb pose
+        s_climbPosition = new Pose2d();
+        break;
+      default:
+        // TODO: Make this set the position to the left climb pose
+        s_climbPosition = new Pose2d();
+        break;
+    }
   }
 
   public void bindOverRampRequest(BooleanSupplier overRampRequest) {

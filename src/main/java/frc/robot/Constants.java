@@ -262,6 +262,8 @@ public final class Constants {
   }
 
   public static class Field {
+    public static final double BLUE_ZONE_X = 3.964;
+    public static final double RED_ZONE_X = 12.549;
     public static final double MAX_BALL_Y_POS = 2.8;
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
@@ -275,11 +277,24 @@ public final class Constants {
       ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
     );
     public static final Pose2d BLUE_TOWER =
-      new Pose2d(
-        new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(180));  
+        new Pose2d(
+            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(-90));  
+    public static final Pose2d BLUE_TOWER_DEPOT_SIDE =
+        new Pose2d(
+            new Translation2d(Meters.of(1.6), Meters.of(3.9)), Rotation2d.fromDegrees(-90));  
+    public static final Pose2d BLUE_TOWER_OUTPOST_SIDE =
+        new Pose2d(
+            new Translation2d(Meters.of(1.6), Meters.of(2.954)), Rotation2d.fromDegrees(-90));  
     public static final Pose2d RED_TOWER =
-      new Pose2d(
-        new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(180));
+        new Pose2d(
+            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(90)); 
+    public static final Pose2d RED_TOWER_DEPOT_SIDE =
+        new Pose2d(
+            new Translation2d(Meters.of(14.919), Meters.of(4.2)), Rotation2d.fromDegrees(90));  
+    public static final Pose2d RED_TOWER_OUTPOST_SIDE =
+        new Pose2d(
+            new Translation2d(Meters.of(14.919), Meters.of(5.1)), Rotation2d.fromDegrees(90));  
+
     
     public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d(14.231, 2.235);
     public static final Translation2d RED_TOP_PASS_COORDINATES = new Translation2d(14.231, 6.235);
@@ -340,5 +355,9 @@ public final class Constants {
     public static final double CLIMB_SPEED_SLOW = CLIMB_SPEED * 0.2;
     public static final Angle CLIMB_ANGLE = Degrees.of(0);
     public static final Angle STOW_ANGLE = Degrees.of(0);
+  }
+
+  public static class SmartDashboard {
+    public static final String SMARTDASHBOARD_CLIMB_CHOOSER_NAME = "Auto Climb Position";
   }
 }
