@@ -62,6 +62,8 @@ public class RobotContainer {
       m_driverController.a(),
       // reverse intake button
       m_driverController.a(),
+      // reset odom button
+      m_driverController.a(),
       // over ramp button
       () -> m_driverController.getHID().getRightTriggerAxis() > 0.5,
       // intake fallen trigger
