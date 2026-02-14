@@ -10,6 +10,7 @@ import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -24,6 +25,10 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   private final TalonFX m_climbMotor1;
   private final TalonFX m_climbMotor2;
   private boolean m_isClimbing;
+  private boolean m_wantToClimb;
+  private boolean m_wantToDeploy;
+  private boolean m_isDeployed;
+  private boolean m_isClimbed;
 
   public static ClimbSubsystem getInstance() {
     if (s_climbInstance == null){
@@ -50,6 +55,8 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_climbMotor2.setControl(new Follower(this.m_climbMotor1.getDeviceID(), MotorAlignmentValue.Aligned));
 
     this.m_isClimbing = false;
+    this.m_wantToClimb = false;
+    this.m_isClimbed = false;
   }
 
   /**
@@ -86,7 +93,15 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * @return A boolean for whether or not the climber is in the climb position
    */
   public boolean inClimbPosition() {
-    return s_climbInstance.getClimberAngle().gte(Constants.Climb.CLIMB_ANGLE);
+    return s_climbInstance.getClimberAngle().lte(Constants.Climb.CLIMB_ANGLE);
+  }
+
+  /**
+   * Check to see if climber is in deploy position
+   * @return A boolean for whether or not the climber is in the deploy position
+   */
+  public boolean inDeployPosition() {
+    return s_climbInstance.getClimberAngle().gte(Constants.Climb.DEPLOY_ANGLE);
   }
 
   /**
@@ -99,31 +114,43 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    *  Set the motor to move to climb position
    */
-  private void moveToClimb() {
-    s_climbInstance.m_climbMotor1.set(Constants.Climb.CLIMB_SPEED);
+  private void moveClimbUp() {
+    s_climbInstance.m_climbMotor1.setControl(new MotionMagicVelocityVoltage(Constants.Climb.CLIMB_SPEED_RPS));
   }
 
   /**
    *  Set the motor to move to stow position
    */
-  private void moveToStow() {
-    s_climbInstance.m_climbMotor1.set(-Constants.Climb.CLIMB_SPEED);
+  private void moveClimbDown() {
+    s_climbInstance.m_climbMotor1.setControl(new MotionMagicVelocityVoltage(-Constants.Climb.CLIMB_SPEED_RPS));
   }
 
   @Override
   public void periodic() {
     // Handle climbing logic
-    if (m_isClimbing) {
-      if (!s_climbInstance.inClimbPosition()) {
-        s_climbInstance.moveToClimb();
+    // TODO: Make sure this follows the actual climbing logic
+    if (m_wantToDeploy) {
+      if (!s_climbInstance.inDeployPosition()) {
+        s_climbInstance.moveClimbUp();
       } else {
-        s_climbInstance.m_climbMotor1.stopMotor();
+        m_isDeployed = true;
+        // Wait for confirmation
+        if (m_wantToClimb && !s_climbInstance.inClimbPosition()) {
+          s_climbInstance.moveClimbDown();
+          m_isClimbing = true;
+        } else {
+          s_climbInstance.m_climbMotor1.stopMotor();
+          m_isClimbed = true;
+          m_isClimbing = false;
+        }
       }
     } else {
       if (!s_climbInstance.inStowPosition()) {
-        s_climbInstance.moveToStow();
+        s_climbInstance.moveClimbDown();
       } else {
         s_climbInstance.m_climbMotor1.stopMotor();
+        m_isClimbed = false;
+        m_isDeployed = false;
       }
     }
 
@@ -132,6 +159,10 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/inStowPosition", inStowPosition());
     Logger.recordOutput(getName() + "/inClimbPosition", inClimbPosition());
     Logger.recordOutput(getName() + "/isClimbing", m_isClimbing);
+    Logger.recordOutput(getName() + "/isClimbed", m_isClimbed);
+    Logger.recordOutput(getName() + "/wantToClimb", m_wantToClimb);
+    Logger.recordOutput(getName() + "/wantToDeploy", m_wantToDeploy);
+    Logger.recordOutput(getName() + "/isDeployed", m_isDeployed);
   }
 
   @Override

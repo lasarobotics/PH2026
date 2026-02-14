@@ -187,8 +187,9 @@ public final class Constants {
     public static final int ARM_ENCODER_ID = 0;
 
     // TODO: Find the values of climb constants
-    public static final double CLIMB_SPEED = 0.0;
-    public static final Angle CLIMB_ANGLE = Degrees.of(0);
+    public static final double CLIMB_SPEED_RPS = 3000.0 / 60.0;
+    public static final Angle CLIMB_ANGLE = Degrees.of(70);
+    public static final Angle DEPLOY_ANGLE = Degrees.of(95);
     public static final Angle STOW_ANGLE = Degrees.of(0);
   }
 }
