@@ -5,9 +5,12 @@
 package frc.robot;
 
 import frc.robot.Constants.OperatorConstants;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.subsystems.drive.DriveSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -50,8 +53,29 @@ public class RobotContainer {
       () -> m_driverController.getHID().getAButtonPressed(),
       // do climb stuff when button is pressed
       () -> m_driverController.getHID().getAButtonPressed(),
-      m_driverController.a()
+      m_driverController.a(),
+      // hold right trigger for OVER_RAMP
+      () -> m_driverController.getHID().getRightTriggerAxis() > 0.5
     );
+
+
+    m_driverController
+        .start()
+        .onTrue(
+            new InstantCommand(
+                    () -> {
+                      // Prevent pose resets during AUTON
+                      if (DriverStation.isAutonomous() && DriverStation.isEnabled()) return;
+                      DriveSubsystem.getInstance().resetPoseToZero();
+                    })
+                .ignoringDisable(true));
+
+    DriveSubsystem.getInstance().bindControls(
+        () -> m_driverController.getLeftY(),
+        () -> m_driverController.getLeftX(),
+        () -> m_driverController.getRightX(),
+        () -> false,
+        () -> false);
   }
 
   /**

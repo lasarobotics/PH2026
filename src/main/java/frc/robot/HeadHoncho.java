@@ -35,10 +35,11 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
+        boolean overRampRequested = s_headHoncho.m_overRampRequest.getAsBoolean();
         boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
         boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
 
-        if (shootButton || passButton) {
+        if (!overRampRequested && (shootButton || passButton)) {
           DriveSubsystem.getInstance().driveAutoAim();
         } else {
           DriveSubsystem.getInstance().driverControl();
@@ -51,11 +52,27 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (s_headHoncho.m_overRampRequest.getAsBoolean() && !DriveSubsystem.getInstance().overRampFinishedWhileHeld())
+          return OVER_RAMP;
+
         if (
           s_headHoncho.m_climbButtonHasFallen.getAsBoolean() &&
           DriveSubsystem.getInstance().inAllianceZone()
         ) return CLIMB;
 
+        return this;
+      }
+    },
+    OVER_RAMP {
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().driverControl();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!s_headHoncho.m_overRampRequest.getAsBoolean()) return NORMAL;
+        if (DriveSubsystem.getInstance().overRampFinishedWhileHeld()) return NORMAL;
         return this;
       }
     },
@@ -79,6 +96,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (s_headHoncho.m_overRampRequest.getAsBoolean() && !DriveSubsystem.getInstance().overRampFinishedWhileHeld())
+          return OVER_RAMP;
+
         if (s_headHoncho.m_cancelButton.getAsBoolean()) return NORMAL;
 
         return this;
@@ -95,6 +115,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_climbButtonHasFallen;
   private BooleanSupplier m_cancelButton;
   private BooleanSupplier m_goToToggle;
+  private BooleanSupplier m_overRampRequest = () -> false;
 
   public static HeadHoncho getInstance() {
     if (s_headHoncho == null) {
@@ -148,7 +169,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     BooleanSupplier passButton,
     BooleanSupplier intakeButton,
     BooleanSupplier climbButton,
-    BooleanSupplier cancelButton
+    BooleanSupplier cancelButton,
+    BooleanSupplier overRampRequest
   ) {
     m_shootButton = shootButton;
     m_dumbShootButton = dumbShootButton;
@@ -157,6 +179,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_intakeButtonHasFallen = intakeButton;
     m_climbButtonHasFallen = climbButton;
     m_cancelButton = cancelButton;
+    m_overRampRequest = (overRampRequest != null) ? overRampRequest : () -> false;
+
+    DriveSubsystem.getInstance().bindOverRampRequest(m_overRampRequest);
   }
 
   public void close() {}

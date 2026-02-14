@@ -251,9 +251,13 @@ public final class Constants {
       NZ_RAMP_BLUE_BASE_X - NZ_POS_C_OFFSET_X, 
       NZ_RAMP_HIGH_Y, 
       new Rotation2d(-3 * Math.PI / 4));
-        
+
     public static final Pose2d[] NZ_RAMP_POSA_CANDIDATES = new Pose2d[] {
         NZ_rampRed1_posa, NZ_rampRed2_posa, NZ_rampBlue1_posa, NZ_rampBlue2_posa
+    };
+         
+    public static final Pose2d[] NZ_RAMP_POSC_CANDIDATES = new Pose2d[] {
+        NZ_rampRed1_posc, NZ_rampRed2_posc, NZ_rampBlue1_posc, NZ_rampBlue2_posc
     };
   }
 
