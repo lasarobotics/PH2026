@@ -37,6 +37,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private final MotionMagicVelocityVoltage m_shooterRequest;
   private final MotionMagicVoltage m_hoodRequest;
 
+  private boolean m_isRunning = true;
+
   public static ShooterSubsystem getInstance() {
     if (s_shooterSubsystem == null) {
       s_shooterSubsystem = new ShooterSubsystem();
@@ -88,9 +90,24 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Allows the shooter subsystem to operate as normal.
+   */
+  public void startOperation() {
+    m_isRunning = true;
+  }
+
+  /**
+   * Force the shooter subsystem to stop operation and
+   * stop motors.
+   */
+  public void stopOperation() {
+    m_isRunning = false;
+  }
+
+  /**
    * Stops all motors.
    */
-  public void stopEverything() {
+  private void stopEverything() {
     stopShooter();
     stopIndexer();
     stopHood();
@@ -246,7 +263,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     super.periodic();
 
-    // Periodic shooter logic. Basically:
+    // Periodic shooter logic. Basically (if in operation):
     // Always adjust hood
     // If holding shoot button:
     // (pass/shoot/forceshoot/dumbshoot)
@@ -255,6 +272,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     //    - Indexer is always turned on if forceshoot is held
     // If not holding button, set shoot motor to hold speed
     // and stop indexer
+    // If not in operation, just stop everything
     boolean shooting = HeadHoncho.getInstance().wantToShoot();
     boolean passing = HeadHoncho.getInstance().wantToPass();
     boolean dumbShooting = HeadHoncho.getInstance().wantToDumbShoot();
@@ -264,45 +282,49 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/wantToDumbShoot", dumbShooting);
     Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
 
-    adjustHood();
+    if (m_isRunning) {
+      adjustHood();
 
-    if (shooting || passing || forceShooting || dumbShooting) {
-      runShooter();
+      if (shooting || passing || forceShooting || dumbShooting) {
+        runShooter();
 
-      boolean shooterIsReady = shooterReady();
-      boolean readyToShoot = (
-        shooterIsReady &&
-        DriveSubsystem.getInstance().inAllianceZone() &&
-        (
-          GameHelpers.scoringTimeLeft() - Constants.Field.HUB_HANG_TIME
-          >= Constants.Shooter.SHOOTER_TIME_MARGIN
-        )
-      );
-      boolean readyToPass = (
-        shooterIsReady && 
-        !DriveSubsystem.getInstance().inAllianceZone()
-      );
+        boolean shooterIsReady = shooterReady();
+        boolean readyToShoot = (
+          shooterIsReady &&
+          DriveSubsystem.getInstance().inAllianceZone() &&
+          (
+            GameHelpers.scoringTimeLeft() - Constants.Field.HUB_HANG_TIME
+            >= Constants.Shooter.SHOOTER_TIME_MARGIN
+          )
+        );
+        boolean readyToPass = (
+          shooterIsReady && 
+          !DriveSubsystem.getInstance().inAllianceZone()
+        );
 
-      Logger.recordOutput(getName() + "/shooterIsReady", shooterIsReady);
-      Logger.recordOutput(getName() + "/readyToShoot", readyToShoot);
-      Logger.recordOutput(getName() + "/readyToPass", readyToPass);
+        Logger.recordOutput(getName() + "/shooterIsReady", shooterIsReady);
+        Logger.recordOutput(getName() + "/readyToShoot", readyToShoot);
+        Logger.recordOutput(getName() + "/readyToPass", readyToPass);
 
-      if ((readyToShoot && shooting) ||
-          (readyToPass && passing) ||
-          // BTW: wantedHoodPosition & wantedShooterSpeed
-          // return the dumb constants and readyToShoot
-          // doesn't check orientation if the dumb
-          // shooting button is held
-          (readyToShoot && dumbShooting) ||
-          forceShooting
-      ) {
-        runIndexer();
+        if ((readyToShoot && shooting) ||
+            (readyToPass && passing) ||
+            // BTW: wantedHoodPosition & wantedShooterSpeed
+            // return the dumb constants and readyToShoot
+            // doesn't check orientation if the dumb
+            // shooting button is held
+            (readyToShoot && dumbShooting) ||
+            forceShooting
+        ) {
+          runIndexer();
+        } else {
+          stopIndexer();
+        }
       } else {
+        holdShooter();
         stopIndexer();
       }
     } else {
-      holdShooter();
-      stopIndexer();
+      stopEverything();
     }
     
     Logger.recordOutput(getName() + "/shooterSpeed",
@@ -321,6 +343,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       wantedShooterSpeed());
     Logger.recordOutput(getName() + "/wantedHoodPosition",
       wantedHoodPosition());
+    Logger.recordOutput(getName() + "/isRunning",
+      m_isRunning);
   }
 
   @Override

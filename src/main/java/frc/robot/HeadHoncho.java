@@ -20,8 +20,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     REST {
       @Override
       public void initialize() {
-        ShooterSubsystem.getInstance().stopEverything();
         IntakeSubsystem.getInstance().stopIntake();
+        ShooterSubsystem.getInstance().stopOperation();
         DriveSubsystem.getInstance().driverControl();
         ClimbSubsystem.getInstance().stow();
       }
@@ -34,6 +34,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     NORMAL {
       @Override
       public void initialize() {
+        ShooterSubsystem.getInstance().startOperation();
         ClimbSubsystem.getInstance().stow();
       }
 
@@ -78,7 +79,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         // The hopper can retract while full
         // it just spews balls out
         IntakeSubsystem.getInstance().stopIntake();
-        ShooterSubsystem.getInstance().stopEverything();
+        ShooterSubsystem.getInstance().stopOperation();
         DriveSubsystem.getInstance().driveAutoClimb();
         ClimbSubsystem.getInstance().stow();
       }
