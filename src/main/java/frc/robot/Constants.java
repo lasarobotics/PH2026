@@ -45,14 +45,14 @@ public final class Constants {
   }
 
   public static class Shooter {
-    public static final int LEADER_SHOOTER_MOTOR_ID = 0; // TODO
+    public static final int LEADER_SHOOTER_MOTOR_ID = 30;
     // NOTE: Slave motors should spin in the same direction
     // (opposite to that of the master)
-    public static final int FOLLOWER_SHOOTER_ONE_MOTOR_ID = 0; // TODO
-    public static final int FOLLOWER_SHOOTER_TWO_MOTOR_ID = 0; // TODO
-    public static final int INDEXER_MOTOR_ID = 0; // TODO
-    public static final int HOOD_MOTOR_ID = 0; // TODO
-    public static final int HOOD_CANCODER_ID = 0; // TODO
+    public static final int FOLLOWER_SHOOTER_ONE_MOTOR_ID = 31;
+    public static final int FOLLOWER_SHOOTER_TWO_MOTOR_ID = 32;
+    public static final int INDEXER_MOTOR_ID = 33;
+    public static final int HOOD_MOTOR_ID = 34;
+    public static final int HOOD_CANCODER_ID = 35;
 
     // TODO find value for this
     // voltage
@@ -319,10 +319,9 @@ public final class Constants {
   }
 
   public static class Intake {
-    // TODO: find the ids of the motors and encoder
-    public static final int INTAKE_MOTOR_ID = 0;
-    public static final int ARM_MOTOR_ID = 0;
-    public static final int ARM_ENCODER_ID = 0;
+    public static final int INTAKE_MOTOR_ID = 40;
+    public static final int ARM_MOTOR_ID = 41;
+    public static final int ARM_ENCODER_ID = 42;
 
     // TODO: find values of intake positions
     public static final Dimensionless INTAKE_SPEED = Value.of(0.6);
@@ -334,10 +333,9 @@ public final class Constants {
   }
 
   public static class Hopper {
-    // TODO find these
-    public static final int CANRANGE_TOP_ONE_ID = 0;
-    public static final int CANRANGE_TOP_TWO_ID = 0;
-    public static final int CANRANGE_BOTTOM_ID = 0;
+    public static final int CANRANGE_TOP_ONE_ID = 50;
+    public static final int CANRANGE_TOP_TWO_ID = 51;
+    public static final int CANRANGE_BOTTOM_ID = 52;
 
     // 18 inches is wall to wall where bottom canrange is
     // so 17 inches for extra tolerance
@@ -357,10 +355,9 @@ public final class Constants {
   }
 
   public static class Climb {
-    // TODO: find the ids of the climb motors and encoder
-    public static final int CLIMB_MOTOR_1_ID = 0;
-    public static final int CLIMB_MOTOR_2_ID = 0;
-    public static final int ARM_ENCODER_ID = 0;
+    public static final int CLIMB_MOTOR_1_ID = 60;
+    public static final int CLIMB_MOTOR_2_ID = 61;
+    public static final int ARM_ENCODER_ID = 62;
 
     // TODO: Find the values of climb constants
     public static final double CLIMB_SPEED = 0.0;
