@@ -2,6 +2,7 @@ package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
@@ -15,12 +16,14 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.generated.TunerConstants;
@@ -48,11 +51,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             s_drive
                 .withVelocityX(
                     Constants.Drive.MAX_SPEED
-                        .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                        .times(Math.pow(s_driveRequest.getAsDouble(), 1))
                         .times(s_driveSpeedScalar))
                 .withVelocityY(
                     Constants.Drive.MAX_SPEED
-                        .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                        .times(Math.pow(s_strafeRequest.getAsDouble(), 1))
                         .times(s_driveSpeedScalar))
                 .withRotationalRate(
                     Constants.Drive.MAX_ANGULAR_RATE
@@ -64,8 +67,18 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       @Override
       public SystemState nextState() {
         if (DriverStation.isAutonomous()) return AUTO;
+
+        DriveSubsystem subsystem = getInstance();
+        boolean overRampRequested = subsystem.overRampRequested();
+        if (!overRampRequested) {
+          subsystem.m_overRampFinishedWhileHeld = false;
+        }
+        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+          return OVER_RAMP;
+        }
+
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && s_driveSubsystem.inAllianceZone()) return CLIMB_ALIGN;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && subsystem.inAllianceZone()) return CLIMB_ALIGN;
         
         return this;
       }
@@ -87,11 +100,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           s_drive
             .withVelocityX(
                 Constants.Drive.MAX_SPEED
-                    .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                    .times(Math.pow(s_driveRequest.getAsDouble(), 1))
                     .times(s_driveSpeedScalar))
             .withVelocityY(
                 Constants.Drive.MAX_SPEED
-                    .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                    .times(Math.pow(s_strafeRequest.getAsDouble(), 1))
                     .times(s_driveSpeedScalar))
             .withRotationalRate(
               output
@@ -100,9 +113,18 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        DriveSubsystem subsystem = getInstance();
+        boolean overRampRequested = subsystem.overRampRequested();
+        if (!overRampRequested) {
+          subsystem.m_overRampFinishedWhileHeld = false;
+        }
+        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+          return OVER_RAMP;
+        }
+
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && s_driveSubsystem.inAllianceZone()) return CLIMB_ALIGN;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && subsystem.inAllianceZone()) return CLIMB_ALIGN;
 
         return this;
       }
@@ -115,7 +137,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        if (s_driveSubsystem.atDestination(s_alliancePoses[WP_CLIMB], DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
+        DriveSubsystem subsystem = getInstance();
+        boolean overRampRequested = subsystem.overRampRequested();
+        if (!overRampRequested) {
+          subsystem.m_overRampFinishedWhileHeld = false;
+        }
+        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+          return OVER_RAMP;
+        }
+
+        if (subsystem.atDestination(s_alliancePoses[WP_CLIMB], DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
           if (!DriverStation.isAutonomous()) {
             return SLOW_DRIVER_ALIGN;
           } else {
@@ -140,11 +171,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             s_drive
                 .withVelocityX(
                     Constants.Drive.MAX_SPEED
-                        .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                        .times(Math.pow(s_driveRequest.getAsDouble(), 1))
                         .times(s_driveSpeedScalar))
                 .withVelocityY(
                     Constants.Drive.MAX_SPEED
-                        .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                        .times(Math.pow(s_strafeRequest.getAsDouble(), 1))
                         .times(s_driveSpeedScalar))
                 .withRotationalRate(
                     Constants.Drive.MAX_ANGULAR_RATE
@@ -154,10 +185,62 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public DriveStates nextState() {
+        DriveSubsystem subsystem = getInstance();
+        boolean overRampRequested = subsystem.overRampRequested();
+        if (!overRampRequested) {
+          subsystem.m_overRampFinishedWhileHeld = false;
+        }
+        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+          return OVER_RAMP;
+        }
+
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && s_driveSubsystem.inAllianceZone()) return CLIMB_ALIGN;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && subsystem.inAllianceZone()) return CLIMB_ALIGN;
 
+        return this;
+      }
+    },
+    OVER_RAMP {
+      @Override
+      public void initialize() {
+        DriveSubsystem subsystem = getInstance();
+        subsystem.m_overRampFinishedWhileHeld = false;
+        subsystem.startOverRampSequence();
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem subsystem = getInstance();
+        if (!subsystem.overRampRequested()) {
+          subsystem.m_overRampOverrideActive = false;
+          subsystem.driveOverRampOverride();
+          return;
+        }
+
+        subsystem.runOverRampSequence();
+        subsystem.driveOverRampOverride();
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        DriveSubsystem subsystem = getInstance();
+        subsystem.m_overRampRunning = false;
+        subsystem.m_overRampOverrideActive = false;
+        subsystem.m_overRampStage = 0;
+        subsystem.m_overRampVx = 0.0;
+        subsystem.m_overRampVy = 0.0;
+        subsystem.m_overRampOmega = 0.0;
+        if (!subsystem.overRampRequested()) {
+          subsystem.m_overRampFinishedWhileHeld = false;
+        }
+      }
+
+      @Override
+      public SystemState nextState() {
+        DriveSubsystem subsystem = getInstance();
+        if (!subsystem.overRampRequested()) return DRIVER_CONTROL;
+        if (subsystem.m_overRampFinishedWhileHeld) return DRIVER_CONTROL;
         return this;
       }
     }
@@ -170,6 +253,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DoubleSupplier s_driveRequest = () -> 0;
   private static DoubleSupplier s_strafeRequest = () -> 0;
   private static DoubleSupplier s_rotateRequest = () -> 0;
+  private static BooleanSupplier s_overRampRequest = () -> false;
 
   private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
   private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
@@ -195,6 +279,23 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DriveStates s_requestedDriveState = DriveStates.NOTHING;
 
   private static Pose2d[] s_alliancePoses;
+
+  private static final double[] OVER_RAMP_STAGE_MAX_SPEED_MPS = {1.75, 1.67, 0.75};
+  private static final double OVER_RAMP_STAGE_TIMEOUT_SEC = 2.5;
+  private static final double OVER_RAMP_POSITION_TOLERANCE_M = 0.1;
+  private static final double OVER_RAMP_HEADING_TOLERANCE_RAD = Math.toRadians(8.0);
+
+  private boolean m_overRampRunning = false;
+  private boolean m_overRampFinishedWhileHeld = false;
+  private int m_overRampStage = 0;
+  private final Pose2d[] m_overRampTargets = new Pose2d[3];
+
+  private double m_overRampVx = 0.0;
+  private double m_overRampVy = 0.0;
+  private double m_overRampOmega = 0.0;
+  private boolean m_overRampOverrideActive = false;
+  private double m_overRampStageTimeoutStart = 0.0;
+  private Pose2d m_overRampStageStartPose = new Pose2d();
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -395,6 +496,224 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       s_drivetrain.getState().Pose.getRotation().getMeasure(),
       Constants.Drive.ROTATION_TOLERANCE
     );
+  }
+
+  public void bindOverRampRequest(BooleanSupplier overRampRequest) {
+    s_overRampRequest = (overRampRequest != null) ? overRampRequest : () -> false;
+  }
+
+  public boolean overRampFinishedWhileHeld() {
+    return m_overRampFinishedWhileHeld;
+  }
+
+  public Pose2d getCurrentPose() {
+    return s_drivetrain.getState().Pose;
+  }
+
+  public void resetPoseToZero() {
+    s_drivetrain.resetPose(new Pose2d());
+  }
+
+  private boolean overRampRequested() {
+    return s_overRampRequest != null && s_overRampRequest.getAsBoolean();
+  }
+
+  private void startOverRampSequence() {
+    Pose2d current = s_drivetrain.getState().Pose;
+
+    Pose2d[] azCandidates = Constants.Drive.AZ_RAMP_POSA_CANDIDATES;
+    Pose2d[] nzCandidates = Constants.Drive.NZ_RAMP_POSA_CANDIDATES;
+
+    double bestAzDistance = Double.MAX_VALUE;
+    int bestAzIndex = 0;
+    for (int i = 0; i < azCandidates.length; i++) {
+      double dist = current.getTranslation().getDistance(azCandidates[i].getTranslation());
+      if (dist < bestAzDistance) {
+        bestAzDistance = dist;
+        bestAzIndex = i;
+      }
+    }
+
+    double bestNzDistance = Double.MAX_VALUE;
+    int bestNzIndex = 0;
+    for (int i = 0; i < nzCandidates.length; i++) {
+      double dist = current.getTranslation().getDistance(nzCandidates[i].getTranslation());
+      if (dist < bestNzDistance) {
+        bestNzDistance = dist;
+        bestNzIndex = i;
+      }
+    }
+
+    boolean useNz = bestNzDistance < bestAzDistance;
+    int bestIndex = useNz ? bestNzIndex : bestAzIndex;
+
+    if (useNz) {
+      switch (bestIndex) {
+        case 0 -> {
+          m_overRampTargets[0] = Constants.Drive.NZ_rampRed1_posa;
+          m_overRampTargets[1] = Constants.Drive.NZ_rampRed1_posb;
+          m_overRampTargets[2] = Constants.Drive.NZ_rampRed1_posc;
+        }
+        case 1 -> {
+          m_overRampTargets[0] = Constants.Drive.NZ_rampRed2_posa;
+          m_overRampTargets[1] = Constants.Drive.NZ_rampRed2_posb;
+          m_overRampTargets[2] = Constants.Drive.NZ_rampRed2_posc;
+        }
+        case 2 -> {
+          m_overRampTargets[0] = Constants.Drive.NZ_rampBlue1_posa;
+          m_overRampTargets[1] = Constants.Drive.NZ_rampBlue1_posb;
+          m_overRampTargets[2] = Constants.Drive.NZ_rampBlue1_posc;
+        }
+        case 3 -> {
+          m_overRampTargets[0] = Constants.Drive.NZ_rampBlue2_posa;
+          m_overRampTargets[1] = Constants.Drive.NZ_rampBlue2_posb;
+          m_overRampTargets[2] = Constants.Drive.NZ_rampBlue2_posc;
+        }
+        default -> {
+          m_overRampTargets[0] = Constants.Drive.NZ_rampBlue1_posa;
+          m_overRampTargets[1] = Constants.Drive.NZ_rampBlue1_posb;
+          m_overRampTargets[2] = Constants.Drive.NZ_rampBlue1_posc;
+        }
+      }
+    } else {
+      switch (bestIndex) {
+        case 0 -> {
+          m_overRampTargets[0] = Constants.Drive.AZ_rampRed1_posa;
+          m_overRampTargets[1] = Constants.Drive.AZ_rampRed1_posb;
+          m_overRampTargets[2] = Constants.Drive.AZ_rampRed1_posc;
+        }
+        case 1 -> {
+          m_overRampTargets[0] = Constants.Drive.AZ_rampRed2_posa;
+          m_overRampTargets[1] = Constants.Drive.AZ_rampRed2_posb;
+          m_overRampTargets[2] = Constants.Drive.AZ_rampRed2_posc;
+        }
+        case 2 -> {
+          m_overRampTargets[0] = Constants.Drive.AZ_rampBlue1_posa;
+          m_overRampTargets[1] = Constants.Drive.AZ_rampBlue1_posb;
+          m_overRampTargets[2] = Constants.Drive.AZ_rampBlue1_posc;
+        }
+        case 3 -> {
+          m_overRampTargets[0] = Constants.Drive.AZ_rampBlue2_posa;
+          m_overRampTargets[1] = Constants.Drive.AZ_rampBlue2_posb;
+          m_overRampTargets[2] = Constants.Drive.AZ_rampBlue2_posc;
+        }
+        default -> {
+          m_overRampTargets[0] = Constants.Drive.AZ_rampBlue1_posa;
+          m_overRampTargets[1] = Constants.Drive.AZ_rampBlue1_posb;
+          m_overRampTargets[2] = Constants.Drive.AZ_rampBlue1_posc;
+        }
+      }
+    }
+
+    m_overRampStage = 0;
+    m_overRampRunning = true;
+    m_overRampOverrideActive = true;
+    beginOverRampStage();
+  }
+
+  private void beginOverRampStage() {
+    m_overRampStageStartPose = s_drivetrain.getState().Pose;
+    m_overRampStageTimeoutStart = Timer.getFPGATimestamp();
+    m_overRampVx = 0.0;
+    m_overRampVy = 0.0;
+    m_overRampOmega = 0.0;
+    m_overRampOverrideActive = true;
+  }
+
+  private void runOverRampSequence() {
+    if (!m_overRampRunning) {
+      m_overRampOverrideActive = false;
+      return;
+    }
+
+    Pose2d current = s_drivetrain.getState().Pose;
+    Pose2d targetPose = m_overRampTargets[m_overRampStage];
+    double targetHeading = targetPose.getRotation().getRadians();
+
+    Logger.recordOutput("DriveSubsystem/OverRamp/StageIndex", m_overRampStage);
+    Logger.recordOutput("DriveSubsystem/OverRamp/CurrentPose", current);
+    Logger.recordOutput("DriveSubsystem/OverRamp/TargetPose", targetPose);
+
+    double dx = targetPose.getX() - current.getX();
+    double dy = targetPose.getY() - current.getY();
+    double translationKp = 3.0;
+    double rotationKp = 2.5;
+
+    double maxStageSpeed =
+        OVER_RAMP_STAGE_MAX_SPEED_MPS[Math.min(m_overRampStage, OVER_RAMP_STAGE_MAX_SPEED_MPS.length - 1)];
+
+    double maxOmegaRadPerSec = Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond);
+
+    double headingError = MathUtil.angleModulus(targetHeading - current.getRotation().getRadians());
+    double rotationCmd =
+        MathUtil.clamp(headingError * rotationKp, -maxOmegaRadPerSec, maxOmegaRadPerSec);
+
+    double vxCmd =
+        MathUtil.clamp(dx * translationKp * 1000.0, -maxStageSpeed, maxStageSpeed);
+    double vyCmd =
+        MathUtil.clamp(dy * translationKp, -maxStageSpeed, maxStageSpeed);
+
+    boolean positionReached =
+        Math.abs(dx) < OVER_RAMP_POSITION_TOLERANCE_M && Math.abs(dy) < OVER_RAMP_POSITION_TOLERANCE_M;
+    boolean headingReached = Math.abs(headingError) < OVER_RAMP_HEADING_TOLERANCE_RAD;
+    boolean timedOut = (Timer.getFPGATimestamp() - m_overRampStageTimeoutStart) > OVER_RAMP_STAGE_TIMEOUT_SEC;
+    boolean crossedLine = hasCrossedOverRampProgressionLine(targetPose);
+
+    if ((positionReached && headingReached) || timedOut || crossedLine) {
+      m_overRampStage++;
+      if (m_overRampStage >= m_overRampTargets.length) {
+        m_overRampRunning = false;
+        m_overRampOverrideActive = false;
+        m_overRampFinishedWhileHeld = true;
+        return;
+      }
+      beginOverRampStage();
+      return;
+    }
+
+    m_overRampVx = vxCmd;
+    m_overRampVy = vyCmd;
+    m_overRampOmega = rotationCmd;
+    m_overRampOverrideActive = true;
+  }
+
+  private boolean hasCrossedOverRampProgressionLine(Pose2d target) {
+    Pose2d current = s_drivetrain.getState().Pose;
+    double approachDir = Math.signum(target.getX() - m_overRampStageStartPose.getX());
+    if (approachDir == 0.0) {
+      return false;
+    }
+
+    double lineX = target.getX();
+    double currentX = current.getX();
+    boolean crossed = approachDir > 0 ? currentX >= lineX : currentX <= lineX;
+
+    Logger.recordOutput("DriveSubsystem/OverRamp/Line/Crossed", crossed);
+    return crossed;
+  }
+
+  private void driveOverRampOverride() {
+    if (!m_overRampOverrideActive) {
+      s_drivetrain.setControl(
+          s_drive
+              .withVelocityX(MetersPerSecond.of(0.0))
+              .withVelocityY(MetersPerSecond.of(0.0))
+              .withRotationalRate(RadiansPerSecond.of(0.0)));
+      return;
+    }
+
+    double vx = m_overRampVx;
+    double vy = m_overRampVy;
+    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
+      vx = -vx;
+      vy = -vy;
+    }
+
+    s_drivetrain.setControl(
+        s_drive
+            .withVelocityX(MetersPerSecond.of(vx))
+            .withVelocityY(MetersPerSecond.of(vy))
+            .withRotationalRate(m_overRampOmega));
   }
 
   @Override
