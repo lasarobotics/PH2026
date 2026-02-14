@@ -109,6 +109,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     },
     CLIMB_ALIGN {
       @Override
+      public void initialize() {
+        s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude();
+        s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.magnitude();
+        s_climbAlignDistanceError = 0.2;
+        s_climbAlignRotationError = 0.1;
+      }
+      @Override
       public void execute() {
         s_driveSubsystem.goTo(s_climbPosition, 0, DriveSubsystem.s_climbAlignSpeed, DriveSubsystem.s_climbRotationSpeed);
       }
