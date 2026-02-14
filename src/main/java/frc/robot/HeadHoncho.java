@@ -25,6 +25,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       @Override
       public SystemState nextState() {
         if (s_headHoncho.m_restButtonHasFallen.getAsBoolean()) return NORMAL;
+
         return this;
       }
     },
@@ -48,7 +49,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         if (s_headHoncho.m_intakeButtonHasFallen.getAsBoolean()) {
           IntakeSubsystem.getInstance().toggleIntake();
         }
-
       }
 
       @Override
@@ -59,7 +59,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         ) return CLIMB;
 
         if (s_headHoncho.m_restButtonHasFallen.getAsBoolean()) return REST;
-
 
         return this;
       }
@@ -138,22 +137,24 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    * @param forceShootButton True if we want to override
    * shooter checks & force run the indexer.
    * @param passButton True if we currently want to pass.
-   * @param intakeButton True if we want to toggle the intake.
+   * @param intakeButtonHasFallen True if we want to toggle the intake.
    * As a result, should be a provider for if the button has
    * just been pressed down. (e.g. () -> button.wasPressed())
-   * @param climbButton True if we want to do next climb action.
+   * @param climbButtonHasFallen True if we want to do next climb action.
    * Same as intakeButton; should be a provider for if button
    * has just been pressed.
-   * @param cancelButtonGasFallen True if we want to go back from the climb
-   * to the rest state in HeadHoncho.
+   * @param cancelButtonHasFallen True if we want switch between the normal
+   * and rest state in HeadHoncho.
+   * @param cancelButtonHasFallen True if we want to go back from the climb
+   * to the normal state in HeadHoncho.
    */
   public void configureBindings(
     BooleanSupplier shootButton,
     BooleanSupplier dumbShootButton,
     BooleanSupplier forceShootButton,
     BooleanSupplier passButton,
-    BooleanSupplier intakeButton,
-    BooleanSupplier climbButton,
+    BooleanSupplier intakeButtonHasFallen,
+    BooleanSupplier climbButtonHasFallen,
     BooleanSupplier restButtonHasFallen,
     BooleanSupplier cancelButtonHasFallen
   ) {
@@ -161,8 +162,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_dumbShootButton = dumbShootButton;
     m_forceShootButton = forceShootButton;
     m_passButton = passButton;
-    m_intakeButtonHasFallen = intakeButton;
-    m_climbButtonHasFallen = climbButton;
+    m_intakeButtonHasFallen = intakeButtonHasFallen;
+    m_climbButtonHasFallen = climbButtonHasFallen;
     m_restButtonHasFallen = restButtonHasFallen;
     m_cancelButtonHasFallen = cancelButtonHasFallen;
   }
