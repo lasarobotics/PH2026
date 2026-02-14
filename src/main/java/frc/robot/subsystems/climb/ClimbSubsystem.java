@@ -6,8 +6,10 @@ package frc.robot.subsystems.climb;
 
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
@@ -39,20 +41,27 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
 
   /** Creates a new ClimbSubsystem. */
   private ClimbSubsystem() {
-
-    this.m_climbEncoder = new CANcoder(Constants.Climb.ARM_ENCODER_ID);
     this.m_climbMotor1 = new TalonFX(Constants.Climb.CLIMB_MOTOR_1_ID);
     this.m_climbMotor2 = new TalonFX(Constants.Climb.CLIMB_MOTOR_2_ID);
+    this.m_climbEncoder = new CANcoder(Constants.Climb.ARM_ENCODER_ID);
 
     // TODO: Verify motor configs
-    TalonFXConfiguration motorConfig = new TalonFXConfiguration();
-    motorConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    TalonFXConfiguration motorOneConfig = new TalonFXConfiguration();
+    TalonFXConfiguration motorTwoConfig = new TalonFXConfiguration();
+    CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
+    
+    motorOneConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    motorOneConfig.Feedback.FeedbackRemoteSensorID = m_climbEncoder.getDeviceID();
+    motorOneConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
 
-    this.m_climbMotor1.getConfigurator().apply(motorConfig);
-    this.m_climbMotor2.getConfigurator().apply(motorConfig);
+    this.m_climbMotor1.getConfigurator().apply(motorOneConfig);
+    this.m_climbMotor2.getConfigurator().apply(motorTwoConfig);
+    this.m_climbEncoder.getConfigurator().apply(encoderConfig);
 
     // Make climbMotor2 follow climbMotor1
-    this.m_climbMotor2.setControl(new Follower(this.m_climbMotor1.getDeviceID(), MotorAlignmentValue.Aligned));
+    this.m_climbMotor2.setControl(
+      new Follower(this.m_climbMotor1.getDeviceID(), MotorAlignmentValue.Aligned)
+    );
 
     this.m_isClimbing = false;
     this.m_wantToClimb = false;
