@@ -1,6 +1,7 @@
 package frc.robot;
 
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 
 import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
@@ -227,6 +228,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    * @param cancelButton True if we want to go back from the climb
    * to the normal state in HeadHoncho.
    * @param reverseIntakeButton True if we want to reverse the intake motor
+   * @param overRampRequest True if we want to go over the bump
    * @param restButtonHasFallen True if we want to go over the bump
    * @param intakeButtonHasFallen True if we want to toggle the intake.
    * As a result, should be a provider for if the button has
@@ -247,7 +249,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     BooleanSupplier overRampRequest,
     BooleanSupplier intakeButtonHasFallen,
     BooleanSupplier climbButtonHasFallen,
-    BooleanSupplier restButtonHasFallen
+    BooleanSupplier restButtonHasFallen,
+    DoubleSupplier driveRequest,
+    DoubleSupplier strafeRequest,
+    DoubleSupplier rotateRequest
   ) {
     m_shootButton = shootButton;
     m_dumbShootButton = dumbShootButton;
@@ -260,7 +265,12 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_climbButtonHasFallen = climbButtonHasFallen;
     m_restButtonHasFallen = restButtonHasFallen;
 
-    DriveSubsystem.getInstance().bindOverRampRequest(m_overRampRequest);
+    DriveSubsystem.getInstance().bindControls(
+      driveRequest,
+      strafeRequest,
+      rotateRequest,
+      overRampRequest
+    );
   }
 
   public void close() {}

@@ -21,10 +21,6 @@ import frc.robot.subsystems.drive.DriveSubsystem;
  */
 public class RobotContainer {
   // The robot's subsystems and commands are defined here...
-  // TODO
-
-  private final DriveSubsystem DRIVE_SUBSYSTEM = DriveSubsystem.getInstance();
-  private final HeadHoncho HEAD_HONCHO = HeadHoncho.getInstance();
 
   // Replace with CommandPS4Controller or CommandJoystick if needed
   private final CommandXboxController m_driverController =
@@ -34,7 +30,36 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    SmartDashboard.putData(Constants.SmartDashboard.SMARTDASHBOARD_CLIMB_CHOOSER_NAME, HEAD_HONCHO.getClimbChooser());
+    SmartDashboard.putData(
+      Constants.SmartDashboard.SMARTDASHBOARD_CLIMB_CHOOSER_NAME, 
+      HeadHoncho.getInstance().getClimbChooser()
+    );
+  }
+
+  private boolean m_intakePrevious = false;
+  private boolean m_climbPrevious = false;
+  private boolean m_restPrevious = false;
+  private boolean m_intakeRisen = false;
+  private boolean m_climbRisen = false;
+  private boolean m_restRisen = false;
+
+  /**
+   * Updates the rising edge detection for certain bindings (intake,
+   * climb, rest). Should only be called once per loop to ensure that
+   * everything that wants to know about a rising edge does.
+   */
+  public void updateRisen() {
+    boolean intakeDown = m_driverController.leftBumper().getAsBoolean();
+    boolean climbDown = m_driverController.povUp().getAsBoolean();
+    boolean restDown = m_driverController.back().getAsBoolean();
+
+    if (intakeDown && !m_intakePrevious) m_intakeRisen = true;
+    if (climbDown && !m_climbPrevious) m_climbRisen = true;
+    if (restDown && !m_restPrevious) m_restRisen = true;
+
+    m_intakePrevious = intakeDown;
+    m_climbPrevious = climbDown;
+    m_restPrevious = restDown;
   }
 
   /**
@@ -47,49 +72,50 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-
-    // TODO figure out actual bindings
     HeadHoncho.getInstance().configureBindings(
       // shoot button
-      m_driverController.a(),
+      m_driverController.rightTrigger(),
       // dumbshoot button
       m_driverController.b(),
       // forceshoot button
-      m_driverController.b(),
+      m_driverController.y(),
       // pass button
-      m_driverController.a(),
+      m_driverController.rightBumper(),
       // cancel button
-      m_driverController.a(),
+      m_driverController.x(),
       // reverse intake button
       m_driverController.a(),
       // over ramp button
-      () -> m_driverController.getHID().getRightTriggerAxis() > 0.5,
+      m_driverController.leftTrigger(),
       // intake fallen trigger
-      () -> m_driverController.getHID().getAButtonPressed(),
+      () -> m_intakeRisen,
       // climb fallen trigger
-      () -> m_driverController.getHID().getAButtonPressed(),
+      () -> m_climbRisen,
       // rest fallen trigger
-      () -> m_driverController.getHID().getAButtonPressed()
+      () -> m_restRisen,
+      // drive subsystem stuff
+      // drive
+      () -> m_driverController.getLeftY(),
+      // strafe
+      () -> m_driverController.getLeftX(),
+      // rotate
+      () -> m_driverController.getRightX()
     );
 
-
+    // this is kinda icky to have separate
+    // but whatever
     m_driverController
-        .start()
-        .onTrue(
-            new InstantCommand(
-                    () -> {
-                      // Prevent pose resets during AUTON
-                      if (DriverStation.isAutonomous() && DriverStation.isEnabled()) return;
-                      DriveSubsystem.getInstance().resetPoseToZero();
-                    })
-                .ignoringDisable(true));
-
-    DriveSubsystem.getInstance().bindControls(
-        () -> m_driverController.getLeftY(),
-        () -> m_driverController.getLeftX(),
-        () -> m_driverController.getRightX(),
-        () -> false,
-        () -> false);
+      .start()
+      .onTrue(
+        new InstantCommand(
+          () -> {
+            // Prevent pose resets during auto
+            if (DriverStation.isAutonomous() && DriverStation.isEnabled()) return;
+            DriveSubsystem.getInstance().resetPoseToZero();
+          }
+        )
+        .ignoringDisable(true)
+      );
   }
 
   /**

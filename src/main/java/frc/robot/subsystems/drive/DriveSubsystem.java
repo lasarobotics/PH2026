@@ -466,33 +466,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         "limelight1", s_drivetrain.getState().Pose.getRotation().getDegrees(), 0, 0, 0, 0, 0);
   }  
 
-
-  // TODO move all these bindings into headhoncho
-  /*
-   * Binds the controls needed to drive for controller usage
-   */
-  public void bindControls(
-      DoubleSupplier driveRequest, DoubleSupplier strafeRequest, DoubleSupplier rotateRequest) {
-    bindControls(driveRequest, strafeRequest, rotateRequest, () -> false, () -> false);
-  }
-
   public void bindControls(
       DoubleSupplier driveRequest,
       DoubleSupplier strafeRequest,
       DoubleSupplier rotateRequest,
-      BooleanSupplier fuelAlignRequest) {
-    bindControls(driveRequest, strafeRequest, rotateRequest, fuelAlignRequest, () -> false);
-  }
-
-  public void bindControls(
-      DoubleSupplier driveRequest,
-      DoubleSupplier strafeRequest,
-      DoubleSupplier rotateRequest,
-      BooleanSupplier fuelAlignRequest,
       BooleanSupplier overBumpRequest) {
     s_driveRequest = driveRequest;
     s_strafeRequest = strafeRequest;
     s_rotateRequest = rotateRequest;
+    s_overRampRequest = overBumpRequest;
   }
 
   /**
@@ -633,10 +615,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         s_climbPosition = new Pose2d();
         break;
     }
-  }
-
-  public void bindOverRampRequest(BooleanSupplier overRampRequest) {
-    s_overRampRequest = (overRampRequest != null) ? overRampRequest : () -> false;
   }
 
   public boolean overRampFinishedWhileHeld() {
