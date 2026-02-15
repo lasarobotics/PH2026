@@ -85,6 +85,8 @@ public class RobotContainer {
       m_driverController.x(),
       // reverse intake button
       m_driverController.a(),
+      // reset odom button
+      m_driverController.a(),
       // over ramp button
       m_driverController.leftTrigger(),
       // intake fallen trigger
