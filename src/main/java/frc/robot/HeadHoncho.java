@@ -26,7 +26,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         IntakeSubsystem.getInstance().stopIntake();
         ShooterSubsystem.getInstance().stopOperation();
         DriveSubsystem.getInstance().driverControl();
-        ClimbSubsystem.getInstance().stow();
+        ClimbSubsystem.getInstance().stowClimber();
       }
 
       @Override
@@ -40,7 +40,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void initialize() {
         ShooterSubsystem.getInstance().startOperation();
-        ClimbSubsystem.getInstance().stow();
+        ClimbSubsystem.getInstance().stowClimber();
       }
 
       @Override
@@ -109,13 +109,13 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         IntakeSubsystem.getInstance().stopIntake();
         ShooterSubsystem.getInstance().stopOperation();
         DriveSubsystem.getInstance().driveAutoClimb();
-        ClimbSubsystem.getInstance().stow();
+        ClimbSubsystem.getInstance().stowClimber();
       }
 
       @Override
       public void execute() {
         if (s_headHoncho.m_climbButtonHasFallen.getAsBoolean()) {
-          ClimbSubsystem.getInstance().climb();
+          ClimbSubsystem.getInstance().extendClimber();
         }
       }
 
