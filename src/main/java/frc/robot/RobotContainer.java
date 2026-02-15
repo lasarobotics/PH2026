@@ -79,8 +79,6 @@ public class RobotContainer {
       m_driverController.b(),
       // forceshoot button
       m_driverController.y(),
-      // pass button
-      m_driverController.rightBumper(),
       // cancel button
       m_driverController.x(),
       // reverse intake button

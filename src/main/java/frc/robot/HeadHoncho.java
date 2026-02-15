@@ -8,6 +8,7 @@ import org.lasarobotics.fsm.SystemState;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.climb.ClimbSubsystem;
@@ -47,18 +48,14 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         boolean overRampRequested = s_headHoncho.m_overRampRequest.getAsBoolean();
         boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
-        boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
 
-        if (passButton) {
-          AimUtil.setTarget(wantedPassPosition(), 0);
-        } else {
-          AimUtil.setTarget(
-            wantedShootPosition(),
-            Constants.Field.HUB_Y_POS
-          );
-        }
+        Translation3d shootPos = wantedShootPosition();
+        AimUtil.setTarget(
+          new Translation2d(shootPos.getX(), shootPos.getY()),
+          shootPos.getZ()
+        );
 
-        if (!overRampRequested && (shootButton || passButton)) {
+        if (!overRampRequested && (shootButton)) {
           DriveSubsystem.getInstance().driveAutoAim();
         } else {
           DriveSubsystem.getInstance().driverControl();
@@ -135,7 +132,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_shootButton;
   private BooleanSupplier m_dumbShootButton;
   private BooleanSupplier m_forceShootButton;
-  private BooleanSupplier m_passButton;
   private BooleanSupplier m_cancelButton;
   private BooleanSupplier m_reverseIntakeButton;
   private BooleanSupplier m_overRampRequest;
@@ -179,10 +175,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     return m_shootButton.getAsBoolean();
   }
 
-  public boolean wantToPass() {
-    return m_passButton.getAsBoolean();
-  }
-
   public boolean wantToDumbShoot() {
     return m_dumbShootButton.getAsBoolean();
   }
@@ -191,30 +183,42 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     return m_forceShootButton.getAsBoolean();
   }
 
-  private static Translation2d wantedShootPosition() {
-    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-      // red alliance
-      return Constants.Field.RED_HUB_COORDINATES;
-    } else {
-      // blue alliance
-      return Constants.Field.BLUE_HUB_COORDINATES;
-    }
-  }
+  private static Translation3d wantedShootPosition() {
+    Translation2d targetPos;
+    double targetH;
+    if (DriveSubsystem.getInstance().inAllianceZone()) {
+      targetH = Constants.Field.HUB_Y_POS;
 
-  private static Translation2d wantedPassPosition() {
-    Pose2d pose = DriveSubsystem.getDrivetrain().getState().Pose;
-    boolean bottomHalfOfField = pose.getY() <= Constants.Field.HALF_FIELD_Y_POS;
-    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-      // red alliance
-      return bottomHalfOfField ?
-        Constants.Field.RED_BOTTOM_PASS_COORDINATES :
-        Constants.Field.RED_TOP_PASS_COORDINATES;
+      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+        // red alliance
+        targetPos = Constants.Field.RED_HUB_COORDINATES;
+      } else {
+        // blue alliance
+        targetPos = Constants.Field.BLUE_HUB_COORDINATES;
+      }
     } else {
-      // blue alliance
-      return bottomHalfOfField ?
-        Constants.Field.BLUE_BOTTOM_PASS_COORDINATES :
-        Constants.Field.BLUE_TOP_PASS_COORDINATES;
+      targetH = 0;
+
+      Pose2d pose = DriveSubsystem.getDrivetrain().getState().Pose;
+      boolean bottomHalfOfField = pose.getY() <= Constants.Field.HALF_FIELD_Y_POS;
+      if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+        // red alliance
+        targetPos = bottomHalfOfField ?
+          Constants.Field.RED_BOTTOM_PASS_COORDINATES :
+          Constants.Field.RED_TOP_PASS_COORDINATES;
+      } else {
+        // blue alliance
+        targetPos = bottomHalfOfField ?
+          Constants.Field.BLUE_BOTTOM_PASS_COORDINATES :
+          Constants.Field.BLUE_TOP_PASS_COORDINATES;
+      }
     }
+
+    return new Translation3d(
+      targetPos.getX(),
+      targetPos.getY(),
+      targetH
+    );
   }
 
   public boolean wantToResetOdometry() {
@@ -229,7 +233,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    * do a dumb shoot (constant hood position & speed).
    * @param forceShootButton True if we want to override
    * shooter checks & force run the indexer.
-   * @param passButton True if we currently want to pass.
    * @param cancelButton True if we want to go back from the climb
    * to the normal state in HeadHoncho.
    * @param reverseIntakeButton True if we want to reverse the intake motor
@@ -248,7 +251,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     BooleanSupplier shootButton,
     BooleanSupplier dumbShootButton,
     BooleanSupplier forceShootButton,
-    BooleanSupplier passButton,
     BooleanSupplier cancelButton,
     BooleanSupplier reverseIntakeButton,
     BooleanSupplier overRampRequest,
@@ -263,7 +265,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_shootButton = shootButton;
     m_dumbShootButton = dumbShootButton;
     m_forceShootButton = forceShootButton;
-    m_passButton = passButton;
     m_cancelButton = cancelButton;
     m_reverseIntakeButton = reverseIntakeButton;
     m_overRampRequest = overRampRequest;

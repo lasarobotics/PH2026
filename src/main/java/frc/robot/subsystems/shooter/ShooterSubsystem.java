@@ -274,40 +274,49 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // and stop indexer
     // If not in operation, just stop everything
     boolean shooting = HeadHoncho.getInstance().wantToShoot();
-    boolean passing = HeadHoncho.getInstance().wantToPass();
     boolean dumbShooting = HeadHoncho.getInstance().wantToDumbShoot();
     boolean forceShooting = HeadHoncho.getInstance().wantToForceShoot();
     Logger.recordOutput(getName() + "/wantToShoot", shooting);
-    Logger.recordOutput(getName() + "/wantToPass", passing);
     Logger.recordOutput(getName() + "/wantToDumbShoot", dumbShooting);
     Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
 
     if (m_isRunning) {
       adjustHood();
 
-      if (shooting || passing || forceShooting || dumbShooting) {
+      if (shooting || forceShooting || dumbShooting) {
         runShooter();
 
-        boolean shooterIsReady = shooterReady();
+        // If the shooter is ready (rpm, position, hood)
+        // the O of the following truth table is one, then
+        // ready to shoot
+        // Table key: A for being in the alliance zone,
+        // T for being in active shift (Time), and O
+        // for output
+        //  A T O 
+        // ┌─┬─┬─┐
+        // │1│1│1│
+        // ├─┼─┼─┤
+        // │1│0│0│
+        // ├─┼─┼─┤
+        // │0│1│1│
+        // ├─┼─┼─┤
+        // │0│0│1│
+        // └─┴─┴─┘
+
         boolean readyToShoot = (
-          shooterIsReady &&
-          DriveSubsystem.getInstance().inAllianceZone() &&
+          shooterReady() &&
           (
-            GameHelpers.scoringTimeLeft() - Constants.Field.HUB_HANG_TIME
-            >= Constants.Shooter.SHOOTER_TIME_MARGIN
+            !DriveSubsystem.getInstance().inAllianceZone() ||
+            (
+              GameHelpers.scoringTimeLeft() - Constants.Field.HUB_HANG_TIME
+              >= Constants.Shooter.SHOOTER_TIME_MARGIN
+            )
           )
         );
-        boolean readyToPass = (
-          shooterIsReady && 
-          !DriveSubsystem.getInstance().inAllianceZone()
-        );
 
-        Logger.recordOutput(getName() + "/shooterIsReady", shooterIsReady);
         Logger.recordOutput(getName() + "/readyToShoot", readyToShoot);
-        Logger.recordOutput(getName() + "/readyToPass", readyToPass);
 
         if ((readyToShoot && shooting) ||
-            (readyToPass && passing) ||
             // BTW: wantedHoodPosition & wantedShooterSpeed
             // return the dumb constants and readyToShoot
             // doesn't check orientation if the dumb
