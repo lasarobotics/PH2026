@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -74,6 +76,9 @@ public class AimUtil {
     targetPosition = targetPos;
     targetHeight = targetH;
 
+    Logger.recordOutput("AimUtil/targetPosition", targetPosition);
+    Logger.recordOutput("AimUtil/targetHeight", targetHeight);
+
     AimUtil.updateShooterConstants();
   }
 
@@ -103,6 +108,10 @@ public class AimUtil {
     ballVelocity = results.ballVelocity();
     exitAngle = results.exitAngle();
     robotHeading = results.robotHeading();
+  
+    Logger.recordOutput("AimUtil/ballVelocity", ballVelocity);
+    Logger.recordOutput("AimUtil/exitAngle", exitAngle);
+    Logger.recordOutput("AimUtil/robotHeading", robotHeading);
   }
 
   public record ShooterMathResults(
@@ -137,8 +146,12 @@ public class AimUtil {
     double hangTime = (
       (
         Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
-        Math.sqrt(Constants.Field.MAX_BALL_Y_POS -
-                  targetHeight)
+        Math.sqrt(
+          2 * (
+            Constants.Field.MAX_BALL_Y_POS -
+            targetHeight
+          )
+        )
       ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
     );
 
@@ -166,22 +179,25 @@ public class AimUtil {
       getVelocityXStationary(dist, targetHeight),
       getVelocityYStationary()
     );
+
+    Logger.recordOutput("AimUtil/hangTime", hangTime);
+    Logger.recordOutput("AimUtil/futurePos", futurePos);
+    Logger.recordOutput("AimUtil/targetVec", targetVec);
+    Logger.recordOutput("AimUtil/shooterVelocityVec", shooterVelocityVec);
     
     return new ShooterMathResults(
       // the arctangent of the Y velocity and the X velocity is the shooterAngle
-      Angle.ofBaseUnits(
+      Radians.of(
         Math.atan2(
           shooterVelocityVec.getY(), shooterVelocityVec.getX()
-        ),
-        Radians
+        )
       ),
       
       // Pythagorean sum of the X velocity and the Z velocity is the shooter
-      LinearVelocity.ofBaseUnits(
+      MetersPerSecond.of(
         Math.sqrt(
           Math.pow(shooterVelocityVec.getX(), 2) + Math.pow(shooterVelocityVec.getY(), 2)
-        ),
-        MetersPerSecond
+        )
       ),
       
       // The angle of the target vector is your robot heading
