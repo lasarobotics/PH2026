@@ -66,6 +66,9 @@ public class AimUtil {
     Translation2d targetPos,
     double targetH
   ) {
+    // Aimutil already updates periodically,
+    // so we don't want to waste cycles recalculating
+    // if it's the same position
     if (
       targetPos.equals(targetPosition) &&
       targetH == targetHeight

@@ -183,10 +183,20 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     return m_forceShootButton.getAsBoolean();
   }
 
+  /**
+   * Determine and return the optimal shooting target
+   * based on current robot position. If currently in alliance
+   * zone, set this to hub - if not, set it to one of two positions
+   * in the alliance zone (side of hub determines which point).
+   * @return Translation3d representing current target shooting point.
+   */
   private static Translation3d wantedShootPosition() {
+    // Basically, have a target position and height
+    // that are composed into a translation3d at the end
     Translation2d targetPos;
     double targetH;
     if (DriveSubsystem.getInstance().inAllianceZone()) {
+      // in alliance zone
       targetH = Constants.Field.HUB_Y_POS;
 
       if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
@@ -197,9 +207,13 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         targetPos = Constants.Field.BLUE_HUB_COORDINATES;
       }
     } else {
+      // not in alliance zone
+      // (shooting towards the ground)
       targetH = 0;
 
       Pose2d pose = DriveSubsystem.getDrivetrain().getState().Pose;
+      // Top/bottom half of field is based on which side of the
+      // hub the robot is on.
       boolean bottomHalfOfField = pose.getY() <= Constants.Field.HALF_FIELD_Y_POS;
       if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
         // red alliance
