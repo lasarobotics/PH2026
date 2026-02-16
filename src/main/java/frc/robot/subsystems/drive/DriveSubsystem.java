@@ -411,13 +411,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           continue;
         }
         boolean doRejectUpdate = false;
-        if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
-          int[] validIds = {6, 7, 8, 9, 10, 11};
-          LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
-        } else {
-          int[] validIds = {17, 18, 19, 20, 21, 22};
-          LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
-        }
+        // if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
+        //   int[] validIds = {6, 7, 8, 9, 10, 11};
+        //   LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
+        // } else {
+        //   int[] validIds = {17, 18, 19, 20, 21, 22};
+        //   LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
+        // }
         if (s_drivetrain.getState().Speeds.omegaRadiansPerSecond > 2 * Math.PI) {
           doRejectUpdate = true;
         }
