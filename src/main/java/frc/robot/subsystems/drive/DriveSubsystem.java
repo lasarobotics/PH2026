@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj.Timer;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.LimelightHelpers;
-import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
@@ -66,7 +65,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
                         .times(-s_rotateRequest.getAsDouble())
                         .times(Constants.Drive.FAST_SPEED_SCALAR)));
 
-          }
+      }
 
       @Override
       public SystemState nextState() {
@@ -335,13 +334,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private DriveSubsystem() {
     super(DriveStates.DRIVER_CONTROL);
 
-    if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       s_alliancePoses = redPoses;
     } else {
       s_alliancePoses = bluePoses;
     }
 
-    Logger.recordOutput("DriveSubsystem/percieved_alliance", Robot.getAlliance().toString());
+    Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
 
 
     s_drivetrain = TunerConstants.createDrivetrain();
@@ -529,7 +528,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
      */
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", true);
-      if (Robot.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
+      if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
         s_drivetrain.setOperatorPerspectiveForward(
             CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
       } else {
@@ -561,9 +560,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @return true if robot is in alliance zone, false oterwise
    */
   public boolean inAllianceZone() {
-    if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) && s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X) {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) && s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X) {
         return true;
-    } else if (Robot.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) && s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X) {
+    } else if (DriverStation.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) && s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X) {
       return true;
     }
     return false;

@@ -121,9 +121,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        if (s_headHoncho.m_overRampRequest.getAsBoolean() && !DriveSubsystem.getInstance().overRampFinishedWhileHeld())
-          return OVER_RAMP;
-
         if (s_headHoncho.m_cancelButton.getAsBoolean()) return NORMAL;
 
         return this;
