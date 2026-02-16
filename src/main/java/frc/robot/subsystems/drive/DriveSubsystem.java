@@ -28,6 +28,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
+import frc.robot.HeadHoncho;
 import frc.robot.LimelightHelpers;
 import frc.robot.generated.TunerConstants;
 
@@ -507,6 +508,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     @Override
   public void periodic() {
+    boolean resettingOdom = HeadHoncho.getInstance().wantToResetOdometry();
+
+    if (resettingOdom) {
+      zeroOdometry();
+    }
+
     /*
      * Periodically try to apply the operator perspective.
      * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
@@ -528,6 +535,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
     }
 
+    Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
     Logger.recordOutput(getName() + "/subsystemState", getState().toString());
   }
