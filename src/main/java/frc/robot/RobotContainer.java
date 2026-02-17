@@ -53,6 +53,13 @@ public class RobotContainer {
     boolean climbDown = m_driverController.povUp().getAsBoolean();
     boolean restDown = m_driverController.back().getAsBoolean();
 
+    // always set to false - will be made true if there is really
+    // a rising edge
+    m_intakeRisen = false;
+    m_climbRisen = false;
+    m_restRisen = false;
+
+    // rising edge
     if (intakeDown && !m_intakePrevious) m_intakeRisen = true;
     if (climbDown && !m_climbPrevious) m_climbRisen = true;
     if (restDown && !m_restPrevious) m_restRisen = true;
