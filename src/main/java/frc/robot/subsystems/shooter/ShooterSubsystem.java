@@ -286,22 +286,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       if (shooting || forceShooting || dumbShooting) {
         runShooter();
 
-        // If the shooter is ready (rpm, position, hood)
-        // the O of the following truth table is one, then
-        // ready to shoot
-        // Table key: A for being in the alliance zone,
-        // T for being in active shift (Time), and O
-        // for output
-        //  A T O 
-        // ┌─┬─┬─┐
-        // │1│1│1│
-        // ├─┼─┼─┤
-        // │1│0│0│
-        // ├─┼─┼─┤
-        // │0│1│1│
-        // ├─┼─┼─┤
-        // │0│0│1│
-        // └─┴─┴─┘
+        // If the shooter is ready (rpm, position, hood) and
+        // the time/pass check succeeds, then ready to shoot
+        // If we're not in the alliance zone, we're passing
+        // and we can always pass, so succeed
+        // If we're in the alliance zone, we're shooting, and
+        // we only want to shoot during active shift
 
         boolean readyToShoot = (
           shooterReady() &&
