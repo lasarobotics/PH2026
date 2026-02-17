@@ -97,9 +97,9 @@ public class RobotContainer {
       () -> m_restRisen,
       // drive subsystem stuff
       // drive
-      () -> m_driverController.getLeftY(),
-      // strafe
       () -> m_driverController.getLeftX(),
+      // strafe
+      () -> m_driverController.getLeftY(),
       // rotate
       () -> m_driverController.getRightX()
     );
