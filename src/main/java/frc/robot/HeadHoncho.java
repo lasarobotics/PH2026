@@ -3,6 +3,7 @@ package frc.robot;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+import org.lasarobotics.drive.swerve.DriveWheel;
 import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 
@@ -75,7 +76,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        if (s_headHoncho.m_overRampRequest.getAsBoolean() && !DriveSubsystem.getInstance().overRampFinishedWhileHeld())
+        if (s_headHoncho.m_overRampRequest.getAsBoolean()) /*&& !DriveSubsystem.getInstance().overRampFinishedWhileHeld())*/
           return OVER_RAMP;
 
         if (
@@ -90,14 +91,19 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     },
     OVER_RAMP {
       @Override
+      public void initialize() {
+        DriveSubsystem.getInstance().driveOverRamp();
+      }
+      @Override
       public void execute() {
-        DriveSubsystem.getInstance().driverControl();
+        //DriveSubsystem.getInstance().driverControl();
       }
 
       @Override
       public SystemState nextState() {
         if (!s_headHoncho.m_overRampRequest.getAsBoolean()) return NORMAL;
-        if (DriveSubsystem.getInstance().overRampFinishedWhileHeld()) return NORMAL;
+        //if (DriveSubsystem.getInstance().overRampFinishedWhileHeld()) return NORMAL;
+
         return this;
       }
     },

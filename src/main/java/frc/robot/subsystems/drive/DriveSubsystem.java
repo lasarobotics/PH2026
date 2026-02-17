@@ -72,11 +72,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         if (DriverStation.isAutonomous()) return AUTO;
 
         DriveSubsystem subsystem = getInstance();
-        boolean overRampRequested = subsystem.overRampRequested();
-        if (!overRampRequested) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
-        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
           return OVER_RAMP;
         }
 
@@ -118,10 +115,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         DriveSubsystem subsystem = getInstance();
         boolean overRampRequested = subsystem.overRampRequested();
-        if (!overRampRequested) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
-        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
           return OVER_RAMP;
         }
 
@@ -150,10 +144,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         DriveSubsystem subsystem = getInstance();
         boolean overRampRequested = subsystem.overRampRequested();
-        if (!overRampRequested) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
-        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
           return OVER_RAMP;
         }
 
@@ -198,9 +189,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public DriveStates nextState() {
         DriveSubsystem subsystem = getInstance();
         boolean overRampRequested = subsystem.overRampRequested();
-        if (!overRampRequested) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
         if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
           return OVER_RAMP;
         }
@@ -556,6 +544,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.DRIVER_CONTROL;
   }
 
+  public void driveOverRamp() {
+    s_requestedDriveState = DriveStates.OVER_RAMP;
+  }
+
   /**
    * Checks robot's alliance and then checks if robot is in its alliance zone
    * @return true if robot is in alliance zone, false oterwise
@@ -624,9 +616,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
   }
 
-  public boolean overRampFinishedWhileHeld() {
-    return m_overRampFinishedWhileHeld;
-  }
+  //public boolean overRampFinishedWhileHeld() {
+    //return m_overRampFinishedWhileHeld;
+  //}
 
   public Pose2d getCurrentPose() {
     return s_drivetrain.getState().Pose;
