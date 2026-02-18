@@ -93,7 +93,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * @return A boolean for whether or not the climber is in the stow position
    */
   public boolean inStowPosition() {
-    return s_climbInstance.getClimberAngle().lte(Constants.Climb.STOW_ANGLE);
+    return s_climbInstance.getClimberAngle().isNear(Constants.Climb.STOW_ANGLE, Constants.Climb.CLIMB_TOLERANCE);
   }
 
   /**
@@ -101,7 +101,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * @return A boolean for whether or not the climber is in the climb position
    */
   public boolean inClimbPosition() {
-    return s_climbInstance.getClimberAngle().lte(Constants.Climb.CLIMB_ANGLE);
+    return s_climbInstance.getClimberAngle().isNear(Constants.Climb.CLIMB_ANGLE, Constants.Climb.CLIMB_TOLERANCE);
   }
 
   /**

@@ -300,6 +300,7 @@ public final class Constants {
     public static final Angle CLIMB_ANGLE = Degrees.of(70);
     public static final Angle DEPLOY_ANGLE = Degrees.of(95);
     public static final Angle STOW_ANGLE = Degrees.of(0);
+    public static final Angle CLIMB_TOLERANCE = Degrees.of(2);
   }
 
   public static class SmartDashboard {
