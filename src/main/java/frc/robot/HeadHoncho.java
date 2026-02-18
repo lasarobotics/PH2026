@@ -46,7 +46,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        boolean overRampRequested = s_headHoncho.m_overRampRequest.getAsBoolean();
         boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
         boolean passButton = s_headHoncho.m_passButton.getAsBoolean();
 
@@ -59,7 +58,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
           );
         }
 
-        if (!overRampRequested && (shootButton || passButton)) {
+        if (shootButton || passButton) {
           DriveSubsystem.getInstance().driveAutoAim();
         } else {
           DriveSubsystem.getInstance().driverControl();
