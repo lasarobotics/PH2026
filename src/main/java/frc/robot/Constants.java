@@ -295,12 +295,18 @@ public final class Constants {
     public static final int CLIMB_MOTOR_2_ID = 61;
     public static final int ARM_ENCODER_ID = 62;
 
-    // TODO: Find the values of climb constants
+    // TODO: Find out where the servo is
+    public static final int SERVO_CHANNEL = 0;
+
     public static final double CLIMB_SPEED_RPS = 3000.0 / 60.0;
     public static final Angle CLIMB_ANGLE = Degrees.of(70);
     public static final Angle DEPLOY_ANGLE = Degrees.of(95);
     public static final Angle STOW_ANGLE = Degrees.of(0);
     public static final Angle CLIMB_TOLERANCE = Degrees.of(2);
+
+    // TODO: Find the values of climb servo constants
+    public static final Angle SERVO_RETRACT_ANGLE = Degrees.of(0);
+    public static final Angle SERVO_STOW_ANGLE = Degrees.of(0);
   }
 
   public static class SmartDashboard {

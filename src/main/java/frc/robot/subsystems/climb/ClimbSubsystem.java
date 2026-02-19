@@ -109,7 +109,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * @return A boolean for whether or not the climber is in the deploy position
    */
   public boolean inDeployPosition() {
-    return s_climbInstance.getClimberAngle().gte(Constants.Climb.DEPLOY_ANGLE);
+    return s_climbInstance.getClimberAngle().isNear(Constants.Climb.DEPLOY_ANGLE, Constants.Climb.CLIMB_TOLERANCE);
   }
 
   /**
