@@ -10,6 +10,8 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -45,6 +47,31 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
 
     // TODO: set the config for the cancoder
     CANcoderConfiguration intakeEncoderConfig = new CANcoderConfiguration();
+
+    armConfig
+      .Feedback
+        .withFusedCANcoder(m_intakeEncoder)
+        .withRotorToSensorRatio((40 / 28) * 9)  // gearbox is 9:1, sprockets are 40:28
+        .withSensorToMechanismRatio(2); // sprockets are 2:1
+    armConfig
+      .MotorOutput
+        .withInverted(InvertedValue.Clockwise_Positive);
+    armConfig
+      .SoftwareLimitSwitch
+        .withForwardSoftLimitEnable(true)
+        .withReverseSoftLimitEnable(true)
+        .withForwardSoftLimitThreshold(.29) // measured value
+        .withReverseSoftLimitThreshold(0); // zero position
+    armConfig
+      .MotionMagic
+        .withMotionMagicCruiseVelocity(0.8) // measured value
+        .withMotionMagicAcceleration(0.2); // measured value
+
+    intakeEncoderConfig
+      .MagnetSensor
+        .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
+        .withMagnetOffset(0.69287109375) // measured value
+        .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
 
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
