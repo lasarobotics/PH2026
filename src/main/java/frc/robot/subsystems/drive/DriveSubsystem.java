@@ -30,7 +30,6 @@ import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.HeadHoncho;
 import frc.robot.LimelightHelpers;
-import frc.robot.Robot;
 import frc.robot.generated.TunerConstants;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
@@ -67,18 +66,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
                         .times(-s_rotateRequest.getAsDouble())
                         .times(Constants.Drive.FAST_SPEED_SCALAR)));
 
-          }
+      }
 
       @Override
       public SystemState nextState() {
         if (DriverStation.isAutonomous()) return AUTO;
 
         DriveSubsystem subsystem = getInstance();
-        boolean overRampRequested = subsystem.overRampRequested();
-        if (!overRampRequested) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
-        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
           return OVER_RAMP;
         }
 
@@ -120,10 +116,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         DriveSubsystem subsystem = getInstance();
         boolean overRampRequested = subsystem.overRampRequested();
-        if (!overRampRequested) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
-        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
           return OVER_RAMP;
         }
 
@@ -152,10 +145,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         DriveSubsystem subsystem = getInstance();
         boolean overRampRequested = subsystem.overRampRequested();
-        if (!overRampRequested) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
-        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
           return OVER_RAMP;
         }
 
@@ -200,9 +190,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public DriveStates nextState() {
         DriveSubsystem subsystem = getInstance();
         boolean overRampRequested = subsystem.overRampRequested();
-        if (!overRampRequested) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
         if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
           return OVER_RAMP;
         }
@@ -336,13 +323,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private DriveSubsystem() {
     super(DriveStates.DRIVER_CONTROL);
 
-    if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       s_alliancePoses = redPoses;
     } else {
       s_alliancePoses = bluePoses;
     }
 
-    Logger.recordOutput("DriveSubsystem/percieved_alliance", Robot.getAlliance().toString());
+    Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
 
 
     s_drivetrain = TunerConstants.createDrivetrain();
@@ -536,7 +523,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
      */
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", true);
-      if (Robot.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
+      if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(Alliance.Red)) {
         s_drivetrain.setOperatorPerspectiveForward(
             CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
       } else {
@@ -550,6 +537,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
+    Logger.recordOutput(getName() + "/subsystemState", getState().toString());
   }
 
   public void driveAutoAim() {
@@ -564,14 +552,22 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.DRIVER_CONTROL;
   }
 
+  public void driveOverRamp() {
+    s_requestedDriveState = DriveStates.OVER_RAMP;
+  }
+
   /**
    * Checks robot's alliance and then checks if robot is in its alliance zone
    * @return true if robot is in alliance zone, false oterwise
    */
   public boolean inAllianceZone() {
-    if (Robot.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) && s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X) {
-        return true;
-    } else if (Robot.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) && s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X) {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) &&
+        s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X
+    ) {
+      return true;
+    } else if (DriverStation.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) &&
+        s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X
+    ) {
       return true;
     }
     return false;
@@ -632,9 +628,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
   }
 
-  public boolean overRampFinishedWhileHeld() {
-    return m_overRampFinishedWhileHeld;
-  }
+  //public boolean overRampFinishedWhileHeld() {
+    //return m_overRampFinishedWhileHeld;
+  //}
 
   public Pose2d getCurrentPose() {
     return s_drivetrain.getState().Pose;
