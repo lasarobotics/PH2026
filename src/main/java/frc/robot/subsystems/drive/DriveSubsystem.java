@@ -22,6 +22,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -603,7 +604,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * resets pose of robot
    */
   public void zeroOdometry() {
-    s_drivetrain.resetPose();
+    Rotation2d rotation;
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+      // red alliance
+      rotation = CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation;
+    } else {
+      // blue alliance
+      rotation = CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation;
+    }
+    s_drivetrain.seedFieldCentric(rotation);
+    s_drivetrain.getPigeon2().reset();
   }
 
   /**
