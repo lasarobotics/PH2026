@@ -553,9 +553,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @return true if robot is in alliance zone, false oterwise
    */
   public boolean inAllianceZone() {
-    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) && s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X) {
-        return true;
-    } else if (DriverStation.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) && s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X) {
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) &&
+        s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X
+    ) {
+      return true;
+    } else if (DriverStation.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) &&
+        s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X
+    ) {
       return true;
     }
     return false;
