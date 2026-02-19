@@ -30,13 +30,15 @@ public class AimUtil {
    * 
    * @param distance Linear distance from target
    * @param targetHeight Final y position of ball
+   * @param maxBallYPos The Y value for the highest point of the ball's curve
    * @return Value of X velocity of the ball when shot stationary
    */
   private static double getVelocityXStationary(
     double distance,
-    double targetHeight
+    double targetHeight,
+    double maxBallYPos
   ) {
-    double y_max = Constants.Field.MAX_BALL_Y_POS;
+    double y_max = maxBallYPos;
     double y_end = targetHeight;
     double g = Constants.Field.GRAVITY_VALUE;
 
@@ -46,9 +48,10 @@ public class AimUtil {
 
   /**
    * @return Value of Y velocity of the ball when shot stationary
+   * @param maxBallYPos The Y value for the highest point of the ball's curve
    */
-  private static double getVelocityYStationary() {
-    double y_max = Constants.Field.MAX_BALL_Y_POS;
+  private static double getVelocityYStationary(double maxBallYPos) {
+    double y_max = maxBallYPos;
     double g = Constants.Field.GRAVITY_VALUE;
 
     double y_vel = Math.sqrt(y_max * 2 * g);
@@ -105,7 +108,8 @@ public class AimUtil {
       currentRobotPose,
       currentAngularVelocity,
       targetPosition,
-      targetHeight
+      targetHeight,
+      Constants.Field.MAX_BALL_Y_POS
     );
 
     ballVelocity = results.ballVelocity();
@@ -132,6 +136,7 @@ public class AimUtil {
    * (as an AngularVelocity object)
    * @param targetPos The position of the target
    * @param targetHeight The final height the ball should be at
+   * @param maxBallYPos The Y value for the highest point of the ball's curve
    * @return A ShooterMathResults record with the wanted exit angle,
    * ball velocity, and robot heading
    */
@@ -140,7 +145,8 @@ public class AimUtil {
     Pose2d currentRobotPose,
     AngularVelocity currentAngularVelocity,
     Translation2d targetPos,
-    double targetHeight
+    double targetHeight,
+    double maxBallYPos
   ) {
 
     double latency = Constants.Drive.ROBOT_LATENCY;
@@ -148,10 +154,10 @@ public class AimUtil {
 
     double hangTime = (
       (
-        Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
+        Math.sqrt(maxBallYPos * 2) +
         Math.sqrt(
           2 * (
-            Constants.Field.MAX_BALL_Y_POS -
+            maxBallYPos -
             targetHeight
           )
         )
@@ -179,8 +185,8 @@ public class AimUtil {
 
     // Get your stationary shooter velocity 2d vector
     Translation2d shooterVelocityVec = new Translation2d(
-      getVelocityXStationary(dist, targetHeight),
-      getVelocityYStationary()
+      getVelocityXStationary(dist, targetHeight, maxBallYPos),
+      getVelocityYStationary(maxBallYPos)
     );
 
     Logger.recordOutput("AimUtil/hangTime", hangTime);
