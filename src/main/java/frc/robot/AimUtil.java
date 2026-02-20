@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
@@ -92,7 +93,10 @@ public class AimUtil {
    */
   public static void updateShooterConstants() {
     SwerveDriveState driveState = DriveSubsystem.getDrivetrain().getState();
-    ChassisSpeeds currentRobotSpeeds = driveState.Speeds;
+    ChassisSpeeds currentRobotSpeeds = ChassisSpeeds.fromRobotRelativeSpeeds(
+      driveState.Speeds,
+      driveState.Pose.getRotation()
+    );
     Pose2d currentRobotPose = driveState.Pose;
     AngularVelocity currentAngularVelocity = AngularVelocity.ofBaseUnits(driveState.Speeds.omegaRadiansPerSecond, RadiansPerSecond);
 
@@ -142,7 +146,6 @@ public class AimUtil {
     Translation2d targetPos,
     double targetHeight
   ) {
-
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
 
@@ -158,10 +161,10 @@ public class AimUtil {
       ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
     );
 
-    // Project your movement forward 
+    // Project your movement forward
     Translation2d futurePos = currentRobotPose.getTranslation().plus(
       new Translation2d(
-        currentRobotSpeeds.vxMetersPerSecond, 
+        currentRobotSpeeds.vxMetersPerSecond,
         currentRobotSpeeds.vyMetersPerSecond
       )
       .times(latency + hangTime)
@@ -184,7 +187,9 @@ public class AimUtil {
     );
 
     Logger.recordOutput("AimUtil/hangTime", hangTime);
-    Logger.recordOutput("AimUtil/futurePos", futurePos);
+    Logger.recordOutput("AimUtil/futurePos",
+      new Pose2d(futurePos, new Rotation2d(targetVec.getAngle().getMeasure()))
+    );
     Logger.recordOutput("AimUtil/targetVec", targetVec);
     Logger.recordOutput("AimUtil/shooterVelocityVec", shooterVelocityVec);
     
