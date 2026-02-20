@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -298,7 +299,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
           (
             !DriveSubsystem.getInstance().inAllianceZone() ||
             (
-              GameHelpers.scoringTimeLeft() - Constants.Field.HUB_HANG_TIME
+              GameHelpers.scoringTimeLeft() - AimUtil.getHangTime().in(Seconds)
               >= Constants.Shooter.SHOOTER_TIME_MARGIN
             )
           )

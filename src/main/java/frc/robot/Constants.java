@@ -269,13 +269,7 @@ public final class Constants {
     public static final double GRAVITY_VALUE = 9.80665;
     public static final Translation2d BLUE_HUB_COORDINATES = new Translation2d(4.619, 4.049);
     public static final Translation2d RED_HUB_COORDINATES = new Translation2d(11.925, 4.049);
-    public static final double HUB_HANG_TIME = (
-      (
-        Math.sqrt(Constants.Field.MAX_BALL_Y_POS * 2) +
-        Math.sqrt(Constants.Field.MAX_BALL_Y_POS -
-                  Constants.Field.HUB_Y_POS)
-      ) / Math.sqrt(Constants.Field.GRAVITY_VALUE)
-    );
+
     public static final Pose2d BLUE_TOWER =
         new Pose2d(
             new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(-90));  

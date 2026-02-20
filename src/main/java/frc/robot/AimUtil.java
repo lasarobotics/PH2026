@@ -4,6 +4,7 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -15,6 +16,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class AimUtil {
@@ -22,6 +24,7 @@ public class AimUtil {
   private static LinearVelocity ballVelocity = MetersPerSecond.of(0);
   private static Angle exitAngle = Degrees.of(45);
   private static Angle robotHeading = Radians.of(0);
+  private static Time hangTime = Seconds.of(1.5);
 
   private static Translation2d targetPosition;
   private static double targetHeight;
@@ -115,16 +118,19 @@ public class AimUtil {
     ballVelocity = results.ballVelocity();
     exitAngle = results.exitAngle();
     robotHeading = results.robotHeading();
+    hangTime = results.hangTime();
   
     Logger.recordOutput("AimUtil/ballVelocity", ballVelocity);
     Logger.recordOutput("AimUtil/exitAngle", exitAngle);
     Logger.recordOutput("AimUtil/robotHeading", robotHeading);
+    Logger.recordOutput("AimUtil/hangTime", hangTime);
   }
 
   public record ShooterMathResults(
     Angle exitAngle,
     LinearVelocity ballVelocity,
-    Angle robotHeading
+    Angle robotHeading,
+    Time hangTime
   ){}
 
   /**
@@ -189,7 +195,6 @@ public class AimUtil {
       getVelocityYStationary(maxBallYPos)
     );
 
-    Logger.recordOutput("AimUtil/hangTime", hangTime);
     Logger.recordOutput("AimUtil/futurePos", futurePos);
     Logger.recordOutput("AimUtil/targetVec", targetVec);
     Logger.recordOutput("AimUtil/shooterVelocityVec", shooterVelocityVec);
@@ -210,7 +215,10 @@ public class AimUtil {
       ),
       
       // The angle of the target vector is your robot heading
-      targetVec.getAngle().getMeasure()
+      targetVec.getAngle().getMeasure(),
+
+      // hang time
+      Seconds.of(hangTime)
     );
   }
 
@@ -233,6 +241,13 @@ public class AimUtil {
    */
   public static Angle getRobotHeading() {
     return robotHeading;
+  }
+
+  /**
+   * @return Returns the robot heading needed to shoot at any given point
+   */
+  public static Time getHangTime() {
+    return hangTime;
   }
 }
 
