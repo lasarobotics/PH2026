@@ -10,6 +10,7 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
@@ -49,23 +50,30 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     CANcoderConfiguration intakeEncoderConfig = new CANcoderConfiguration();
 
     armConfig
+      .MotorOutput
+        .withInverted(InvertedValue.Clockwise_Positive);
+    armConfig
+      .Slot0
+        .withKP(75)
+        .withKS(.185)
+        .withKG(.4)
+        .withGravityType(GravityTypeValue.Arm_Cosine)
+        .withGravityArmPositionOffset(.25);
+    armConfig
       .Feedback
         .withFusedCANcoder(m_intakeEncoder)
         .withRotorToSensorRatio((40 / 28) * 9)  // gearbox is 9:1, sprockets are 40:28
         .withSensorToMechanismRatio(2); // sprockets are 2:1
     armConfig
-      .MotorOutput
-        .withInverted(InvertedValue.Clockwise_Positive);
-    armConfig
       .SoftwareLimitSwitch
         .withForwardSoftLimitEnable(true)
         .withReverseSoftLimitEnable(true)
-        .withForwardSoftLimitThreshold(.29) // measured value
+        .withForwardSoftLimitThreshold(.28) // measured value
         .withReverseSoftLimitThreshold(0); // zero position
     armConfig
       .MotionMagic
-        .withMotionMagicCruiseVelocity(0.8) // measured value
-        .withMotionMagicAcceleration(0.2); // measured value
+        .withMotionMagicCruiseVelocity(10) // measured value
+        .withMotionMagicAcceleration(8); // measured value
 
     intakeEncoderConfig
       .MagnetSensor
