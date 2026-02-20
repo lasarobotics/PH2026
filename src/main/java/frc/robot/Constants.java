@@ -67,19 +67,6 @@ public final class Constants {
     // https://docs.google.com/spreadsheets/d/1W-cpAlIJaHPbepHAKy7-uNkREk7_ITiVmTQvAB0_ZDM/edit
     public static final double SHOOTER_HOLD_SPEED = 0;
 
-    // TODO maybe negative? find value
-    // This is the voltage that the hood goes at whole zeroing
-    public static final double HOOD_ZERO_VOLTAGE = 1;
-    // TODO find actual value
-    // This should be something around the maximum current of the motor
-    public static final Current HOOD_STALL_CURRENT = Amps.of(40);
-    // TODO find value
-    // Tolerance for detecting if hood motor has stalled
-    public static final Current HOOD_ZERO_CURRENT_TOLERANCE = Amps.of(0.1);
-    // TODO find value
-    // Tolerance for detecting if hood speed is zero
-    public static final double HOOD_ZERO_SPEED_TOLERANCE = 0.1;
-
     public static final double SHOOTER_SPEED_TOLERANCE = 0; // TODO
     public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(0); // TODO
 
