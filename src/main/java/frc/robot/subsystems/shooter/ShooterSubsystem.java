@@ -274,40 +274,39 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // and stop indexer
     // If not in operation, just stop everything
     boolean shooting = HeadHoncho.getInstance().wantToShoot();
-    boolean passing = HeadHoncho.getInstance().wantToPass();
     boolean dumbShooting = HeadHoncho.getInstance().wantToDumbShoot();
     boolean forceShooting = HeadHoncho.getInstance().wantToForceShoot();
     Logger.recordOutput(getName() + "/wantToShoot", shooting);
-    Logger.recordOutput(getName() + "/wantToPass", passing);
     Logger.recordOutput(getName() + "/wantToDumbShoot", dumbShooting);
     Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
 
     if (m_isRunning) {
       adjustHood();
 
-      if (shooting || passing || forceShooting || dumbShooting) {
+      if (shooting || forceShooting || dumbShooting) {
         runShooter();
 
-        boolean shooterIsReady = shooterReady();
+        // If the shooter is ready (rpm, position, hood) and
+        // the time/pass check succeeds, then ready to shoot
+        // If we're not in the alliance zone, we're passing
+        // and we can always pass, so succeed
+        // If we're in the alliance zone, we're shooting, and
+        // we only want to shoot during active shift
+
         boolean readyToShoot = (
-          shooterIsReady &&
-          DriveSubsystem.getInstance().inAllianceZone() &&
+          shooterReady() &&
           (
-            GameHelpers.scoringTimeLeft() - Constants.Field.HUB_HANG_TIME
-            >= Constants.Shooter.SHOOTER_TIME_MARGIN
+            !DriveSubsystem.getInstance().inAllianceZone() ||
+            (
+              GameHelpers.scoringTimeLeft() - Constants.Field.HUB_HANG_TIME
+              >= Constants.Shooter.SHOOTER_TIME_MARGIN
+            )
           )
         );
-        boolean readyToPass = (
-          shooterIsReady && 
-          !DriveSubsystem.getInstance().inAllianceZone()
-        );
 
-        Logger.recordOutput(getName() + "/shooterIsReady", shooterIsReady);
         Logger.recordOutput(getName() + "/readyToShoot", readyToShoot);
-        Logger.recordOutput(getName() + "/readyToPass", readyToPass);
 
         if ((readyToShoot && shooting) ||
-            (readyToPass && passing) ||
             // BTW: wantedHoodPosition & wantedShooterSpeed
             // return the dumb constants and readyToShoot
             // doesn't check orientation if the dumb
