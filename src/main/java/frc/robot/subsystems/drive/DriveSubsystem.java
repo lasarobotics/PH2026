@@ -1,10 +1,10 @@
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
-import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
 import org.lasarobotics.fsm.StateMachine;
@@ -18,15 +18,14 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import edu.wpi.first.wpilibj.Timer;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.HeadHoncho;
@@ -73,14 +72,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         if (DriverStation.isAutonomous()) return AUTO;
 
-        DriveSubsystem subsystem = getInstance();
-
-        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) {
           return OVER_RAMP;
         }
 
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && subsystem.inAllianceZone()) return CLIMB_ALIGN;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
         
         return this;
       }
@@ -115,15 +112,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        DriveSubsystem subsystem = getInstance();
-        boolean overRampRequested = subsystem.overRampRequested();
-        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) {
           return OVER_RAMP;
         }
 
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && subsystem.inAllianceZone()) return CLIMB_ALIGN;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
 
         return this;
       }
@@ -144,19 +139,24 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        DriveSubsystem subsystem = getInstance();
-        boolean overRampRequested = subsystem.overRampRequested();
-        if (s_requestedDriveState == DriveStates.OVER_RAMP) { //overRampRequested && !subsystem.m_overRampFinishedWhileHeld
+        if (s_requestedDriveState == DriveStates.OVER_RAMP) {
           return OVER_RAMP;
         }
 
-        if (subsystem.atDestination(s_climbPosition, DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
+        if (atDestination(s_climbPosition, DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
           DriveSubsystem.s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude()/4;
           DriveSubsystem.s_climbRotationSpeed = Constants.Drive.MAX_SPEED.magnitude()/2;
           DriveSubsystem.s_climbAlignDistanceError = 0.01;
           DriveSubsystem.s_climbAlignRotationError = 0.01;
 
-          if (!DriverStation.isAutonomous() && s_driveSubsystem.atDestination(s_climbPosition, DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
+          if (
+            !DriverStation.isAutonomous() &&
+            atDestination(
+              s_climbPosition,
+              DriveSubsystem.s_climbAlignDistanceError,
+              DriveSubsystem.s_climbAlignRotationError
+            )
+          ) {
             return SLOW_DRIVER_ALIGN;
           }
         }
@@ -189,59 +189,69 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public DriveStates nextState() {
-        DriveSubsystem subsystem = getInstance();
-        boolean overRampRequested = subsystem.overRampRequested();
-        if (overRampRequested && !subsystem.m_overRampFinishedWhileHeld) {
-          return OVER_RAMP;
-        }
-
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && subsystem.inAllianceZone()) return CLIMB_ALIGN;
+        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
 
         return this;
       }
     },
     OVER_RAMP {
+      private Pose2d[] rampSequence;
+      private int sequenceIndex;
+
       @Override
       public void initialize() {
-        DriveSubsystem subsystem = getInstance();
-        subsystem.m_overRampFinishedWhileHeld = false;
-        subsystem.startOverRampSequence();
+        rampSequence = getInstance().getBestRampSequence();
+        sequenceIndex = 0;
+        Logger.recordOutput("DriveSubsystem/currentRampSequence", rampSequence);
       }
 
       @Override
       public void execute() {
-        DriveSubsystem subsystem = getInstance();
-        if (!subsystem.overRampRequested()) {
-          subsystem.m_overRampOverrideActive = false;
-          subsystem.driveOverRampOverride();
-          return;
+        if (
+          atDestination(
+            rampSequence[sequenceIndex],
+            OVER_RAMP_POSITION_TOLERANCE_M,
+            OVER_RAMP_HEADING_TOLERANCE_RAD
+          )
+        ) {
+          sequenceIndex++;
         }
 
-        subsystem.runOverRampSequence();
-        subsystem.driveOverRampOverride();
-      }
+        Logger.recordOutput("DriveSubsystem/sequenceIndex", sequenceIndex);
 
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem subsystem = getInstance();
-        subsystem.m_overRampRunning = false;
-        subsystem.m_overRampOverrideActive = false;
-        subsystem.m_overRampStage = 0;
-        subsystem.m_overRampVx = 0.0;
-        subsystem.m_overRampVy = 0.0;
-        subsystem.m_overRampOmega = 0.0;
-        if (!subsystem.overRampRequested()) {
-          subsystem.m_overRampFinishedWhileHeld = false;
-        }
+        if (sequenceIndex > 2) return;
+
+        double maxSpeed =
+          OVER_RAMP_STAGE_MAX_SPEED_MPS[Math.min(sequenceIndex, OVER_RAMP_STAGE_MAX_SPEED_MPS.length - 1)];
+        // if last waypoint, set target speed to 0
+        double targetSpeed =
+          sequenceIndex == 2 ?
+            0.5 :
+            maxSpeed;
+
+        getInstance().goTo(
+          rampSequence[sequenceIndex],
+          targetSpeed,
+          maxSpeed,
+          Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond)
+        );
       }
 
       @Override
       public SystemState nextState() {
-        DriveSubsystem subsystem = getInstance();
-        if (!subsystem.overRampRequested()) return DRIVER_CONTROL;
-        if (subsystem.m_overRampFinishedWhileHeld) return DRIVER_CONTROL;
+        // if not at first waypoint yet and driver doesn't
+        // have button pressed OR
+        // if done going over ramp
+        if (
+          (
+            sequenceIndex == 0 &&
+            !HeadHoncho.getInstance().wantToCrossRamp()
+          ) ||
+          sequenceIndex == 3
+        ) return DRIVER_CONTROL;
+
         return this;
       }
     }
@@ -254,7 +264,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DoubleSupplier s_driveRequest = () -> 0;
   private static DoubleSupplier s_strafeRequest = () -> 0;
   private static DoubleSupplier s_rotateRequest = () -> 0;
-  private static BooleanSupplier s_overRampRequest = () -> false;
 
   private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
   private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
@@ -288,23 +297,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static boolean s_climberCameraSeesTag = false;
   private static boolean s_backCameraSeesTag = false;
 
-
   private static final double[] OVER_RAMP_STAGE_MAX_SPEED_MPS = {1.75, 1.67, 0.75};
-  private static final double OVER_RAMP_STAGE_TIMEOUT_SEC = 2.5;
-  private static final double OVER_RAMP_POSITION_TOLERANCE_M = 0.1;
-  private static final double OVER_RAMP_HEADING_TOLERANCE_RAD = Math.toRadians(8.0);
-
-  private boolean m_overRampRunning = false;
-  private boolean m_overRampFinishedWhileHeld = false;
-  private int m_overRampStage = 0;
-  private final Pose2d[] m_overRampTargets = new Pose2d[3];
-
-  private double m_overRampVx = 0.0;
-  private double m_overRampVy = 0.0;
-  private double m_overRampOmega = 0.0;
-  private boolean m_overRampOverrideActive = false;
-  private double m_overRampStageTimeoutStart = 0.0;
-  private Pose2d m_overRampStageStartPose = new Pose2d();
+  private static final double OVER_RAMP_POSITION_TOLERANCE_M = 0.2;
+  private static final double OVER_RAMP_HEADING_TOLERANCE_RAD = Math.toRadians(20);
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -344,7 +339,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
 
     s_autoDrive = new PIDController(1.75, 0.0, 0.0);
-    s_headingController = new PIDController(3, 0.0, 0.5);
+    s_headingController = new PIDController(10, 0.5, 0.75);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
     // TODO: Fix this with real values
@@ -361,8 +356,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     m_limelight_thread.start();
   }
 
-
-   /**
+  /**
    * Function to set up the LimeLights on the robot 
    */
   public void limelight_thread_func() {
@@ -458,12 +452,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   public void bindControls(
       DoubleSupplier driveRequest,
       DoubleSupplier strafeRequest,
-      DoubleSupplier rotateRequest,
-      BooleanSupplier overBumpRequest) {
+      DoubleSupplier rotateRequest
+    ) {
     s_driveRequest = driveRequest;
     s_strafeRequest = strafeRequest;
     s_rotateRequest = rotateRequest;
-    s_overRampRequest = overBumpRequest;
   }
 
   /**
@@ -487,27 +480,26 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
 
-
     var outputVelocity = 
-        Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, maxVelocity);
+      Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, maxVelocity);
 
     var rotationRate = 
-        Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate);
+      Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate);
 
     var xComponent = outputVelocity * directionOfTravel.getCos();
     var yComponent = outputVelocity * directionOfTravel.getSin();
 
     s_drivetrain.setControl(
-       s_drive
-          .withVelocityX(MetersPerSecond.of(xComponent))
-          .withVelocityY(MetersPerSecond.of(yComponent))
-          .withRotationalRate(rotationRate)
-        );
-        Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
+      s_drive
+        .withVelocityX(MetersPerSecond.of(xComponent).times(-1))
+        .withVelocityY(MetersPerSecond.of(yComponent).times(-1))
+        .withRotationalRate(rotationRate)
+    );
+  
+    Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
+  }
 
-    }
-
-    @Override
+  @Override
   public void periodic() {
     boolean resettingOdom = HeadHoncho.getInstance().wantToResetOdometry();
 
@@ -561,13 +553,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * Checks robot's alliance and then checks if robot is in its alliance zone
    * @return true if robot is in alliance zone, false oterwise
    */
-  public boolean inAllianceZone() {
+  public static boolean inAllianceZone() {
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) &&
-        s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X
+      s_drivetrain.getState().Pose.getX() >= Constants.Field.RED_ZONE_X
     ) {
       return true;
     } else if (DriverStation.getAlliance().orElse(Alliance.Red).equals(Alliance.Blue) &&
-        s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X
+      s_drivetrain.getState().Pose.getX() <= Constants.Field.BLUE_ZONE_X
     ) {
       return true;
     }
@@ -575,18 +567,23 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
-   * 
    * @param target position robot is trying to reach
    * @param acceptableDistanceError how much error is acceptable in terms of distance to the target
    * @param acceptableRotationError how much error is acceptable in terms of angle relative to desired Pose2d
+   * (in radians)
    * @return true if robot is at destination, false otherwise
    */
-  public boolean atDestination(Pose2d target, double acceptableDistanceError, double acceptableRotationError) {
+  public static boolean atDestination(Pose2d target, double acceptableDistanceError, double acceptableRotationError) {
     Pose2d robotPose = s_drivetrain.getState().Pose;
     double distance = robotPose.getTranslation().getDistance(target.getTranslation());
     
-    if (Math.abs(distance) < acceptableDistanceError 
-    && Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()) < acceptableRotationError) {
+    if (
+      Math.abs(distance) < acceptableDistanceError 
+      && robotPose.getRotation().getMeasure().isNear(
+        target.getRotation().getMeasure(),
+        Radians.of(acceptableRotationError)
+      )
+    ) {
       return true;
     } else {
       return false;
@@ -638,23 +635,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
   }
 
-  //public boolean overRampFinishedWhileHeld() {
-    //return m_overRampFinishedWhileHeld;
-  //}
-
-  public Pose2d getCurrentPose() {
-    return s_drivetrain.getState().Pose;
-  }
-
-  public void resetPoseToZero() {
-    s_drivetrain.resetPose(new Pose2d());
-  }
-
-  private boolean overRampRequested() {
-    return s_overRampRequest != null && s_overRampRequest.getAsBoolean();
-  }
-
-  private void startOverRampSequence() {
+  private Pose2d[] getBestRampSequence() {
     Pose2d current = s_drivetrain.getState().Pose;
 
     Pose2d[] azCandidates = Constants.Drive.AZ_RAMP_POSA_CANDIDATES;
@@ -686,171 +667,52 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     if (useNz) {
       switch (bestIndex) {
         case 0 -> {
-          m_overRampTargets[0] = Constants.Drive.NZ_rampRed1_posa;
-          m_overRampTargets[1] = Constants.Drive.NZ_rampRed1_posb;
-          m_overRampTargets[2] = Constants.Drive.NZ_rampRed1_posc;
+          return Constants.Drive.NZ_rampRed1;
         }
         case 1 -> {
-          m_overRampTargets[0] = Constants.Drive.NZ_rampRed2_posa;
-          m_overRampTargets[1] = Constants.Drive.NZ_rampRed2_posb;
-          m_overRampTargets[2] = Constants.Drive.NZ_rampRed2_posc;
+          return Constants.Drive.NZ_rampRed2;
         }
         case 2 -> {
-          m_overRampTargets[0] = Constants.Drive.NZ_rampBlue1_posa;
-          m_overRampTargets[1] = Constants.Drive.NZ_rampBlue1_posb;
-          m_overRampTargets[2] = Constants.Drive.NZ_rampBlue1_posc;
+          return Constants.Drive.NZ_rampBlue1;
         }
         case 3 -> {
-          m_overRampTargets[0] = Constants.Drive.NZ_rampBlue2_posa;
-          m_overRampTargets[1] = Constants.Drive.NZ_rampBlue2_posb;
-          m_overRampTargets[2] = Constants.Drive.NZ_rampBlue2_posc;
-        }
-        default -> {
-          m_overRampTargets[0] = Constants.Drive.NZ_rampBlue1_posa;
-          m_overRampTargets[1] = Constants.Drive.NZ_rampBlue1_posb;
-          m_overRampTargets[2] = Constants.Drive.NZ_rampBlue1_posc;
+          return Constants.Drive.NZ_rampBlue2;
         }
       }
     } else {
       switch (bestIndex) {
         case 0 -> {
-          m_overRampTargets[0] = Constants.Drive.AZ_rampRed1_posa;
-          m_overRampTargets[1] = Constants.Drive.AZ_rampRed1_posb;
-          m_overRampTargets[2] = Constants.Drive.AZ_rampRed1_posc;
+          return Constants.Drive.AZ_rampRed1;
         }
         case 1 -> {
-          m_overRampTargets[0] = Constants.Drive.AZ_rampRed2_posa;
-          m_overRampTargets[1] = Constants.Drive.AZ_rampRed2_posb;
-          m_overRampTargets[2] = Constants.Drive.AZ_rampRed2_posc;
+          return Constants.Drive.AZ_rampRed2;
         }
         case 2 -> {
-          m_overRampTargets[0] = Constants.Drive.AZ_rampBlue1_posa;
-          m_overRampTargets[1] = Constants.Drive.AZ_rampBlue1_posb;
-          m_overRampTargets[2] = Constants.Drive.AZ_rampBlue1_posc;
+          return Constants.Drive.AZ_rampBlue1;
         }
         case 3 -> {
-          m_overRampTargets[0] = Constants.Drive.AZ_rampBlue2_posa;
-          m_overRampTargets[1] = Constants.Drive.AZ_rampBlue2_posb;
-          m_overRampTargets[2] = Constants.Drive.AZ_rampBlue2_posc;
-        }
-        default -> {
-          m_overRampTargets[0] = Constants.Drive.AZ_rampBlue1_posa;
-          m_overRampTargets[1] = Constants.Drive.AZ_rampBlue1_posb;
-          m_overRampTargets[2] = Constants.Drive.AZ_rampBlue1_posc;
+          return Constants.Drive.AZ_rampBlue2;
         }
       }
     }
 
-    m_overRampStage = 0;
-    m_overRampRunning = true;
-    m_overRampOverrideActive = true;
-    beginOverRampStage();
+    return null;
   }
 
-  private void beginOverRampStage() {
-    m_overRampStageStartPose = s_drivetrain.getState().Pose;
-    m_overRampStageTimeoutStart = Timer.getFPGATimestamp();
-    m_overRampVx = 0.0;
-    m_overRampVy = 0.0;
-    m_overRampOmega = 0.0;
-    m_overRampOverrideActive = true;
-  }
+  // private boolean hasCrossedOverRampProgressionLine(Pose2d target) {
+  //   Pose2d current = s_drivetrain.getState().Pose;
+  //   double approachDir = Math.signum(target.getX() - m_overRampStageStartPose.getX());
+  //   if (approachDir == 0.0) {
+  //     return false;
+  //   }
 
-  private void runOverRampSequence() {
-    if (!m_overRampRunning) {
-      m_overRampOverrideActive = false;
-      return;
-    }
+  //   double lineX = target.getX();
+  //   double currentX = current.getX();
+  //   boolean crossed = approachDir > 0 ? currentX >= lineX : currentX <= lineX;
 
-    Pose2d current = s_drivetrain.getState().Pose;
-    Pose2d targetPose = m_overRampTargets[m_overRampStage];
-    double targetHeading = targetPose.getRotation().getRadians();
-
-    Logger.recordOutput("DriveSubsystem/OverRamp/StageIndex", m_overRampStage);
-    Logger.recordOutput("DriveSubsystem/OverRamp/CurrentPose", current);
-    Logger.recordOutput("DriveSubsystem/OverRamp/TargetPose", targetPose);
-
-    double dx = targetPose.getX() - current.getX();
-    double dy = targetPose.getY() - current.getY();
-    double translationKp = 3.0;
-    double rotationKp = 2.5;
-
-    double maxStageSpeed =
-        OVER_RAMP_STAGE_MAX_SPEED_MPS[Math.min(m_overRampStage, OVER_RAMP_STAGE_MAX_SPEED_MPS.length - 1)];
-
-    double maxOmegaRadPerSec = Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond);
-
-    double headingError = MathUtil.angleModulus(targetHeading - current.getRotation().getRadians());
-    double rotationCmd =
-        MathUtil.clamp(headingError * rotationKp, -maxOmegaRadPerSec, maxOmegaRadPerSec);
-
-    double vxCmd =
-        MathUtil.clamp(dx * translationKp * 1000.0, -maxStageSpeed, maxStageSpeed);
-    double vyCmd =
-        MathUtil.clamp(dy * translationKp, -maxStageSpeed, maxStageSpeed);
-
-    boolean positionReached =
-        Math.abs(dx) < OVER_RAMP_POSITION_TOLERANCE_M && Math.abs(dy) < OVER_RAMP_POSITION_TOLERANCE_M;
-    boolean headingReached = Math.abs(headingError) < OVER_RAMP_HEADING_TOLERANCE_RAD;
-    boolean timedOut = (Timer.getFPGATimestamp() - m_overRampStageTimeoutStart) > OVER_RAMP_STAGE_TIMEOUT_SEC;
-    boolean crossedLine = hasCrossedOverRampProgressionLine(targetPose);
-
-    if ((positionReached && headingReached) || timedOut || crossedLine) {
-      m_overRampStage++;
-      if (m_overRampStage >= m_overRampTargets.length) {
-        m_overRampRunning = false;
-        m_overRampOverrideActive = false;
-        m_overRampFinishedWhileHeld = true;
-        return;
-      }
-      beginOverRampStage();
-      return;
-    }
-
-    m_overRampVx = vxCmd;
-    m_overRampVy = vyCmd;
-    m_overRampOmega = rotationCmd;
-    m_overRampOverrideActive = true;
-  }
-
-  private boolean hasCrossedOverRampProgressionLine(Pose2d target) {
-    Pose2d current = s_drivetrain.getState().Pose;
-    double approachDir = Math.signum(target.getX() - m_overRampStageStartPose.getX());
-    if (approachDir == 0.0) {
-      return false;
-    }
-
-    double lineX = target.getX();
-    double currentX = current.getX();
-    boolean crossed = approachDir > 0 ? currentX >= lineX : currentX <= lineX;
-
-    Logger.recordOutput("DriveSubsystem/OverRamp/Line/Crossed", crossed);
-    return crossed;
-  }
-
-  private void driveOverRampOverride() {
-    if (!m_overRampOverrideActive) {
-      s_drivetrain.setControl(
-          s_drive
-              .withVelocityX(MetersPerSecond.of(0.0))
-              .withVelocityY(MetersPerSecond.of(0.0))
-              .withRotationalRate(RadiansPerSecond.of(0.0)));
-      return;
-    }
-
-    double vx = m_overRampVx;
-    double vy = m_overRampVy;
-    if (DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red) {
-      vx = -vx;
-      vy = -vy;
-    }
-
-    s_drivetrain.setControl(
-        s_drive
-            .withVelocityX(MetersPerSecond.of(vx))
-            .withVelocityY(MetersPerSecond.of(vy))
-            .withRotationalRate(m_overRampOmega));
-  }
+  //   Logger.recordOutput("DriveSubsystem/OverRamp/Line/Crossed", crossed);
+  //   return crossed;
+  // }
 
   @Override
   public void close() throws Exception {

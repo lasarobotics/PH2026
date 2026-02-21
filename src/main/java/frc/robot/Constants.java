@@ -122,60 +122,78 @@ public final class Constants {
     private static final double AZ_POS_A_OFFSET_BLUE_X = -0.986536; // good
     private static final double AZ_POS_B_OFFSET_X = 0.1524 + 0.31; // good
     private static final double AZ_POS_C_OFFSET_X = 1.0668+0.1524; // good
-    // AZ-NZ POSA   
-    public static final Pose2d AZ_rampRed1_posa = new Pose2d(
-      AZ_RAMP_RED_BASE_X + AZ_POS_A_OFFSET_RED_X, 
-      AZ_RAMP_LOW_Y, 
-      new Rotation2d(-5 * Math.PI / 4));
-    public static final Pose2d AZ_rampRed2_posa = new Pose2d(
-      AZ_RAMP_RED_BASE_X + AZ_POS_A_OFFSET_RED_X, 
-      AZ_RAMP_HIGH_Y, 
-      new Rotation2d(-3 * Math.PI / 4));
-    public static final Pose2d AZ_rampBlue1_posa = new Pose2d(
-      AZ_RAMP_BLUE_BASE_X + AZ_POS_A_OFFSET_BLUE_X, 
-      AZ_RAMP_LOW_Y, 
-      ROT_45);
-    public static final Pose2d AZ_rampBlue2_posa = new Pose2d(
-      AZ_RAMP_BLUE_BASE_X + AZ_POS_A_OFFSET_BLUE_X, 
-      AZ_RAMP_HIGH_Y, 
-      new Rotation2d(-Math.PI / 4));
-    // AZ-NZ POSB    
-    public static final Pose2d AZ_rampRed1_posb = new Pose2d(
-      AZ_RAMP_RED_BASE_X - AZ_POS_B_OFFSET_X, 
-      AZ_RAMP_LOW_Y, 
-      new Rotation2d(-5 * Math.PI / 4));
-    public static final Pose2d AZ_rampRed2_posb = new Pose2d(
-      AZ_RAMP_RED_BASE_X - AZ_POS_B_OFFSET_X, 
-      AZ_RAMP_HIGH_Y, 
-      new Rotation2d(-3 * Math.PI / 4));
-    public static final Pose2d AZ_rampBlue1_posb = new Pose2d(
-      AZ_RAMP_BLUE_BASE_X + (AZ_POS_B_OFFSET_X), 
-      AZ_RAMP_LOW_Y, 
-      ROT_45);
-    public static final Pose2d AZ_rampBlue2_posb = new Pose2d(
-      AZ_RAMP_BLUE_BASE_X + (AZ_POS_B_OFFSET_X), 
-      AZ_RAMP_HIGH_Y, 
-      new Rotation2d(-Math.PI / 4));
-    // AZ-NZ POSC 
-    public static final Pose2d AZ_rampRed1_posc = new Pose2d(
-      AZ_RAMP_RED_BASE_X - AZ_POS_C_OFFSET_X, 
-      AZ_RAMP_LOW_Y, 
-      new Rotation2d(-5 * Math.PI / 4));
-    public static final Pose2d AZ_rampRed2_posc = new Pose2d(
-      AZ_RAMP_RED_BASE_X - AZ_POS_C_OFFSET_X, 
-      AZ_RAMP_HIGH_Y, 
-      new Rotation2d(-3 * Math.PI / 4));
-    public static final Pose2d AZ_rampBlue1_posc = new Pose2d(
-      AZ_RAMP_BLUE_BASE_X + AZ_POS_C_OFFSET_X, 
-      AZ_RAMP_LOW_Y, 
-      ROT_45);
-    public static final Pose2d AZ_rampBlue2_posc = new Pose2d(
-      AZ_RAMP_BLUE_BASE_X + AZ_POS_C_OFFSET_X, 
-      AZ_RAMP_HIGH_Y, 
-      new Rotation2d(-Math.PI / 4));
-        
+
+    public static final Pose2d[] AZ_rampRed1 = new Pose2d[] {
+      new Pose2d(
+        AZ_RAMP_RED_BASE_X + AZ_POS_A_OFFSET_RED_X, 
+        AZ_RAMP_LOW_Y, 
+        new Rotation2d(3 * Math.PI / 4)
+      ),
+      new Pose2d(
+        AZ_RAMP_RED_BASE_X - AZ_POS_B_OFFSET_X, 
+        AZ_RAMP_LOW_Y, 
+        new Rotation2d(3 * Math.PI / 4)
+      ),
+      new Pose2d(
+        AZ_RAMP_RED_BASE_X - AZ_POS_C_OFFSET_X, 
+        AZ_RAMP_LOW_Y, 
+        new Rotation2d(3 * Math.PI / 4)
+      )
+    };
+    public static final Pose2d[] AZ_rampRed2 = new Pose2d[] {
+      new Pose2d(
+        AZ_RAMP_RED_BASE_X + AZ_POS_A_OFFSET_RED_X, 
+        AZ_RAMP_HIGH_Y, 
+        new Rotation2d(-3 * Math.PI / 4)
+      ),
+      new Pose2d(
+        AZ_RAMP_RED_BASE_X - AZ_POS_B_OFFSET_X, 
+        AZ_RAMP_HIGH_Y, 
+        new Rotation2d(-3 * Math.PI / 4)
+      ),
+      new Pose2d(
+        AZ_RAMP_RED_BASE_X - AZ_POS_C_OFFSET_X, 
+        AZ_RAMP_HIGH_Y, 
+        new Rotation2d(-3 * Math.PI / 4)
+      )
+    };
+    public static final Pose2d[] AZ_rampBlue1 = new Pose2d[] {
+      new Pose2d(
+        AZ_RAMP_BLUE_BASE_X + AZ_POS_A_OFFSET_BLUE_X, 
+        AZ_RAMP_LOW_Y, 
+        ROT_45
+      ),
+      new Pose2d(
+        AZ_RAMP_BLUE_BASE_X + (AZ_POS_B_OFFSET_X), 
+        AZ_RAMP_LOW_Y, 
+        ROT_45
+      ),
+      new Pose2d(
+        AZ_RAMP_BLUE_BASE_X + AZ_POS_C_OFFSET_X, 
+        AZ_RAMP_LOW_Y, 
+        ROT_45
+      )
+    };
+    public static final Pose2d[] AZ_rampBlue2 = new Pose2d[] {
+      new Pose2d(
+        AZ_RAMP_BLUE_BASE_X + AZ_POS_A_OFFSET_BLUE_X, 
+        AZ_RAMP_HIGH_Y, 
+        new Rotation2d(-Math.PI / 4)
+      ),
+      new Pose2d(
+        AZ_RAMP_BLUE_BASE_X + (AZ_POS_B_OFFSET_X), 
+        AZ_RAMP_HIGH_Y, 
+        new Rotation2d(-Math.PI / 4)
+      ),
+      new Pose2d(
+        AZ_RAMP_BLUE_BASE_X + AZ_POS_C_OFFSET_X, 
+        AZ_RAMP_HIGH_Y, 
+        new Rotation2d(-Math.PI / 4)
+      )
+    };
+
     public static final Pose2d[] AZ_RAMP_POSA_CANDIDATES = new Pose2d[] {
-        AZ_rampRed1_posa, AZ_rampRed2_posa, AZ_rampBlue1_posa, AZ_rampBlue2_posa
+      AZ_rampRed1[0], AZ_rampRed2[0], AZ_rampBlue1[0], AZ_rampBlue2[0]
     };
         
     public static final double NZ_GO_OVER_RAMP_SPEED_SCALAR = 0.5;
@@ -188,64 +206,79 @@ public final class Constants {
     private static final double NZ_POS_A_OFFSET_BLUE_X = AZ_POS_A_OFFSET_BLUE_X + 0.1143; // good
     private static final double NZ_POS_B_OFFSET_X = AZ_POS_B_OFFSET_X + 0.1143; // good
     private static final double NZ_POS_C_OFFSET_X = AZ_POS_C_OFFSET_X + 0.1143; // good
-    // NZ-AZ POSA    
-    public static final Pose2d NZ_rampRed1_posa = new Pose2d(
-      NZ_RAMP_RED_BASE_X - NZ_POS_A_OFFSET_RED_X, 
-      NZ_RAMP_LOW_Y, 
-      ROT_45);
-    public static final Pose2d NZ_rampRed2_posa = new Pose2d(
-      NZ_RAMP_RED_BASE_X - NZ_POS_A_OFFSET_RED_X, 
-      NZ_RAMP_HIGH_Y, 
-      new Rotation2d(7 * Math.PI / 4));
-    public static final Pose2d NZ_rampBlue1_posa = new Pose2d(
-      NZ_RAMP_BLUE_BASE_X - NZ_POS_A_OFFSET_BLUE_X, 
-      NZ_RAMP_LOW_Y, 
-      new Rotation2d(3 * Math.PI / 4));
-    public static final Pose2d NZ_rampBlue2_posa = new Pose2d(
-      NZ_RAMP_BLUE_BASE_X - NZ_POS_A_OFFSET_BLUE_X, 
-      NZ_RAMP_HIGH_Y, 
-      new Rotation2d(-3 * Math.PI / 4));
-    // NZ-AZ POSB    
-    public static final Pose2d NZ_rampRed1_posb = new Pose2d(
-      NZ_RAMP_RED_BASE_X + NZ_POS_B_OFFSET_X, 
-      NZ_RAMP_LOW_Y, 
-      ROT_45);
-    public static final Pose2d NZ_rampRed2_posb = new Pose2d(
-      NZ_RAMP_RED_BASE_X + NZ_POS_B_OFFSET_X, 
-      NZ_RAMP_HIGH_Y, 
-      new Rotation2d(7 * Math.PI / 4));
-    public static final Pose2d NZ_rampBlue1_posb = new Pose2d(
-      NZ_RAMP_BLUE_BASE_X - NZ_POS_B_OFFSET_X, 
-      NZ_RAMP_LOW_Y, 
-      new Rotation2d(3 * Math.PI / 4));
-    public static final Pose2d NZ_rampBlue2_posb = new Pose2d(
-      NZ_RAMP_BLUE_BASE_X - NZ_POS_B_OFFSET_X, 
-      NZ_RAMP_HIGH_Y, 
-      new Rotation2d(-3 * Math.PI / 4));
-    // NZ-AZ POSC    
-    public static final Pose2d NZ_rampRed1_posc = new Pose2d(
-      NZ_RAMP_RED_BASE_X + NZ_POS_C_OFFSET_X, 
-      NZ_RAMP_LOW_Y, 
-      ROT_45);
-    public static final Pose2d NZ_rampRed2_posc = new Pose2d(
-      NZ_RAMP_RED_BASE_X + NZ_POS_C_OFFSET_X, 
-      NZ_RAMP_HIGH_Y, 
-      new Rotation2d(7 * Math.PI / 4));
-    public static final Pose2d NZ_rampBlue1_posc = new Pose2d(
-      NZ_RAMP_BLUE_BASE_X - NZ_POS_C_OFFSET_X, 
-      NZ_RAMP_LOW_Y, 
-      new Rotation2d(3 * Math.PI / 4));
-    public static final Pose2d NZ_rampBlue2_posc = new Pose2d(
-      NZ_RAMP_BLUE_BASE_X - NZ_POS_C_OFFSET_X, 
-      NZ_RAMP_HIGH_Y, 
-      new Rotation2d(-3 * Math.PI / 4));
+
+    public static final Pose2d[] NZ_rampRed1 = new Pose2d[] {
+      new Pose2d(
+        NZ_RAMP_RED_BASE_X - NZ_POS_A_OFFSET_RED_X, 
+        NZ_RAMP_LOW_Y, 
+        ROT_45
+      ),
+      new Pose2d(
+        NZ_RAMP_RED_BASE_X + NZ_POS_B_OFFSET_X, 
+        NZ_RAMP_LOW_Y, 
+        ROT_45
+      ),
+      new Pose2d(
+        NZ_RAMP_RED_BASE_X + NZ_POS_C_OFFSET_X, 
+        NZ_RAMP_LOW_Y, 
+        ROT_45
+      )
+    };
+    public static final Pose2d[] NZ_rampRed2 = new Pose2d[] {
+      new Pose2d(
+        NZ_RAMP_RED_BASE_X - NZ_POS_A_OFFSET_RED_X, 
+        NZ_RAMP_HIGH_Y, 
+        new Rotation2d(-Math.PI / 4)
+      ),
+      new Pose2d(
+        NZ_RAMP_RED_BASE_X + NZ_POS_B_OFFSET_X, 
+        NZ_RAMP_HIGH_Y, 
+        new Rotation2d(-Math.PI / 4)
+      ),
+      new Pose2d(
+        NZ_RAMP_RED_BASE_X + NZ_POS_C_OFFSET_X, 
+        NZ_RAMP_HIGH_Y, 
+        new Rotation2d(-Math.PI / 4)
+      )
+    };
+
+    public static final Pose2d[] NZ_rampBlue1 = new Pose2d[] {
+      new Pose2d(
+        NZ_RAMP_BLUE_BASE_X - NZ_POS_A_OFFSET_BLUE_X, 
+        NZ_RAMP_LOW_Y, 
+        new Rotation2d(3 * Math.PI / 4)
+      ),
+      new Pose2d(
+        NZ_RAMP_BLUE_BASE_X - NZ_POS_B_OFFSET_X, 
+        NZ_RAMP_LOW_Y, 
+        new Rotation2d(3 * Math.PI / 4)
+      ),
+      new Pose2d(
+        NZ_RAMP_BLUE_BASE_X - NZ_POS_C_OFFSET_X, 
+        NZ_RAMP_LOW_Y, 
+        new Rotation2d(3 * Math.PI / 4)
+      )
+    };
+    public static final Pose2d[] NZ_rampBlue2 = new Pose2d[] {
+      new Pose2d(
+        NZ_RAMP_BLUE_BASE_X - NZ_POS_A_OFFSET_BLUE_X, 
+        NZ_RAMP_HIGH_Y, 
+        new Rotation2d(-3 * Math.PI / 4)
+      ),
+      new Pose2d(
+        NZ_RAMP_BLUE_BASE_X - NZ_POS_B_OFFSET_X, 
+        NZ_RAMP_HIGH_Y, 
+        new Rotation2d(-3 * Math.PI / 4)
+      ),
+      new Pose2d(
+        NZ_RAMP_BLUE_BASE_X - NZ_POS_C_OFFSET_X, 
+        NZ_RAMP_HIGH_Y, 
+        new Rotation2d(-3 * Math.PI / 4)
+      )
+    };
 
     public static final Pose2d[] NZ_RAMP_POSA_CANDIDATES = new Pose2d[] {
-        NZ_rampRed1_posa, NZ_rampRed2_posa, NZ_rampBlue1_posa, NZ_rampBlue2_posa
-    };
-         
-    public static final Pose2d[] NZ_RAMP_POSC_CANDIDATES = new Pose2d[] {
-        NZ_rampRed1_posc, NZ_rampRed2_posc, NZ_rampBlue1_posc, NZ_rampBlue2_posc
+      NZ_rampRed1[0], NZ_rampRed2[0], NZ_rampBlue1[0], NZ_rampBlue2[0]
     };
   }
 

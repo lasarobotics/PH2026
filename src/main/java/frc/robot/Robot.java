@@ -70,7 +70,7 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     // Simple always on signal to verify logging is working in AdvantageScope.
     Logger.recordOutput("Robot/Heartbeat", Timer.getFPGATimestamp());
-    Logger.recordOutput("Robot/CurrentPose", DriveSubsystem.getInstance().getCurrentPose());
+    Logger.recordOutput("Robot/CurrentPose", DriveSubsystem.getDrivetrain().getState().Pose);
 
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
