@@ -117,6 +117,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     CLIMB_ALIGN {
       @Override
       public void initialize() {
+        s_headingController.reset(s_drivetrain.getState().Pose.getRotation().getRadians());
+
         s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude();
         s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.magnitude();
         s_climbAlignDistanceError = 0.2;
@@ -195,6 +197,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public void initialize() {
         sequenceIndex = 0;
         rampSequence = new Pose2d[3];
+
+        s_headingController.reset(s_drivetrain.getState().Pose.getRotation().getRadians());
 
         Translation2d[] translations = getInstance().getBestRampSequence();
         double robotAngle = s_drivetrain.getState().Pose.getRotation().getDegrees();
