@@ -250,7 +250,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         Logger.recordOutput("DriveSubsystem/sequenceIndex", sequenceIndex);
 
-        if (sequenceIndex > 2) return;
+        if (sequenceIndex > 2) {
+          // when all 3 ramp pos are done, js stop the robot at the last pos
+          s_drivetrain.setControl(
+              s_drive
+                  .withVelocityX(MetersPerSecond.of(0.0))
+                  .withVelocityY(MetersPerSecond.of(0.0))
+                  .withRotationalRate(0.0));
+          // leave execute() so we do not call goTo again
+          return;
+        }
 
         LinearVelocity maxSpeed =
           Constants.Drive.OVER_RAMP_STAGE_MAX_SPEED[sequenceIndex];
@@ -270,17 +279,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        // if not at first waypoint yet and driver doesn't
-        // have button pressed OR
-        // if done going over ramp
-        if (
-          (
-            sequenceIndex == 0 &&
-            !HeadHoncho.getInstance().wantToCrossRamp()
-          ) ||
-          HeadHoncho.getInstance().wantToCancel() ||
-          sequenceIndex == 3
-        ) return DRIVER_CONTROL;
+        // driver must hold ramp button throughout the ramp
+        // if driver lets go of ramp button goes back to driver_control
+        if (!HeadHoncho.getInstance().wantToCrossRamp() || HeadHoncho.getInstance().wantToCancel()) { // allow driver to go back to drive state if let go
+          s_requestedDriveState = DriveStates.DRIVER_CONTROL;
+          return DRIVER_CONTROL;
+        }
+        if (sequenceIndex >= 3) { // once it reaches last "stage" of ramp it goes to driver
+          s_requestedDriveState = DriveStates.DRIVER_CONTROL;
+          return DRIVER_CONTROL;
+        }
 
         return this;
       }
