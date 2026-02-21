@@ -262,6 +262,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             sequenceIndex == 0 &&
             !HeadHoncho.getInstance().wantToCrossRamp()
           ) ||
+          HeadHoncho.getInstance().wantToCancel() ||
           sequenceIndex == 3
         ) return DRIVER_CONTROL;
 

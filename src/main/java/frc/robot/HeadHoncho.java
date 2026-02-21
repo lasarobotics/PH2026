@@ -184,6 +184,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     return m_forceShootButton.getAsBoolean();
   }
 
+  public boolean wantToCancel() {
+    return m_cancelButton.getAsBoolean();
+  }
+
   public boolean wantToCrossRamp() {
     return m_overRampButton.getAsBoolean();
   }
