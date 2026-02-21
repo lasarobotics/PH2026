@@ -202,8 +202,26 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void initialize() {
-        rampSequence = getInstance().getBestRampSequence();
         sequenceIndex = 0;
+        rampSequence = new Pose2d[3];
+
+        Translation2d[] translations = getInstance().getBestRampSequence();
+        double robotAngle = s_drivetrain.getState().Pose.getRotation().getDegrees();
+        // we want to get the nearest diagonal rotation
+        // instead of having a constant one
+        // because snapping around 180 degrees for no reason sucks
+        Rotation2d snappedAngle = Rotation2d.fromDegrees(
+          Math.round((robotAngle - 45.0) / 90.0) * 90.0 + 45.0
+        );
+
+        for (int i = 0; i < 3; i++) {
+          rampSequence[i] =
+            new Pose2d(
+              translations[i],
+              snappedAngle
+            );
+        }
+
         Logger.recordOutput("DriveSubsystem/currentRampSequence", rampSequence);
       }
 
@@ -268,7 +286,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
   private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
 
-  //TODO: add more when you get more WP destinations
+  // TODO: add more when you get more WP destinations
   private static final int WP_CLIMB = 0;
 
   private static final Double DEADBAND_SCALAR = 0.085;
@@ -635,16 +653,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
   }
 
-  private Pose2d[] getBestRampSequence() {
+  private Translation2d[] getBestRampSequence() {
     Pose2d current = s_drivetrain.getState().Pose;
 
-    Pose2d[] azCandidates = Constants.Drive.AZ_RAMP_POSA_CANDIDATES;
-    Pose2d[] nzCandidates = Constants.Drive.NZ_RAMP_POSA_CANDIDATES;
+    Translation2d[] azCandidates = Constants.Drive.AZ_RAMP_POSA_CANDIDATES;
+    Translation2d[] nzCandidates = Constants.Drive.NZ_RAMP_POSA_CANDIDATES;
 
     double bestAzDistance = Double.MAX_VALUE;
     int bestAzIndex = 0;
     for (int i = 0; i < azCandidates.length; i++) {
-      double dist = current.getTranslation().getDistance(azCandidates[i].getTranslation());
+      double dist = current.getTranslation().getDistance(azCandidates[i]);
       if (dist < bestAzDistance) {
         bestAzDistance = dist;
         bestAzIndex = i;
@@ -654,7 +672,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     double bestNzDistance = Double.MAX_VALUE;
     int bestNzIndex = 0;
     for (int i = 0; i < nzCandidates.length; i++) {
-      double dist = current.getTranslation().getDistance(nzCandidates[i].getTranslation());
+      double dist = current.getTranslation().getDistance(nzCandidates[i]);
       if (dist < bestNzDistance) {
         bestNzDistance = dist;
         bestNzIndex = i;
