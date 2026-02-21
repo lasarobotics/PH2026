@@ -348,7 +348,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
     
     // TODO tune
-    s_headingController = new ProfiledPIDController(10, 0.5, 0.75, Constants.Drive.TURN_CONSTRAINTS);
+    s_headingController = new ProfiledPIDController(3, 0.0, 0.0, Constants.Drive.TURN_CONSTRAINTS);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
     // TODO: Fix this with real values
