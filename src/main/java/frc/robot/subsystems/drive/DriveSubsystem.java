@@ -591,6 +591,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.OVER_RAMP;
   }
 
+  public void leaveClimb() {
+    // TODO: Make the drive subsystem back up from tower when done climbing
+  }
+
+  public boolean isPastTower() {
+    // TODO: Figure out if the drive is free of the tower
+    return false;
+  }
+
   /**
    * Checks robot's alliance and then checks if robot is in its alliance zone
    * @return true if robot is in alliance zone, false oterwise
