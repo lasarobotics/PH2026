@@ -26,6 +26,7 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
  */
 public class Robot extends LoggedRobot {
   private Command m_autonomousCommand;
+  private final LoopLogger ll = new LoopLogger();
 
   private RobotContainer m_robotContainer;
 
@@ -68,6 +69,7 @@ public class Robot extends LoggedRobot {
    */
   @Override
   public void robotPeriodic() {
+    ll.RobotStart();
     // Simple always on signal to verify logging is working in AdvantageScope.
     Logger.recordOutput("Robot/Heartbeat", Timer.getFPGATimestamp());
     Logger.recordOutput("Robot/CurrentPose", DriveSubsystem.getDrivetrain().getState().Pose);
@@ -84,6 +86,7 @@ public class Robot extends LoggedRobot {
     // TODO remove for competition
     Logger.recordOutput("GameHelpers/matchTimeLeft", GameHelpers.matchTimeLeft());
     Logger.recordOutput("GameHelpers/scoringTimeLeft", GameHelpers.scoringTimeLeft());
+    ll.RobotEnd(isEnabled());
   }
 
   /** This function is called once each time the robot enters Disabled mode. */
@@ -106,7 +109,10 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+    ll.AutonomousStart();
+    ll.AutonomousEnd();
+  }
 
   @Override
   public void teleopInit() {
@@ -123,7 +129,10 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+    ll.TeleopStart();
+    ll.TeleopEnd();
+  }
 
   @Override
   public void testInit() {
