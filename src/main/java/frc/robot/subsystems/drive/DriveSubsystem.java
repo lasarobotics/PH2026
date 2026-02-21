@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -21,6 +22,10 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.AimUtil;
@@ -119,15 +124,20 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public void initialize() {
         s_headingController.reset(s_drivetrain.getState().Pose.getRotation().getRadians());
 
-        s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude();
-        s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.magnitude();
-        s_climbAlignDistanceError = 0.2;
-        s_climbAlignRotationError = 0.1;
+        s_climbAlignSpeed = Constants.Drive.MAX_SPEED;
+        s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE;
+        s_climbAlignDistanceError = Meters.of(0.2);
+        s_climbAlignRotationError = Radians.of(0.1);
       }
       
       @Override
       public void execute() {
-        s_driveSubsystem.goTo(s_climbPosition, 0, DriveSubsystem.s_climbAlignSpeed, DriveSubsystem.s_climbRotationSpeed);
+        s_driveSubsystem.goTo(
+          s_climbPosition,
+          MetersPerSecond.zero(),
+          DriveSubsystem.s_climbAlignSpeed,
+          DriveSubsystem.s_climbRotationSpeed
+        );
       }
 
       @Override
@@ -136,11 +146,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           return OVER_RAMP;
         }
 
-        if (atDestination(s_climbPosition, DriveSubsystem.s_climbAlignDistanceError, DriveSubsystem.s_climbAlignRotationError)) {
-          DriveSubsystem.s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude()/4;
-          DriveSubsystem.s_climbRotationSpeed = Constants.Drive.MAX_SPEED.magnitude()/2;
-          DriveSubsystem.s_climbAlignDistanceError = 0.01;
-          DriveSubsystem.s_climbAlignRotationError = 0.01;
+        if (
+          atDestination(
+            s_climbPosition,
+            DriveSubsystem.s_climbAlignDistanceError,
+            DriveSubsystem.s_climbAlignRotationError
+          )
+        ) {
+          s_climbAlignSpeed = Constants.Drive.MAX_SPEED.div(4);
+          s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.div(2);
+          s_climbAlignDistanceError = Meters.of(0.01);
+          s_climbAlignRotationError = Radians.of(0.01);
 
           if (
             !DriverStation.isAutonomous() &&
@@ -225,8 +241,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         if (
           atDestination(
             rampSequence[sequenceIndex],
-            OVER_RAMP_POSITION_TOLERANCE_M,
-            OVER_RAMP_HEADING_TOLERANCE_RAD
+            Constants.Drive.OVER_RAMP_POSITION_TOLERANCE,
+            Constants.Drive.OVER_RAMP_HEADING_TOLERANCE
           )
         ) {
           sequenceIndex++;
@@ -236,19 +252,19 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         if (sequenceIndex > 2) return;
 
-        double maxSpeed =
-          OVER_RAMP_STAGE_MAX_SPEED_MPS[Math.min(sequenceIndex, OVER_RAMP_STAGE_MAX_SPEED_MPS.length - 1)];
-        // if last waypoint, set target speed to 0
-        double targetSpeed =
+        LinearVelocity maxSpeed =
+          Constants.Drive.OVER_RAMP_STAGE_MAX_SPEED[sequenceIndex];
+        // if last waypoint, set target speed to 0.5
+        LinearVelocity targetSpeed =
           sequenceIndex == 2 ?
-            0.5 :
+            MetersPerSecond.of(0.5) :
             maxSpeed;
 
         getInstance().goTo(
           rampSequence[sequenceIndex],
           targetSpeed,
           maxSpeed,
-          Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond)
+          Constants.Drive.MAX_ANGULAR_RATE
         );
       }
 
@@ -289,10 +305,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private boolean m_hasAppliedOperatorPerspective = false;
 
-  private static double s_climbAlignSpeed = Constants.Drive.MAX_SPEED.magnitude();
-  private static double s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.magnitude();
-  private static double s_climbAlignDistanceError = 0.2;
-  private static double s_climbAlignRotationError = 0.1;
+  private static LinearVelocity s_climbAlignSpeed = Constants.Drive.MAX_SPEED;
+  private static AngularVelocity s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE;
+  private static Distance s_climbAlignDistanceError = Meters.of(0.2);
+  private static Angle s_climbAlignRotationError = Radians.of(0.1);
 
   private static ProfiledPIDController s_headingController;
   private static ProfiledPIDController s_autoAimController;
@@ -310,10 +326,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static boolean s_shooterCameraSeesTag = false;
   private static boolean s_climberCameraSeesTag = false;
   private static boolean s_backCameraSeesTag = false;
-
-  private static final double[] OVER_RAMP_STAGE_MAX_SPEED_MPS = {1.75, 1.67, 0.75};
-  private static final double OVER_RAMP_POSITION_TOLERANCE_M = 0.2;
-  private static final double OVER_RAMP_HEADING_TOLERANCE_RAD = Math.toRadians(20);
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -467,10 +479,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }  
 
   public void bindControls(
-      DoubleSupplier driveRequest,
-      DoubleSupplier strafeRequest,
-      DoubleSupplier rotateRequest
-    ) {
+    DoubleSupplier driveRequest,
+    DoubleSupplier strafeRequest,
+    DoubleSupplier rotateRequest
+  ) {
     s_driveRequest = driveRequest;
     s_strafeRequest = strafeRequest;
     s_rotateRequest = rotateRequest;
@@ -483,7 +495,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param maxRotationRate max rate of rotation the robot can rotate at
    * @return whether ropbot has reached target or not
    */
-  private void goTo(Pose2d target, double exitVelocity, double maxVelocity, double maxRotationRate) {
+  private void goTo(
+    Pose2d target,
+    LinearVelocity exitVelocity,
+    LinearVelocity maxVelocity,
+    AngularVelocity maxRotationRate
+  ) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
@@ -498,10 +515,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
 
     var outputVelocity = 
-      Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity, maxVelocity);
+      Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity.in(MetersPerSecond), maxVelocity.in(MetersPerSecond));
 
     var rotationRate = 
-      Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate);
+      Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate.in(RadiansPerSecond));
 
     var xComponent = outputVelocity * directionOfTravel.getCos();
     var yComponent = outputVelocity * directionOfTravel.getSin();
@@ -590,15 +607,19 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * (in radians)
    * @return true if robot is at destination, false otherwise
    */
-  public static boolean atDestination(Pose2d target, double acceptableDistanceError, double acceptableRotationError) {
+  public static boolean atDestination(
+    Pose2d target,
+    Distance acceptableDistanceError,
+    Angle acceptableRotationError
+  ) {
     Pose2d robotPose = s_drivetrain.getState().Pose;
-    double distance = robotPose.getTranslation().getDistance(target.getTranslation());
+    double distance = Math.abs(robotPose.getTranslation().getDistance(target.getTranslation()));
     
     if (
-      Math.abs(distance) < acceptableDistanceError 
+      distance < acceptableDistanceError.in(Meters)
       && robotPose.getRotation().getMeasure().isNear(
         target.getRotation().getMeasure(),
-        Radians.of(acceptableRotationError)
+        acceptableRotationError
       )
     ) {
       return true;

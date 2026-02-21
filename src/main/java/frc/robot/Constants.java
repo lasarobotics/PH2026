@@ -9,6 +9,7 @@ import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
@@ -119,6 +120,14 @@ public final class Constants {
 
     // TODO: change offsets according to 418 wheels
     public static final double EPSILON = 0.000001;
+
+    public static final LinearVelocity[] OVER_RAMP_STAGE_MAX_SPEED = {
+      MetersPerSecond.of(1.75),
+      MetersPerSecond.of(1.67),
+      MetersPerSecond.of(0.75)
+    };
+    public static final Distance OVER_RAMP_POSITION_TOLERANCE = Meters.of(0.2);
+    public static final Angle OVER_RAMP_HEADING_TOLERANCE = Radians.of(20);
 
     private static final double RED_RAMP_BASE_X = 11.938;
     private static final double BLUE_RAMP_BASE_X = 4.6482;
