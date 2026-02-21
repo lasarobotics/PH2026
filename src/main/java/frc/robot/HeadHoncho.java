@@ -3,9 +3,9 @@ package frc.robot;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
-import org.lasarobotics.drive.swerve.DriveWheel;
 import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -163,6 +163,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
     // Update DriveSubsystem when the climbChooser changes
     m_climbChooser.onChange(DriveSubsystem::setClimbPosition);
+  }
+
+  public void periodic() {
+    Logger.recordOutput(getName() + "/currentState", this.getState().toString());
   }
 
   /**

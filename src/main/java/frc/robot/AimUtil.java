@@ -1,6 +1,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -145,8 +146,9 @@ public class AimUtil {
    * @param currentAngularVelocity driveState.Speeds.omegaRadiansPerSecond
    * (as an AngularVelocity object)
    * @param targetPos The position of the target
-   * @param targetHeight The final height the ball should be at
-   * @param maxBallYPos The Y value for the highest point of the ball's curve
+   * @param targetHeight The final height the ball should be at, relative to the field
+   * @param maxBallYPos The Y value for the highest point of the ball's curve,
+   * relative to the field
    * @return A ShooterMathResults record with the wanted exit angle,
    * ball velocity, and robot heading
    */
@@ -158,6 +160,9 @@ public class AimUtil {
     double targetHeight,
     double maxBallYPos
   ) {
+    targetHeight = targetHeight - Constants.Shooter.SHOOTER_OFFSET_Y.in(Meters);
+    maxBallYPos = maxBallYPos - Constants.Shooter.SHOOTER_OFFSET_Y.in(Meters);
+
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
 
@@ -179,13 +184,13 @@ public class AimUtil {
         currentRobotSpeeds.vxMetersPerSecond,
         currentRobotSpeeds.vyMetersPerSecond
       )
-      .times(latency + hangTime)
       .plus(
         new Translation2d(
-          currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.cos(currentRobotHeading),
-          currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET * Math.sin(currentRobotHeading)
+          currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET_X.in(Meters) * Math.cos(currentRobotHeading),
+          currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET_X.in(Meters) * Math.sin(currentRobotHeading)
         )
       )
+      .times(latency + hangTime)
     );
     
     // Get your distance to the target (using the future position)

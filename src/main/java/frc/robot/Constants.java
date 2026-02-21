@@ -4,7 +4,6 @@
 
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -23,7 +22,6 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
@@ -77,7 +75,10 @@ public final class Constants {
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;
 
-    public static final double SHOOTER_OFFSET = 0.0; //TODO change
+    // x offset from center
+    public static final Distance SHOOTER_OFFSET_X = Inches.of(7.710630); // measured in cad
+    // y offset from floor (hood at 25deg, center of ball exit height)
+    public static final Distance SHOOTER_OFFSET_Y = Inches.of(23.422254); // measured in cad
 
     // TODO find actual value
     // Probably going to be pretty high? Unknown
