@@ -17,6 +17,9 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.wpilibj.Servo;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -26,6 +29,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   private final CANcoder m_climbEncoder;
   private final TalonFX m_climbMotor1;
   private final TalonFX m_climbMotor2;
+  private final Servo m_climbServo;
 
   public static ClimbSubsystem getInstance() {
     if (s_climbInstance == null){
@@ -39,6 +43,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_climbMotor1 = new TalonFX(Constants.Climb.CLIMB_MOTOR_1_ID);
     this.m_climbMotor2 = new TalonFX(Constants.Climb.CLIMB_MOTOR_2_ID);
     this.m_climbEncoder = new CANcoder(Constants.Climb.ARM_ENCODER_ID);
+    this.m_climbServo = new Servo(Constants.Climb.SERVO_CHANNEL);
 
     // TODO: Verify motor configs
     TalonFXConfiguration motorOneConfig = new TalonFXConfiguration();
@@ -61,24 +66,45 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Stow the climber so it is inside the frame perimeter
+   * Stow the climber so it is inside the frame perimeter. If in climb position, the climber will deploy.
+   * @return Command to move the climb motor to stow position
    */
-  public void stow() {
-    m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.STOW_ANGLE));
+  public Command stow() {
+    if (!inClimbPosition()) {
+      return this.runOnce(() -> m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.STOW_ANGLE)));
+    } else {
+      return deploy();
+    }
   }
 
   /**
-   * Deploy the climber so it is in the DEPLOY_ANGLE
+   * Deploy the climber and retract or stow servo
+   * @return Command to deploy the climb motor and move servo appropriately
    */
-  public void deploy() {
-    m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.DEPLOY_ANGLE));
+  public Command deploy() {
+    if (inClimbPosition()) {
+      return Commands.sequence(
+        deployClimbMotor(),
+        runOnce(() -> m_climbServo.setAngle(Constants.Climb.SERVO_STOW_ANGLE.magnitude()))
+      );
+    } else {
+      return Commands.sequence(
+        runOnce(() -> m_climbServo.setAngle(Constants.Climb.SERVO_RETRACT_ANGLE.magnitude())),
+        deployClimbMotor()
+      );
+    }
   }
 
   /**
-   * Move the climber to CLIMB_ANGLE
+   * Move the climber to CLIMB_ANGLE if climber is in deployed position. Otherwise deploy climber.
+   * @return Command to move the climb motor to climb position
    */
-  public void climb() {
-    m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.CLIMB_ANGLE));
+  public Command climb() {
+    if (inDeployPosition()) {
+      return this.runOnce(() -> m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.CLIMB_ANGLE)));
+    } else {
+      return deploy();
+    }
   }
 
   /**
@@ -117,6 +143,13 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private Angle getClimberAngle() {
     return this.m_climbEncoder.getAbsolutePosition().getValue();
+  }
+
+  /**
+   * Move the climb motor to deploy position
+   */
+  private Command deployClimbMotor() {
+    return this.runOnce(() -> m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.DEPLOY_ANGLE)));
   }
 
   @Override
