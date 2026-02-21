@@ -22,12 +22,14 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
+import frc.robot.HeadHoncho;
 import frc.robot.LimelightHelpers;
 import frc.robot.generated.TunerConstants;
 
@@ -397,13 +399,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           continue;
         }
         boolean doRejectUpdate = false;
-        if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
-          int[] validIds = {6, 7, 8, 9, 10, 11};
-          LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
-        } else {
-          int[] validIds = {17, 18, 19, 20, 21, 22};
-          LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
-        }
+        // if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue) == Alliance.Red) {
+        //   int[] validIds = {6, 7, 8, 9, 10, 11};
+        //   LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
+        // } else {
+        //   int[] validIds = {17, 18, 19, 20, 21, 22};
+        //   LimelightHelpers.SetFiducialIDFiltersOverride(limelight, validIds);
+        // }
         if (s_drivetrain.getState().Speeds.omegaRadiansPerSecond > 2 * Math.PI) {
           doRejectUpdate = true;
         }
@@ -507,6 +509,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     @Override
   public void periodic() {
+    boolean resettingOdom = HeadHoncho.getInstance().wantToResetOdometry();
+
+    if (resettingOdom) {
+      zeroOdometry();
+    }
+
     /*
      * Periodically try to apply the operator perspective.
      * If we haven't applied the operator perspective before, then we should apply it regardless of DS state.
@@ -528,6 +536,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
     }
 
+    Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
     Logger.recordOutput(getName() + "/subsystemState", getState().toString());
   }
@@ -595,7 +604,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * resets pose of robot
    */
   public void zeroOdometry() {
-    s_drivetrain.resetPose();
+    Rotation2d rotation;
+    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
+      // red alliance
+      rotation = CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation;
+    } else {
+      // blue alliance
+      rotation = CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation;
+    }
+    s_drivetrain.seedFieldCentric(rotation);
+    s_drivetrain.getPigeon2().reset();
   }
 
   /**
