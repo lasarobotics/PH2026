@@ -711,21 +711,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return null;
   }
 
-  // private boolean hasCrossedOverRampProgressionLine(Pose2d target) {
-  //   Pose2d current = s_drivetrain.getState().Pose;
-  //   double approachDir = Math.signum(target.getX() - m_overRampStageStartPose.getX());
-  //   if (approachDir == 0.0) {
-  //     return false;
-  //   }
-
-  //   double lineX = target.getX();
-  //   double currentX = current.getX();
-  //   boolean crossed = approachDir > 0 ? currentX >= lineX : currentX <= lineX;
-
-  //   Logger.recordOutput("DriveSubsystem/OverRamp/Line/Crossed", crossed);
-  //   return crossed;
-  // }
-
   @Override
   public void close() throws Exception {
     s_drivetrain.close();
