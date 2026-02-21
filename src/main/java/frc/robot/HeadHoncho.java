@@ -135,7 +135,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_intakeButtonHasFallen;
   private BooleanSupplier m_climbButtonHasFallen;
   private BooleanSupplier m_restButtonHasFallen;
-  private BooleanSupplier m_goToToggle;
   private BooleanSupplier m_resetOdometry;
 
   private SendableChooser<String> m_climbChooser;

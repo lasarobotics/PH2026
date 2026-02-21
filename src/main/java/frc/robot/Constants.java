@@ -7,6 +7,7 @@ package frc.robot;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
+import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
@@ -66,7 +67,7 @@ public final class Constants {
     public static final double SHOOTER_HOLD_SPEED = 0;
 
     public static final double SHOOTER_SPEED_TOLERANCE = 0; // TODO
-    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(0); // TODO
+    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(1); // TODO
 
     public static final double SHOOTER_TIME_MARGIN = 0; // TODO
 
@@ -98,14 +99,24 @@ public final class Constants {
     public static final double SLOW_SPEED_SCALAR = 0.3;
     public static final double FAST_SPEED_SCALAR = 1.0;
 
-    public static final double ROTATION_TOLERANCE = 0; // TODO
+    // This is used as a percent tolerance
+    // 5% seems reasonable, subject to change
+    public static final double ROTATION_TOLERANCE = 0.05; // TODO
 
     public static final double ROBOT_LATENCY = 0.15; //TODO: measure
 
+    public static final TrapezoidProfile.Constraints TRANSLATE_CONSTRAINTS =
+      new TrapezoidProfile.Constraints(
+        MAX_SPEED.in(MetersPerSecond),
+        MAX_ACCELERATION.in(MetersPerSecondPerSecond)
+      );
+
     public static final TrapezoidProfile.Constraints TURN_CONSTRAINTS =
       new TrapezoidProfile.Constraints(
-          MAX_ANGULAR_RATE.in(RadiansPerSecond),
-          MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond));
+        MAX_ANGULAR_RATE.in(RadiansPerSecond),
+        MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond)
+      );
+
     // TODO: change offsets according to 418 wheels
     public static final double EPSILON = 0.000001;
 
@@ -243,7 +254,9 @@ public final class Constants {
     public static final Angle DEPLOY_ANGLE = Degrees.of(0);
 
     // Tolerance of check for hopper being deployed
-    public static final double DEPLOY_TOLERANCE = 0; // TODO
+    // percent based on deploy angle
+    // 5% probably reasonable for now
+    public static final double DEPLOY_TOLERANCE = 0.05; // TODO
   }
 
   public static class Hopper {

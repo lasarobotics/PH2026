@@ -1,6 +1,5 @@
 package frc.robot.subsystems.drive;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
@@ -18,12 +17,10 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.VecBuilder;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.AimUtil;
@@ -83,12 +80,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       }
     },
     AUTO_AIM {
-      @Override
-      public void initialize() {
-        s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
-        s_autoAimController.setConstraints(Constants.Drive.TURN_CONSTRAINTS);
-      }
-
       @Override
       public void execute() {
         double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
@@ -298,9 +289,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static double s_climbAlignDistanceError = 0.2;
   private static double s_climbAlignRotationError = 0.1;
 
+  private static ProfiledPIDController s_headingController;
   private static ProfiledPIDController s_autoAimController;
-  private static PIDController s_autoDrive;
-  private static PIDController s_headingController;
+  private static ProfiledPIDController s_autoDrive;
 
   private static DriveStates s_requestedDriveState = DriveStates.NOTHING;
 
@@ -349,21 +340,24 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_drivetrain = TunerConstants.createDrivetrain();
 
     s_drive =
-        new SwerveRequest.FieldCentric()
-            .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
-            .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1)) // Add a
-            .withDriveRequestType(DriveRequestType.Velocity)
-            .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-            .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
-
-    s_autoDrive = new PIDController(1.75, 0.0, 0.0);
-    s_headingController = new PIDController(10, 0.5, 0.75);
+      new SwerveRequest.FieldCentric()
+        .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
+        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1)) // Add a
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
+    
+    // TODO tune
+    s_headingController = new ProfiledPIDController(10, 0.5, 0.75, Constants.Drive.TURN_CONSTRAINTS);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
     // TODO: Fix this with real values
     // also add tolerance
-    s_autoAimController = new ProfiledPIDController(0.0, 0.0, 0.0, null);
+    s_autoAimController = new ProfiledPIDController(0.0, 0.0, 0.0, Constants.Drive.TURN_CONSTRAINTS);
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
+
+    // TODO tune
+    s_autoDrive = new ProfiledPIDController(1.75, 0.0, 0.0, Constants.Drive.TRANSLATE_CONSTRAINTS);
 
     // TODO: Initialize the climb position to left
     s_climbPosition = new Pose2d(); 
