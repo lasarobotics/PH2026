@@ -9,7 +9,7 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -35,7 +35,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TalonFX m_hoodMotor;
   private CANcoder m_hoodCanCoder;
 
-  private final MotionMagicVelocityVoltage m_shooterRequest;
+  private final VelocityDutyCycle m_shooterRequest;
   private final MotionMagicVoltage m_hoodRequest;
 
   private boolean m_isRunning = true;
@@ -55,15 +55,20 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
-    m_shooterRequest = new MotionMagicVelocityVoltage(0);
+    m_shooterRequest = new VelocityDutyCycle(0);
     m_hoodRequest = new MotionMagicVoltage(0);
 
-    // TODO set up configs
-    // for reference:
-    // https://github.com/lasarobotics/PH2025/blob/master/src/main/java/frc/robot/subsystems/lift/LiftSubsystem.java#L1359-L1422
-    TalonFXConfiguration shooterOneConfig = new TalonFXConfiguration();
-    TalonFXConfiguration shooterTwoConfig = new TalonFXConfiguration();
-    TalonFXConfiguration shooterThreeConfig = new TalonFXConfiguration();
+    TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
+    shooterConfig
+      .Feedback
+        .withSensorToMechanismRatio(1 / 1.125);
+    shooterConfig
+      .Slot0
+        .withKP(999999999999999999999.0);
+    shooterConfig
+      .MotorOutput
+        .withPeakForwardDutyCycle(1.0)
+        .withPeakReverseDutyCycle(0.0);
 
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
 
@@ -73,20 +78,18 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
 
-    m_shooterMotorLeader.getConfigurator().apply(shooterOneConfig);
-    m_shooterMotorFollowerOne.getConfigurator().apply(shooterTwoConfig);
-    m_shooterMotorFollowerTwo.getConfigurator().apply(shooterThreeConfig);
+    m_shooterMotorLeader.getConfigurator().apply(shooterConfig);
+    m_shooterMotorFollowerOne.getConfigurator().apply(shooterConfig);
+    m_shooterMotorFollowerTwo.getConfigurator().apply(shooterConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
     m_hoodMotor.getConfigurator().apply(hoodConfig);
     m_hoodCanCoder.getConfigurator().apply(canCoderConfig);
 
-    // Master motor should be the one that goes in a different
-    // direction than the other two
     m_shooterMotorFollowerOne.setControl(
-      new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Opposed)
-    );    
+      new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
+    );
     m_shooterMotorFollowerTwo.setControl(
-      new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Opposed)
+      new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
     );
   }
 

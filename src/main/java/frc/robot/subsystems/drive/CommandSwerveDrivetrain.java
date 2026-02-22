@@ -3,32 +3,26 @@ package frc.robot.subsystems.drive;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Volts;
 
+import java.util.function.Supplier;
+
 import com.ctre.phoenix6.SignalLogger;
 import com.ctre.phoenix6.Utils;
 import com.ctre.phoenix6.swerve.SwerveDrivetrainConstants;
-import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
-import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.config.PIDConstants;
-import com.pathplanner.lib.config.RobotConfig;
-import com.pathplanner.lib.controllers.PPHolonomicDriveController;
+
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.robot.generated.TunerConstants.TunerSwerveDrivetrain;
-import java.util.function.Supplier;
-import org.littletonrobotics.junction.Logger;
 
 /**
  * Class that extends the Phoenix 6 SwerveDrivetrain class and implements Subsystem so it can easily
@@ -125,7 +119,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    configureAutoBuilder();
   }
 
   /**
@@ -147,86 +140,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    configureAutoBuilder();
   }
 
-  private void resetPoseNotGyro(Pose2d pose) {
+  public void resetPoseNotGyro(Pose2d pose) {
     this.resetPose(new Pose2d(pose.getX(), pose.getY(), this.getState().Pose.getRotation()));
-  }
-
-  private void configureAutoBuilder() {
-    try {
-      var config = RobotConfig.fromGUISettings();
-      AutoBuilder.configure(
-          () -> getState().Pose,
-          this::resetPoseNotGyro,
-          () -> getState().Speeds,
-          // Consumer of ChassisSpeeds and feedforwards to drive the robot
-          (speeds, feedforwards) -> {
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod0/XNewtons",
-                feedforwards.robotRelativeForcesXNewtons()[0]);
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod1/XNewtons",
-                feedforwards.robotRelativeForcesXNewtons()[1]);
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod2/XNewtons",
-                feedforwards.robotRelativeForcesXNewtons()[2]);
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod3/XNewtons",
-                feedforwards.robotRelativeForcesXNewtons()[3]);
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod0/YNewtons",
-                feedforwards.robotRelativeForcesYNewtons()[0]);
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod1/YNewtons",
-                feedforwards.robotRelativeForcesYNewtons()[1]);
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod2/YNewtons",
-                feedforwards.robotRelativeForcesYNewtons()[2]);
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod3/YNewtons",
-                feedforwards.robotRelativeForcesYNewtons()[3]);
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod0/MagNewtons",
-                Math.sqrt(
-                    Math.pow(feedforwards.robotRelativeForcesXNewtons()[0], 2.0)
-                        + Math.pow(feedforwards.robotRelativeForcesYNewtons()[0], 2.0)));
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod1/MagNewtons",
-                Math.sqrt(
-                    Math.pow(feedforwards.robotRelativeForcesXNewtons()[1], 2.0)
-                        + Math.pow(feedforwards.robotRelativeForcesYNewtons()[1], 2.0)));
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod2/MagNewtons",
-                Math.sqrt(
-                    Math.pow(feedforwards.robotRelativeForcesXNewtons()[2], 2.0)
-                        + Math.pow(feedforwards.robotRelativeForcesYNewtons()[2], 2.0)));
-            Logger.recordOutput(
-                getName() + "PathPlanner/Mod3/MagNewtons",
-                Math.sqrt(
-                    Math.pow(feedforwards.robotRelativeForcesXNewtons()[3], 2.0)
-                        + Math.pow(feedforwards.robotRelativeForcesYNewtons()[3], 2.0)));
-            setControl(
-                m_pathApplyRobotSpeeds
-                    .withSpeeds(speeds)
-                    .withWheelForceFeedforwardsX(feedforwards.robotRelativeForcesXNewtons())
-                    .withWheelForceFeedforwardsY(feedforwards.robotRelativeForcesYNewtons())
-                    .withDriveRequestType(DriveRequestType.Velocity)
-                    .withSteerRequestType(SteerRequestType.MotionMagicExpo));
-          },
-          new PPHolonomicDriveController(
-              // translation
-              new PIDConstants(2, 0, 0),
-              // rotation
-              new PIDConstants(1, 0, 0)),
-          config,
-          () -> DriverStation.getAlliance().orElse(Alliance.Blue) == Alliance.Red,
-          this);
-    } catch (Exception ex) {
-      DriverStation.reportError(
-          "Failed to load PathPlanner config and configure AutoBuilder", ex.getStackTrace());
-    }
   }
 
   /**
@@ -259,7 +176,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    configureAutoBuilder();
   }
 
   /**

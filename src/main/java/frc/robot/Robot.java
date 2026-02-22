@@ -55,7 +55,7 @@ public class Robot extends LoggedRobot {
     // initialize subsystems
     ClimbSubsystem.getInstance();
     DriveSubsystem.getInstance();
-    HopperSubsystem.getInstance();
+    // HopperSubsystem.getInstance();
     IntakeSubsystem.getInstance();
     ShooterSubsystem.getInstance();
   }

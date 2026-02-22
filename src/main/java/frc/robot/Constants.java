@@ -47,8 +47,6 @@ public final class Constants {
 
   public static class Shooter {
     public static final int LEADER_SHOOTER_MOTOR_ID = 30;
-    // NOTE: Follower motors should spin in the same direction
-    // (opposite to that of the leader)
     public static final int FOLLOWER_SHOOTER_ONE_MOTOR_ID = 31;
     public static final int FOLLOWER_SHOOTER_TWO_MOTOR_ID = 32;
     public static final int INDEXER_MOTOR_ID = 33;
@@ -100,6 +98,46 @@ public final class Constants {
         RotationsPerSecondPerSecond.of(1); // TODO  measure
     public static final double SLOW_SPEED_SCALAR = 0.3;
     public static final double FAST_SPEED_SCALAR = 1.0;
+
+    public static final String SHOOTER_LIMELIGHT_NAME = "shooter";
+    public static final String CLIMB_LIMELIGHT_NAME = "climb";
+    public static final String BACK_LIMELIGHT_NAME = "back";
+
+    public static final int THROTTLE_OFF = 200;
+    public static final int THROTTLE_IDLE = 25;
+    public static final int THROTTLE_RUNNING = 0;
+
+    public static final int[] ALL_APRIL_TAGS = new int[]{};
+    public static final int[] RED_TOWER_APRIL_TAGS = new int[]{
+      15, 16
+    };
+    public static final int[] RED_HUB_APRIL_TAGS = new int[]{
+      2, 3, 4, 5, 8, 9, 10, 11
+    };
+    public static final int[] RED_TOWER_AND_HUB_APRIL_TAGS = new int[] {
+      9, 10, 15, 16
+    };
+    public static final int[] RED_TRENCH_APRIL_TAGS = new int[] {
+      1, 12, 6, 7
+    };
+    public static final int[] RED_OUTPOST_APRIL_TAGS = new int[] {
+      13, 14
+    };
+    public static final int[] BLUE_TOWER_APRIL_TAGS = new int[]{
+      31, 32
+    };
+    public static final int[] BLUE_HUB_APRIL_TAGS = new int[]{
+      18, 19, 20, 21, 24, 25, 26, 27
+    };
+    public static final int[] BLUE_TOWER_AND_HUB_APRIL_TAGS = new int[] {
+      25, 26, 31, 32
+    };
+    public static final int[] BLUE_TRENCH_APRIL_TAGS = new int[] {
+      17, 28, 22, 23
+    };
+    public static final int[] BLUE_OUTPOST_APRIL_TAGS = new int[] {
+      29, 30
+    };
 
     // This is used as a percent tolerance
     // 5% seems reasonable, subject to change
