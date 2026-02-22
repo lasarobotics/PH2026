@@ -12,6 +12,7 @@ import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
@@ -247,8 +248,13 @@ public final class Constants {
 
     // TODO: find values of intake positions
     public static final Dimensionless INTAKE_SPEED = Value.of(0.6);
-    public static final Angle STOW_ANGLE = Degrees.of(0);
-    public static final Angle DEPLOY_ANGLE = Degrees.of(0);
+
+    // preliminary values
+    public static final Angle STOW_ANGLE = Rotations.of(0);
+    // might want to reduce
+    // this should be basically the value of the soft limit of the arm
+    // TODO update for bumper
+    public static final Angle DEPLOY_ANGLE = Rotations.of(.28);
 
     // Tolerance of check for hopper being deployed
     // percent based on deploy angle

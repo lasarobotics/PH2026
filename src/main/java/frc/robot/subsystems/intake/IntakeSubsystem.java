@@ -68,6 +68,9 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       .SoftwareLimitSwitch
         .withForwardSoftLimitEnable(true)
         .withReverseSoftLimitEnable(true)
+        // Note:
+        // .29 is the physical limit with no bumper
+        // I think .28 should be good? idk TODO figure out
         .withForwardSoftLimitThreshold(.28) // measured value
         .withReverseSoftLimitThreshold(0); // zero position
     armConfig
