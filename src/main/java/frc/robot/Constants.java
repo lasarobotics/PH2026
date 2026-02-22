@@ -240,18 +240,6 @@ public final class Constants {
     
   }
 
-  public static class Vision {
-    public static final String CAMERA_NAME = "Arducam_OV9782_USB_Camera"; // NEED TO CHANGE maybe.....
-    public static final int OBJECT_DETECTION_PIPELINE_INDEX = 0;
-    public static final int MAX_TARGETS_TO_PROCESS = 60; // can be increased, js for now kept low to help with performance
-
-    public static final double MIN_CONFIDENCE = 0.2;
-    public static final double MIN_TARGET_AREA_PERCENT = 0.1;
-    public static final double AREA_PERCENT_AT_ONE_METER = 12.0;
-    public static final double BOUNDING_BOX_AREA_AT_ONE_METER = 9000.0;
-    public static final double MIN_DISTANCE_METERS = Meters.of(0.05).in(Meters);
-  }
-
   public static class Intake {
     public static final int INTAKE_MOTOR_ID = 40;
     public static final int ARM_MOTOR_ID = 41;

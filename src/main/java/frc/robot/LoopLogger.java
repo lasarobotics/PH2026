@@ -72,8 +72,6 @@ package frc.robot;
 import java.lang.management.ManagementFactory;
 import java.lang.management.MemoryMXBean;
 
-import org.ejml.dense.row.decompose.qr.QrHelperFunctions_CDRM;
-
 import edu.wpi.first.wpilibj.Timer;
 
 
@@ -155,22 +153,6 @@ public class LoopLogger {
       lastSlot= slot;
     }
 
-    private void ProcessLoopDuration_OLD_OLD_OLD_OLD_OLD_OLD() {
-      int quantumTime= (int)( loopDuration * ( 1000000.0 / 64 ) );
-      int slot= 0;
-      while( quantumTime > 0 ) {
-        quantumTime /= 2;
-        slot++;
-      }
-      if( slot >= N_DURATION_SLOTS ) {
-        slot= N_DURATION_SLOTS - 1;
-      }
-      if( n < N_INITIAL_TIMES_ARRAY ) {
-        initialLoopTimes[n]= slot;
-      }
-      durationSlots[slot]++;
-      n++;
-    }
 
     void PrintStats() {
       System.out.println ( "THREAD: " + name );
