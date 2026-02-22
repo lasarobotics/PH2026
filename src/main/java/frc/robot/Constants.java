@@ -341,6 +341,14 @@ public final class Constants {
     public static final Angle SERVO_STOW_ANGLE = Degrees.of(0);
   }
 
+  public static class Auto {
+    public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.2);
+    public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.05);
+
+    public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(20);
+    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2);
+  }
+
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_CLIMB_CHOOSER_NAME = "Auto Climb Position";
   }

@@ -723,7 +723,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param maxRotationRate max rate of rotation the robot can rotate at
    * @return whether ropbot has reached target or not
    */
-  private void goTo(
+  public void goTo(
     Pose2d target,
     LinearVelocity exitVelocity,
     LinearVelocity maxVelocity,
@@ -759,6 +759,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     );
   
     Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
+  }
+
+  public void stopMoving() {
+    s_drivetrain.setControl(
+      s_drive
+        .withVelocityX(MetersPerSecond.of(0.0))
+        .withVelocityY(MetersPerSecond.of(0.0))
+        .withRotationalRate(0.0)
+    );
   }
 
   @Override

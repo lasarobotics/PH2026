@@ -47,7 +47,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        boolean shootButton = s_headHoncho.m_shootButton.getAsBoolean();
+        boolean shoot = s_headHoncho.m_shootButton.getAsBoolean() || AutoHoncho.autoWantToShoot();
 
         Translation3d shootPos = wantedShootPosition();
         AimUtil.setTarget(
@@ -55,7 +55,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
           shootPos.getZ()
         );
 
-        if (shootButton) {
+        if (shoot) {
           DriveSubsystem.getInstance().driveAutoAim();
         } else {
           DriveSubsystem.getInstance().driverControl();
@@ -192,7 +192,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   }
 
   public boolean wantToShoot() {
-    return m_shootButton.getAsBoolean();
+    return m_shootButton.getAsBoolean() || AutoHoncho.autoWantToShoot();
   }
 
   public boolean wantToDumbShoot() {
