@@ -1,42 +1,25 @@
 package frc.robot;
 
-import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import org.lasarobotics.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
-public class AutoHoncho {
+public class AutoHoncho {  
+  public static AutoPositionConfig positionConfig;
+
   public enum BasicShootAuto implements SystemState {
     START {
-      Pose2d targetPose;
-
-      @Override
-      public void initialize() {
-        targetPose = new Pose2d(
-          new Translation2d(
-            2.5,
-            1.5
-          ),
-          new Rotation2d(
-            Degrees.of(45)
-          )
-        );
-      }
-
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          targetPose,
+          positionConfig.AllianceZoneMiddleSide(),
           MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -52,7 +35,7 @@ public class AutoHoncho {
       public SystemState nextState() {
         if (
           DriveSubsystem.atDestination(
-            targetPose, 
+            positionConfig.AllianceZoneMiddleSide(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -81,25 +64,10 @@ public class AutoHoncho {
 
   public enum ShootAndClimbAuto implements SystemState {
      START {
-      Pose2d targetPose;
-
-      @Override
-      public void initialize() {
-        targetPose = new Pose2d(
-          new Translation2d(
-            2.5,
-            1.5
-          ),
-          new Rotation2d(
-            Degrees.of(45)
-          )
-        );
-      }
-
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          targetPose,
+          positionConfig.AllianceZoneMiddleSide(),
           MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -115,7 +83,7 @@ public class AutoHoncho {
       public SystemState nextState() {
         if (
           DriveSubsystem.atDestination(
-            targetPose, 
+            positionConfig.AllianceZoneMiddleSide(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -131,7 +99,7 @@ public class AutoHoncho {
       public void initialize() {
         s_wantToShoot = true;
 
-        timer.restart();
+        timer.start();
       }
 
       @Override
@@ -141,7 +109,7 @@ public class AutoHoncho {
 
       @Override
       public SystemState nextState() {
-        if (timer.hasElapsed(3)) {
+        if (timer.hasElapsed(Constants.Auto.EightBallShootingTime)) {
           return GO_TO_CLIMB;
         }
         return this;
@@ -158,8 +126,8 @@ public class AutoHoncho {
 
       @Override
       public void execute() {
-         DriveSubsystem.getInstance().goTo(
-          autoClimbPosition,
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.TowerPose(),
           MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -169,7 +137,7 @@ public class AutoHoncho {
       public SystemState nextState() {
         if (
           DriveSubsystem.atDestination(
-            autoClimbPosition, 
+            positionConfig.TowerPose(),
             Constants.Auto.LOW_DISTANCE_TOLERANCE, 
             Constants.Auto.LOW_ROTATION_TOLERANCE
           )
