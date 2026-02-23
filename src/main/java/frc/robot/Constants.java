@@ -161,7 +161,7 @@ public final class Constants {
     public static final double EPSILON = 0.000001;
 
     public static final LinearVelocity[] OVER_RAMP_STAGE_MAX_SPEED = {
-      MetersPerSecond.of(1.75),
+      MetersPerSecond.of(2.25),
       MetersPerSecond.of(1.67),
       MetersPerSecond.of(0.75)
     };

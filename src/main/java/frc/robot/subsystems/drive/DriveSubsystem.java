@@ -402,7 +402,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     },
     OVER_RAMP {
       private Pose2d[] rampSequence;
+      private Pose2d currentTarget;
       private int sequenceIndex;
+      private double directionSign;
 
       @Override
       public void initialize() {
@@ -428,6 +430,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             );
         }
 
+        currentTarget = rampSequence[0];
+
+        // for line-crossing:
+        // if x of final > x of start (sign = 1.0)
+        // then we want the x of the robot to be greater than the
+        // x of the current target to count as "passed"
+        // (and vice versa).
+        // this number should never be 0
+        directionSign = Math.signum(rampSequence[2].getX() - rampSequence[0].getX());
+
         // turn on all limelights
         LimelightHelpers.SetThrottle(
           Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
@@ -447,12 +459,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
+        // if sign of current vs target is the same as final vs start
+        // (i.e. same direction)
+        // or if at exact same point (want to avoid getting stuck)
+        // then increment
+        double crossedSign = Math.signum(
+          s_drivetrain.getState().Pose.getX() - currentTarget.getX()
+        );
         if (
-          atDestination(
-            rampSequence[sequenceIndex],
-            Constants.Drive.OVER_RAMP_POSITION_TOLERANCE,
-            Constants.Drive.OVER_RAMP_HEADING_TOLERANCE
-          )
+          directionSign == crossedSign ||
+          crossedSign == 0
         ) {
           sequenceIndex++;
         }
@@ -470,6 +486,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           return;
         }
 
+        currentTarget = rampSequence[sequenceIndex];
+
         LinearVelocity maxSpeed =
           Constants.Drive.OVER_RAMP_STAGE_MAX_SPEED[sequenceIndex];
         // if last waypoint, set target speed to 0.5
@@ -479,7 +497,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             maxSpeed;
 
         getInstance().goTo(
-          rampSequence[sequenceIndex],
+          currentTarget,
           targetSpeed,
           maxSpeed,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -494,7 +512,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           s_requestedDriveState = DriveStates.DRIVER_CONTROL;
           return DRIVER_CONTROL;
         }
-        if (sequenceIndex >= 3) { // once it reaches last "stage" of ramp it goes to driver
+        if (sequenceIndex > 2) { // once it reaches last "stage" of ramp it goes to driver
           s_requestedDriveState = DriveStates.DRIVER_CONTROL;
           return DRIVER_CONTROL;
         }
