@@ -533,11 +533,14 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DoubleSupplier s_strafeRequest = () -> 0;
   private static DoubleSupplier s_rotateRequest = () -> 0;
 
-  private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
-  private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
+  private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER, Constants.Field.RED_TOWER_DEPOT_SIDE, Constants.Field.RED_TOWER_OUTPOST_SIDE, Constants.Field.RED_TOWER_LEAVE};
+  private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER, Constants.Field.BLUE_TOWER_DEPOT_SIDE, Constants.Field.BLUE_TOWER_OUTPOST_SIDE, Constants.Field.BLUE_TOWER_LEAVE};
 
   // TODO: add more when you get more WP destinations
-  private static final int WP_CLIMB = 0;
+  private static final int WP_CLIMB_CENTER = 0;
+  private static final int WP_CLIMB_DEPOT = 1;
+  private static final int WP_CLIMB_OUTPOST = 2;
+  private static final int WP_CLIMB_LEAVE = 3;
 
   private static final Double DEADBAND_SCALAR = 0.085;
 
@@ -840,12 +843,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   public void leaveClimb() {
-    // TODO: Make the drive subsystem back up from tower when done climbing
+    s_driveSubsystem.goTo(s_alliancePoses[WP_CLIMB_LEAVE], MetersPerSecond.of(0), Constants.Drive.MAX_SPEED, Constants.Drive.MAX_ANGULAR_RATE);
   }
 
   public boolean isPastTower() {
-    // TODO: Figure out if the drive is free of the tower
-    return false;
+    return atDestination(s_alliancePoses[WP_CLIMB_LEAVE], 0.25, 0.25);
   }
 
   /**
