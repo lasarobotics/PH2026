@@ -42,7 +42,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void initialize() {
         ShooterSubsystem.getInstance().startOperation();
-        ClimbSubsystem.getInstance().deploy();
+        ClimbSubsystem.getInstance().stow();
       }
 
       @Override
