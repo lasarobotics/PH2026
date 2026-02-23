@@ -847,7 +847,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   public boolean isPastTower() {
-    return atDestination(s_alliancePoses[WP_CLIMB_LEAVE], 0.25, 0.25);
+    return atDestination(s_alliancePoses[WP_CLIMB_LEAVE], Meters.of(0.25), Radians.of(0.25));
   }
 
   /**
