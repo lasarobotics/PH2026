@@ -120,7 +120,6 @@ public class AutoHoncho {
         return this;
       }
     },
-
     SHOOT {
       Timer timer = new Timer();
 
@@ -145,7 +144,6 @@ public class AutoHoncho {
       }
     },
     GO_TO_CLIMB {
-
       Pose2d autoClimbPosition;
 
       @Override

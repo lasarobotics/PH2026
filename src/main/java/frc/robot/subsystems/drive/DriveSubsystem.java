@@ -737,6 +737,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   /**
    * Auto-aligns to a specific target (in other words, goes to a specific target)
    * @param target The target that you want to go to
+   * @param exitVelocity The target speed of the robot once done
    * @param maxVelocity max velocity the robot can go
    * @param maxRotationRate max rate of rotation the robot can rotate at
    * @return whether ropbot has reached target or not
