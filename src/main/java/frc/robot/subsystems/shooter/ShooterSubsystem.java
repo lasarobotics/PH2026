@@ -12,6 +12,7 @@ import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
@@ -69,6 +70,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       .MotorOutput
         .withPeakForwardDutyCycle(1.0)
         .withPeakReverseDutyCycle(0.0);
+    // https://v6.docs.ctr-electronics.com/en/stable/docs/api-reference/api-usage/status-signals.html
+    m_shooterMotorLeader.getDutyCycle().setUpdateFrequency(1000);
+    m_shooterMotorLeader.getMotorVoltage().setUpdateFrequency(1000);
+    m_shooterMotorLeader.getTorqueCurrent().setUpdateFrequency(1000);
+    ParentDevice.optimizeBusUtilizationForAll(
+      m_shooterMotorFollowerOne,
+      m_shooterMotorFollowerTwo
+    );
 
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
 
