@@ -21,6 +21,7 @@ import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -254,8 +255,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     CLIMB_ALIGN {
       @Override
       public void initialize() {
-        s_headingController.reset(s_drivetrain.getState().Pose.getRotation().getRadians());
-
         s_climbAlignSpeed = Constants.Drive.MAX_SPEED;
         s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE;
         s_climbAlignDistanceError = Meters.of(0.2);
@@ -411,8 +410,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         sequenceIndex = 0;
         rampSequence = new Pose2d[3];
 
-        s_headingController.reset(s_drivetrain.getState().Pose.getRotation().getRadians());
-
         Translation2d[] translations = getInstance().getBestRampSequence();
         double robotAngle = s_drivetrain.getState().Pose.getRotation().getDegrees();
         // we want to get the nearest diagonal rotation
@@ -548,9 +545,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static Distance s_climbAlignDistanceError = Meters.of(0.2);
   private static Angle s_climbAlignRotationError = Radians.of(0.1);
 
-  private static ProfiledPIDController s_headingController;
+  private static PIDController s_headingController;
   private static ProfiledPIDController s_autoAimController;
-  private static ProfiledPIDController s_autoDrive;
+  private static PIDController s_autoDrive;
 
   private static DriveStates s_requestedDriveState;
 
@@ -606,8 +603,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
     
-    // TODO tune
-    s_headingController = new ProfiledPIDController(3, 0.0, 0.0, Constants.Drive.TURN_CONSTRAINTS);
+    s_headingController = new PIDController(3, 0.0, 0.0);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
     // TODO: Fix this with real values
@@ -615,8 +611,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoAimController = new ProfiledPIDController(0.0, 0.0, 0.0, Constants.Drive.TURN_CONSTRAINTS);
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 
-    // TODO tune
-    s_autoDrive = new ProfiledPIDController(1.75, 0.0, 0.0, Constants.Drive.TRANSLATE_CONSTRAINTS);
+    s_autoDrive = new PIDController(1.75, 0.0, 0.0);
 
     // TODO: Initialize the climb position to left
     s_climbPosition = new Pose2d(); 
