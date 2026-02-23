@@ -45,6 +45,16 @@ public final class Constants {
     public static final int kDriverControllerPort = 0;
   }
 
+  public static class Auto {
+    public static final double EightBallShootingTime = 3;
+
+    public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.2);
+    public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.05);
+
+    public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(20);
+    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2);
+  }
+
   public static class Shooter {
     public static final int LEADER_SHOOTER_MOTOR_ID = 30;
     public static final int FOLLOWER_SHOOTER_ONE_MOTOR_ID = 31;
@@ -339,14 +349,6 @@ public final class Constants {
     // TODO: Find the values of climb servo constants
     public static final Angle SERVO_RETRACT_ANGLE = Degrees.of(0);
     public static final Angle SERVO_STOW_ANGLE = Degrees.of(0);
-  }
-
-  public static class Auto {
-    public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.2);
-    public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.05);
-
-    public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(20);
-    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2);
   }
 
   public static class SmartDashboard {
