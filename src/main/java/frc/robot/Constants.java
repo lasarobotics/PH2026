@@ -268,6 +268,14 @@ public final class Constants {
         new Pose2d(
             new Translation2d(Meters.of(14.919), Meters.of(5.1)), Rotation2d.fromDegrees(90));  
 
+    public static final Pose2d BLUE_TOWER_LEAVE =
+        new Pose2d(
+            new Translation2d(Meters.of(2.17), Meters.of(3.7)), Rotation2d.fromDegrees(0));  
+
+    public static final Pose2d RED_TOWER_LEAVE =
+        new Pose2d(
+            new Translation2d(Meters.of(14.15), Meters.of(4.309)), Rotation2d.fromDegrees(180));  
+
     
     public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d(14.231, 2.235);
     public static final Translation2d RED_TOP_PASS_COORDINATES = new Translation2d(14.231, 6.235);
