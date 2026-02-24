@@ -200,6 +200,30 @@ public class AutoHoncho {
     }
   }
 
+  // this is more of a POC/example than actual auto
+  public enum CrossRampAuto implements SystemState {
+    START {
+      @Override
+      public void initialize() {
+        DriveSubsystem.getInstance().driveOverRamp();
+        s_wantToCrossBump = true;
+      }
+
+      @Override
+      public void execute() {
+        if (DriveSubsystem.getInstance().getState()
+            != DriveSubsystem.DriveStates.OVER_RAMP) {
+          s_wantToCrossBump = false;
+        }
+      }
+
+      @Override
+      public SystemState nextState() {
+        return this;
+      }
+    }
+  }
+
   private static boolean s_wantToShoot = false;
   private static boolean s_wantToCrossBump = false;
 
