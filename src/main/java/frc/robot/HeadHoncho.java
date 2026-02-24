@@ -137,7 +137,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
-        if (DriveSubsystem.getInstance().isPastTower()) return NORMAL;
+        if (DriveSubsystem.getInstance().isPastTower() || s_headHoncho.m_cancelButton.getAsBoolean()) return NORMAL;
 
         return this;
       }
