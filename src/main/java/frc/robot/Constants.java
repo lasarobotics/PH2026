@@ -53,6 +53,55 @@ public final class Constants {
 
     public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(20);
     public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2);
+
+    public static final Pose2d BLUE_RIGHT_POSE = new Pose2d(
+      new Translation2d(
+        2, 1.5
+      ),
+      new Rotation2d(
+        Degrees.of(45)
+      )
+    );
+    public static final Pose2d BLUE_LEFT_POSE = new Pose2d(
+      new Translation2d(
+        2.5, 6.5
+      ),
+      new Rotation2d(
+        Degrees.of(-45)
+      )
+    );
+    public static final Pose2d BLUE_CENTER_POSE = new Pose2d(
+      new Translation2d(
+        2, 4
+      ),
+      new Rotation2d(
+        Degrees.of(0)
+      )
+    );
+    public static final Pose2d RED_RIGHT_POSE = new Pose2d(
+      new Translation2d(
+        14.5, 6.5
+      ),
+      new Rotation2d(
+        Degrees.of(-135)
+      )
+    );
+    public static final Pose2d RED_LEFT_POSE = new Pose2d(
+      new Translation2d(
+        14.5, 1.5
+      ),
+      new Rotation2d(
+        Degrees.of(135)
+      )
+    );
+    public static final Pose2d RED_CENTER_POSE = new Pose2d(
+      new Translation2d(
+        14, 4
+      ),
+      new Rotation2d(
+        Degrees.of(180)
+      )
+    );
   }
 
   public static class Shooter {

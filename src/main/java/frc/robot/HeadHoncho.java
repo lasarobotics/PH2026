@@ -218,7 +218,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   }
 
   public boolean wantToCrossRamp() {
-    return m_overRampButton.getAsBoolean();
+    return m_overRampButton.getAsBoolean() || AutoHoncho.autoWantToCrossRamp();
   }
 
   /**

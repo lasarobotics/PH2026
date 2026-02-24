@@ -345,8 +345,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
               DriveSubsystem.s_climbAlignDistanceError,
               DriveSubsystem.s_climbAlignRotationError
             )
-          ) {
-            return SLOW_DRIVER_ALIGN;
+          ) {          
+            return 
+              DriverStation.isAutonomous() ?
+                AUTO :
+                SLOW_DRIVER_ALIGN;
           }
         }
 
@@ -520,11 +523,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         // if driver lets go of ramp button goes back to driver_control
         if (!HeadHoncho.getInstance().wantToCrossRamp() || HeadHoncho.getInstance().wantToCancel()) { // allow driver to go back to drive state if let go
           s_requestedDriveState = DriveStates.DRIVER_CONTROL;
-          return DRIVER_CONTROL;
+          return 
+            DriverStation.isAutonomous() ?
+              AUTO :
+              DRIVER_CONTROL;
         }
         if (sequenceIndex > 2) { // once it reaches last "stage" of ramp it goes to driver
           s_requestedDriveState = DriveStates.DRIVER_CONTROL;
-          return DRIVER_CONTROL;
+          return 
+            DriverStation.isAutonomous() ?
+              AUTO :
+              DRIVER_CONTROL;
         }
 
         return this;
