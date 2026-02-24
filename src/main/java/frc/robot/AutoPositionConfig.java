@@ -17,6 +17,8 @@ public class AutoPositionConfig {
   private Pose2d AllianceZoneOppositeSide;
   private Pose2d AllianceZoneCenter;
   private Pose2d TowerPose;
+  private Pose2d DepotEnterPose;
+  private Pose2d DepotExitPose;
 
   public AutoPositionConfig(
     Quadrant quadrant
@@ -31,6 +33,11 @@ public class AutoPositionConfig {
           Constants.Auto.BLUE_RIGHT_POSE;
         this.AllianceZoneCenter =
           Constants.Auto.BLUE_CENTER_POSE;
+        this.DepotEnterPose =
+          Constants.Auto.BLUE_DEPOT_ENTER_POSE;
+        this.DepotExitPose =
+          Constants.Auto.BLUE_DEPOT_EXIT_POSE;
+
       case BLUE_RIGHT:
         this.AllianceZoneSide =
           Constants.Auto.BLUE_RIGHT_POSE;
@@ -38,6 +45,11 @@ public class AutoPositionConfig {
           Constants.Auto.BLUE_LEFT_POSE;
         this.AllianceZoneCenter =
           Constants.Auto.BLUE_CENTER_POSE;
+        this.DepotEnterPose =
+          Constants.Auto.BLUE_DEPOT_ENTER_POSE;
+        this.DepotExitPose =
+          Constants.Auto.BLUE_DEPOT_EXIT_POSE;
+
       case RED_LEFT:
         this.AllianceZoneSide =
           Constants.Auto.RED_LEFT_POSE;
@@ -45,6 +57,11 @@ public class AutoPositionConfig {
           Constants.Auto.RED_RIGHT_POSE;
         this.AllianceZoneCenter =
           Constants.Auto.RED_CENTER_POSE;
+        this.DepotEnterPose =
+          Constants.Auto.RED_DEPOT_ENTER_POSE;
+        this.DepotExitPose =
+          Constants.Auto.RED_DEPOT_EXIT_POSE;
+
       case RED_RIGHT:
         this.AllianceZoneSide =
           Constants.Auto.RED_RIGHT_POSE;
@@ -52,6 +69,10 @@ public class AutoPositionConfig {
           Constants.Auto.RED_LEFT_POSE;
         this.AllianceZoneCenter =
           Constants.Auto.RED_CENTER_POSE;
+        this.DepotEnterPose =
+          Constants.Auto.RED_DEPOT_ENTER_POSE;
+        this.DepotExitPose =
+          Constants.Auto.RED_DEPOT_EXIT_POSE;
     }
   }
 
@@ -70,15 +91,12 @@ public class AutoPositionConfig {
   public Pose2d TowerPose() {
     return TowerPose;
   }
+  
+  public Pose2d DepotEnterPose() {
+    return DepotEnterPose;
+  }
+  
+  public Pose2d DepotExitPose() {
+    return DepotExitPose;
+  }
 }
-
-// blue right middle side:
-// targetPose = new Pose2d(
-//   new Translation2d(
-//     2.5,
-//     1.5
-//   ),
-//   new Rotation2d(
-//     Degrees.of(45)
-//   )
-// );
