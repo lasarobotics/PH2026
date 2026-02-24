@@ -78,6 +78,24 @@ public final class Constants {
         Degrees.of(0)
       )
     );
+    public static final Pose2d BLUE_DEPOT_ENTER_POSE = new Pose2d(
+      new Translation2d(
+        0.5,
+        7
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
+    public static final Pose2d BLUE_DEPOT_EXIT_POSE = new Pose2d(
+      new Translation2d(
+        5.5,
+        7
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
     public static final Pose2d RED_RIGHT_POSE = new Pose2d(
       new Translation2d(
         14.5, 6.5
@@ -100,6 +118,24 @@ public final class Constants {
       ),
       new Rotation2d(
         Degrees.of(180)
+      )
+    );
+    public static final Pose2d RED_DEPOT_ENTER_POSE = new Pose2d(
+      new Translation2d(
+        16,
+        1
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+    public static final Pose2d RED_DEPOT_EXIT_POSE = new Pose2d(
+      new Translation2d(
+        16,
+        2.5
+      ),
+      new Rotation2d(
+        Degrees.of(90)
       )
     );
   }
