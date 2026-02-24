@@ -15,7 +15,7 @@ public class AutoHoncho {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.AllianceZoneMiddleSide(),
+          positionConfig.AllianceZoneSide(),
           MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -31,7 +31,7 @@ public class AutoHoncho {
       public SystemState nextState() {
         if (
           DriveSubsystem.atDestination(
-            positionConfig.AllianceZoneMiddleSide(), 
+            positionConfig.AllianceZoneSide(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -63,7 +63,7 @@ public class AutoHoncho {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.AllianceZoneMiddleSide(),
+          positionConfig.AllianceZoneSide(),
           MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -79,7 +79,7 @@ public class AutoHoncho {
       public SystemState nextState() {
         if (
           DriveSubsystem.atDestination(
-            positionConfig.AllianceZoneMiddleSide(), 
+            positionConfig.AllianceZoneSide(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -141,9 +141,38 @@ public class AutoHoncho {
     },
   }
 
+  // this is more of a POC/example than actual auto
+  public enum CrossRampAuto implements SystemState {
+    START {
+      @Override
+      public void initialize() {
+        DriveSubsystem.getInstance().driveOverRamp();
+        s_wantToCrossBump = true;
+      }
+
+      @Override
+      public void execute() {
+        if (DriveSubsystem.getInstance().getState()
+            != DriveSubsystem.DriveStates.OVER_RAMP) {
+          s_wantToCrossBump = false;
+        }
+      }
+
+      @Override
+      public SystemState nextState() {
+        return this;
+      }
+    }
+  }
+
   private static boolean s_wantToShoot = false;
+  private static boolean s_wantToCrossBump = false;
 
   public static boolean autoWantToShoot() {
     return s_wantToShoot;
+  }
+
+  public static boolean autoWantToCrossRamp() {
+    return s_wantToCrossBump;
   }
 }
