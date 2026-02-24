@@ -22,7 +22,6 @@ import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -374,7 +373,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         s_drivetrain.resetPoseNotGyro(pose_estimate.pose);
 
-         s_drivetrain.setControl(
+        s_drivetrain.setControl(
           s_drive
             .withVelocityX(
               Constants.Drive.MAX_SPEED
@@ -546,7 +545,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static Angle s_climbAlignRotationError = Radians.of(0.1);
 
   private static PIDController s_headingController;
-  private static ProfiledPIDController s_autoAimController;
+  private static PIDController s_autoAimController;
   private static PIDController s_autoDrive;
 
   private static DriveStates s_requestedDriveState;
@@ -608,7 +607,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     // TODO: Fix this with real values
     // also add tolerance
-    s_autoAimController = new ProfiledPIDController(0.0, 0.0, 0.0, Constants.Drive.TURN_CONSTRAINTS);
+    s_autoAimController = new PIDController(5, 0.0, 0.0);
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 
     s_autoDrive = new PIDController(1.75, 0.0, 0.0);
