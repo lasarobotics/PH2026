@@ -896,7 +896,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
-   * resets pose of robot
+   * Resets gyro heading of robot
    */
   public void zeroOdometry() {
     Rotation2d rotation;
@@ -908,7 +908,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       rotation = CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation;
     }
     s_drivetrain.seedFieldCentric(rotation);
-    s_drivetrain.getPigeon2().reset();
   }
 
   /**
