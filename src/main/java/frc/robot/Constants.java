@@ -292,7 +292,7 @@ public final class Constants {
     // might want to reduce
     // this should be basically the value of the soft limit of the arm
     // TODO update for bumper
-    public static final Angle DEPLOY_ANGLE = Rotations.of(.28);
+    public static final Angle DEPLOY_ANGLE = Rotations.of(.255);
 
     // Tolerance of check for hopper being deployed
     // percent based on deploy angle
@@ -324,7 +324,6 @@ public final class Constants {
 
   public static class Climb {
     public static final int CLIMB_MOTOR_1_ID = 60;
-    public static final int CLIMB_MOTOR_2_ID = 61;
     public static final int ARM_ENCODER_ID = 62;
 
     // TODO: Find out where the servo is

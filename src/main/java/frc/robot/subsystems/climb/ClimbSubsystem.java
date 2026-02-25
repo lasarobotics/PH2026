@@ -6,17 +6,17 @@ package frc.robot.subsystems.climb;
 
 import static edu.wpi.first.units.Units.Degrees;
 
+import org.littletonrobotics.junction.Logger;
+
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-
-import org.littletonrobotics.junction.Logger;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Servo;
@@ -30,7 +30,6 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   private static ClimbSubsystem s_climbInstance;
   private final CANcoder m_climbEncoder;
   private final TalonFX m_climbMotor1;
-  private final TalonFX m_climbMotor2;
   private final Servo m_climbServo;
 
   public static ClimbSubsystem getInstance() {
@@ -43,29 +42,38 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   /** Creates a new ClimbSubsystem. */
   private ClimbSubsystem() {
     this.m_climbMotor1 = new TalonFX(Constants.Climb.CLIMB_MOTOR_1_ID);
-    this.m_climbMotor2 = new TalonFX(Constants.Climb.CLIMB_MOTOR_2_ID);
     this.m_climbEncoder = new CANcoder(Constants.Climb.ARM_ENCODER_ID);
     this.m_climbServo = new Servo(Constants.Climb.SERVO_CHANNEL);
 
     // TODO: Verify motor configs
     TalonFXConfiguration motorOneConfig = new TalonFXConfiguration();
-    TalonFXConfiguration motorTwoConfig = new TalonFXConfiguration();
     CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
     
-    motorOneConfig.Feedback.SensorToMechanismRatio = 20.0 / 12.0;
-    motorOneConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    motorOneConfig.Feedback.FeedbackRemoteSensorID = m_climbEncoder.getDeviceID();
-    motorOneConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+    motorOneConfig.MotorOutput
+      .withInverted(InvertedValue.Clockwise_Positive)
+      .withNeutralMode(NeutralModeValue.Brake);
+    motorOneConfig.Feedback
+      .withRotorToSensorRatio(125.0)
+      .withSensorToMechanismRatio(1.66666666667)
+      .withFeedbackRemoteSensorID(m_climbEncoder.getDeviceID())
+      .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder);
+
+    motorOneConfig.SoftwareLimitSwitch
+      .withForwardSoftLimitEnable(true)
+      .withReverseSoftLimitEnable(true)
+      .withForwardSoftLimitThreshold(0.26)
+      .withReverseSoftLimitThreshold(0.0);
+
+    encoderConfig.MagnetSensor
+      .withMagnetOffset(-0.92236328125)
+      .withAbsoluteSensorDiscontinuityPoint(0.95)
+      .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
+
 
     this.m_climbMotor1.getConfigurator().apply(motorOneConfig);
-    this.m_climbMotor2.getConfigurator().apply(motorTwoConfig);
     this.m_climbEncoder.getConfigurator().apply(encoderConfig);
-
-    // Make climbMotor2 follow climbMotor1
-    this.m_climbMotor2.setControl(
-      new Follower(this.m_climbMotor1.getDeviceID(), MotorAlignmentValue.Aligned)
-    );
   }
+
 
   /**
    * Stow the climber so it is inside the frame perimeter. If in climb position, the climber will deploy.
@@ -176,7 +184,6 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   @Override
   public void close() {
     m_climbMotor1.close();
-    m_climbMotor2.close();
     m_climbEncoder.close();
     s_climbInstance = null;
   }

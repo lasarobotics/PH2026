@@ -15,7 +15,9 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
@@ -62,7 +64,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
       .Feedback
-        .withSensorToMechanismRatio(1 / 1.125);
+        .withSensorToMechanismRatio(1.0/0.75);
     shooterConfig
       .Slot0
         .withKP(999999999999999999999.0);
@@ -72,8 +74,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         .withPeakReverseDutyCycle(0.0);
     // https://v6.docs.ctr-electronics.com/en/stable/docs/api-reference/api-usage/status-signals.html
     m_shooterMotorLeader.getDutyCycle().setUpdateFrequency(1000);
-    m_shooterMotorLeader.getMotorVoltage().setUpdateFrequency(1000);
-    m_shooterMotorLeader.getTorqueCurrent().setUpdateFrequency(1000);
+    m_shooterMotorLeader.getMotorVoltage().setUpdateFrequency(100);
+    m_shooterMotorLeader.getTorqueCurrent().setUpdateFrequency(100);
     ParentDevice.optimizeBusUtilizationForAll(
       m_shooterMotorFollowerOne,
       m_shooterMotorFollowerTwo
@@ -82,10 +84,24 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
 
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
-    hoodConfig.Feedback.FeedbackRemoteSensorID = m_hoodCanCoder.getDeviceID();
-    hoodConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.FusedCANcoder;
+    hoodConfig.MotorOutput
+      .withInverted(InvertedValue.CounterClockwise_Positive);
+    hoodConfig.Feedback
+      .withRotorToSensorRatio(36.0 / 16.0)
+      .withSensorToMechanismRatio(127.0 / 13.0)
+      .withFusedCANcoder(m_hoodCanCoder);
+
+    hoodConfig.SoftwareLimitSwitch
+      .withForwardSoftLimitEnable(true)
+      .withReverseSoftLimitEnable(true)
+      .withForwardSoftLimitThreshold(0)
+      .withReverseSoftLimitThreshold(-0.055);
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
+    canCoderConfig.MagnetSensor
+      .withMagnetOffset(0.575927734375)
+      .withAbsoluteSensorDiscontinuityPoint(0.05)
+      .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
 
     m_shooterMotorLeader.getConfigurator().apply(shooterConfig);
     m_shooterMotorFollowerOne.getConfigurator().apply(shooterConfig);
@@ -189,8 +205,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * current hood position (i.e. stop the hood).
    */
   private void stopHood() {
-    double pos = m_hoodMotor.getPosition().getValueAsDouble();
-    m_hoodMotor.setControl(m_hoodRequest.withPosition(pos));
+    //double pos = m_hoodMotor.getPosition().getValueAsDouble();
+    //m_hoodMotor.setControl(m_hoodRequest.withPosition(pos));
   }
 
   /**
@@ -199,9 +215,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * {@link frc.robot.AimUtil#getExitAngle() getExitAngle()}.
    */
   private void adjustHood() {
-    m_hoodMotor.setControl(
-      m_hoodRequest.withPosition(wantedHoodPosition())
-    );
+    //m_hoodMotor.setControl(
+     // m_hoodRequest.withPosition(wantedHoodPosition())
+    //);
   }
 
   /**
@@ -294,7 +310,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
 
     if (m_isRunning) {
-      adjustHood();
+      //adjustHood();
 
       if (shooting || forceShooting || dumbShooting) {
         runShooter();

@@ -61,8 +61,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         .withGravityArmPositionOffset(.25);
     armConfig
       .Feedback
-        .withFusedCANcoder(m_intakeEncoder)
-        .withRotorToSensorRatio((40 / 28) * 9)  // gearbox is 9:1, sprockets are 40:28
+        .withRemoteCANcoder(m_intakeEncoder)
+        .withRotorToSensorRatio((40.0 / 28.0) * 9.0)  // gearbox is 9:1, sprockets are 40:28
         .withSensorToMechanismRatio(2); // sprockets are 2:1
     armConfig
       .SoftwareLimitSwitch
@@ -81,13 +81,15 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(0.69287109375) // measured value
+        .withMagnetOffset(-0.6630859375) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
 
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
     m_armMotor.getConfigurator().apply(armConfig);
     m_intakeEncoder.getConfigurator().apply(intakeEncoderConfig);
+    
+    stowIntake();
   }
 
   /**
