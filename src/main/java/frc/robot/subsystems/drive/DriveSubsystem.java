@@ -67,10 +67,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         s_driveSubsystem.setAllLimelightsToAllTags();
 
-        LimelightHelpers.PoseEstimate pose_estimate =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
-
-        s_drivetrain.resetPose(pose_estimate.pose);
+        Optional<LimelightHelpers.PoseEstimate> pose_estimate =
+          getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
+        
+        if (pose_estimate.isPresent()) {
+          s_drivetrain.resetPose(pose_estimate.get().pose);
+        }
       }
 
       @Override
@@ -206,10 +208,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        LimelightHelpers.PoseEstimate pose_estimate =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
-
-        s_drivetrain.resetPoseNotGyro(pose_estimate.pose);
+        Optional<LimelightHelpers.PoseEstimate> pose_estimate =
+          getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
+        
+        if (pose_estimate.isPresent()) {
+          s_drivetrain.resetPose(pose_estimate.get().pose);
+        }
 
         double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
         double angle = AimUtil.getRobotHeading().in(Radians);
@@ -289,10 +293,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        LimelightHelpers.PoseEstimate pose_estimate =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
-
-        s_drivetrain.resetPoseNotGyro(pose_estimate.pose);
+        Optional<LimelightHelpers.PoseEstimate> pose_estimate =
+          getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
+        
+        if (pose_estimate.isPresent()) {
+          s_drivetrain.resetPose(pose_estimate.get().pose);
+        }
 
         s_driveSubsystem.goTo(
           s_climbPosition,
@@ -368,10 +374,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        LimelightHelpers.PoseEstimate pose_estimate =
-          LimelightHelpers.getBotPoseEstimate_wpiBlue(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
-
-        s_drivetrain.resetPoseNotGyro(pose_estimate.pose);
+        Optional<LimelightHelpers.PoseEstimate> pose_estimate =
+          getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
+        
+        if (pose_estimate.isPresent()) {
+          s_drivetrain.resetPose(pose_estimate.get().pose);
+        }
 
         s_drivetrain.setControl(
           s_drive
@@ -584,6 +592,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_limelightSeesTag = new HashMap<>();
     s_limelightHeartbeat = new HashMap<>();
 
+    // init sees tag just to be safe
+    s_limelightSeesTag.put(Constants.Drive.SHOOTER_LIMELIGHT_NAME, false);
+    s_limelightSeesTag.put(Constants.Drive.CLIMB_LIMELIGHT_NAME, false);
+    s_limelightSeesTag.put(Constants.Drive.BACK_LIMELIGHT_NAME, false);
+
+    // init heartbeat to avoid crash on enable
+    s_limelightHeartbeat.put(Constants.Drive.SHOOTER_LIMELIGHT_NAME, 0.0);
+    s_limelightHeartbeat.put(Constants.Drive.CLIMB_LIMELIGHT_NAME, 0.0);
+    s_limelightHeartbeat.put(Constants.Drive.BACK_LIMELIGHT_NAME, 0.0);
+
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       s_alliancePoses = redPoses;
     } else {
@@ -613,7 +631,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoDrive = new PIDController(1.75, 0.0, 0.0);
 
     // TODO: Initialize the climb position to left
-    s_climbPosition = new Pose2d(); 
+    s_climbPosition = new Pose2d();
 
     //init limelight thread
     m_limelight_thread = new Thread(this::limelight_thread_func);
@@ -627,13 +645,18 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     double hb = LimelightHelpers.getHeartbeat(limelight);
     
-    if (s_limelightHeartbeat.get(limelight) == hb) {
+    Double savedHb = s_limelightHeartbeat.get(limelight);
+    if (
+      savedHb == null ||
+      s_limelightHeartbeat.get(limelight) == hb
+    ) {
       return Optional.empty();
+    } else {
+      s_limelightHeartbeat.put(
+        limelight,
+        hb
+      );
     }
-    s_limelightHeartbeat.put(
-      limelight,
-      hb
-    );
 
     if (pose_estimate == null) {
       return Optional.empty();
