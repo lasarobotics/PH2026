@@ -160,8 +160,8 @@ public class AimUtil {
     double targetHeight,
     double maxBallYPos
   ) {
-    targetHeight = targetHeight - Constants.Shooter.SHOOTER_OFFSET_Y.in(Meters);
-    maxBallYPos = maxBallYPos - Constants.Shooter.SHOOTER_OFFSET_Y.in(Meters);
+    targetHeight = targetHeight - Constants.Shooter.SHOOTER_OFFSET_Z.in(Meters);
+    maxBallYPos = maxBallYPos - Constants.Shooter.SHOOTER_OFFSET_Z.in(Meters);
 
     double latency = Constants.Drive.ROBOT_LATENCY;
     double currentRobotHeading = currentRobotPose.getRotation().getRadians();
@@ -179,19 +179,25 @@ public class AimUtil {
     );
 
     // Project your movement forward
-    Translation2d futurePos = currentRobotPose.getTranslation().plus(
-      new Translation2d(
-        currentRobotSpeeds.vxMetersPerSecond,
-        currentRobotSpeeds.vyMetersPerSecond
-      )
-      .plus(
+    Translation2d futurePos =
+      currentRobotPose.getTranslation().plus(
         new Translation2d(
-          currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET_X.in(Meters) * Math.cos(currentRobotHeading),
-          currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_OFFSET_X.in(Meters) * Math.sin(currentRobotHeading)
+          Constants.Shooter.SHOOTER_OFFSET_X.in(Meters),
+          Constants.Shooter.SHOOTER_OFFSET_Y.in(Meters)
+        ).rotateBy(currentRobotPose.getRotation())
+      ).plus(
+        new Translation2d(
+          currentRobotSpeeds.vxMetersPerSecond,
+          currentRobotSpeeds.vyMetersPerSecond
         )
-      )
-      .times(latency + hangTime)
-    );
+        .plus(
+          new Translation2d(
+            currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.cos(currentRobotHeading),
+            currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.sin(currentRobotHeading)
+          )
+        )
+        .times(latency + hangTime)
+      );
     
     // Get your distance to the target (using the future position)
     Translation2d targetVec = targetPos.minus(futurePos);
@@ -225,7 +231,8 @@ public class AimUtil {
       ),
       
       // The angle of the target vector is your robot heading
-      targetVec.getAngle().getMeasure(),
+      // plus 90 because shooter is on right side of robot
+      targetVec.getAngle().getMeasure().plus(Degrees.of(90)),
 
       // hang time
       Seconds.of(hangTime)

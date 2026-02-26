@@ -74,10 +74,21 @@ public final class Constants {
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;
 
-    // x offset from center
-    public static final Distance SHOOTER_OFFSET_X = Inches.of(7.710630); // measured in cad
-    // y offset from floor (hood at 25deg, center of ball exit height)
-    public static final Distance SHOOTER_OFFSET_Y = Inches.of(23.422254); // measured in cad
+    // Note: using wpilib coordinate system
+    // intake is front
+    // x offset from center (assume middle of shooter)
+    // (behind center)
+    public static final Distance SHOOTER_OFFSET_X = Inches.of(-3.062500); // measured in cad
+    // y offset from center
+    // (right of center)
+    public static final Distance SHOOTER_OFFSET_Y = Inches.of(-7.710630); // measured in cad
+    // z offset from floor (hood at 25deg, center of ball exit height)
+    public static final Distance SHOOTER_OFFSET_Z = Inches.of(23.422254); // measured in cad
+    public static final Distance SHOOTER_DISTANCE_FROM_CENTER = Meters.of(
+      Math.sqrt(
+        Math.pow(SHOOTER_OFFSET_X.in(Meters), 2) + Math.pow(SHOOTER_OFFSET_Y.in(Meters), 2)
+      )
+    );
 
     // TODO find actual value
     // Probably going to be pretty high? Unknown
