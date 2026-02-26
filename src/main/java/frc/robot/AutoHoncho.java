@@ -4,12 +4,16 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
 import org.lasarobotics.fsm.SystemState;
+import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
+import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 public class AutoHoncho {
   public enum BasicShootAuto implements SystemState {
@@ -149,6 +153,7 @@ public class AutoHoncho {
       @Override
       public void initialize() {
         autoClimbPosition = DriveSubsystem.s_climbPosition;
+        ClimbSubsystem.getInstance().deploy();
       }
 
       @Override
@@ -168,7 +173,7 @@ public class AutoHoncho {
             Constants.Auto.LOW_DISTANCE_TOLERANCE, 
             Constants.Auto.LOW_ROTATION_TOLERANCE
           )
-        ) return SHOOT; //TODO: should return climb
+        ) return CLIMB;
         
         return this;
       }
@@ -176,6 +181,29 @@ public class AutoHoncho {
       @Override
       public void end(boolean interrupted) {
         DriveSubsystem.getInstance().stopMoving();
+      }
+    },
+    CLIMB {
+      @Override
+      public void initialize() {
+        IntakeSubsystem.getInstance().stopIntake();
+        ShooterSubsystem.getInstance().stopOperation();
+      }
+
+      @Override
+      public void execute() {
+        if (ClimbSubsystem.getInstance().inDeployPosition()) {
+          Logger.recordOutput("HeadHoncho/executeClimbButtonReady", true);
+          ClimbSubsystem.getInstance().climb();
+        } else {
+          Logger.recordOutput("HeadHoncho/executeClimbButtonReady", false);
+        }
+      }
+
+      @Override
+      public SystemState nextState() {
+        // TODO: Leave this state? Auto should end with climb...
+        return this;
       }
     },
   }

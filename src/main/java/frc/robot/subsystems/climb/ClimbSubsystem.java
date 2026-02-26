@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems.climb;
 
-import static edu.wpi.first.units.Units.Rotations;
-
 import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
@@ -143,7 +141,6 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public boolean inDeployPosition() {
     return s_climbInstance.getClimberAngle().isNear(Constants.Climb.DEPLOY_ANGLE, Constants.Climb.CLIMB_TOLERANCE);
-      // && getServoAngle().equals(Constants.Climb.SERVO_RETRACT_ANGLE);
   }
 
   /**
@@ -151,15 +148,6 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private Angle getClimberAngle() {
     return this.m_climbMotor1.getPosition().getValue();
-  }
-
-  /**
-   * Get the climb servo's angle
-   * @return An Angle containing the climb servo's position
-   */
-  private Angle getServoAngle() {
-    // TODO: Figure out this angle conversion math
-    return Rotations.of(0);
   }
 
   public void setClimbServo() {
