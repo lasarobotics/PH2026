@@ -4,13 +4,15 @@
 
 package frc.robot.subsystems.climb;
 
-import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Rotations;
+
+import java.util.function.BooleanSupplier;
 
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
@@ -20,8 +22,6 @@ import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.Servo;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -49,29 +49,38 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration motorOneConfig = new TalonFXConfiguration();
     CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
     
-    motorOneConfig.MotorOutput
-      .withInverted(InvertedValue.Clockwise_Positive)
-      .withNeutralMode(NeutralModeValue.Brake);
-    motorOneConfig.Feedback
-      .withRotorToSensorRatio(125.0)
-      .withSensorToMechanismRatio(1.66666666667)
-      .withFeedbackRemoteSensorID(m_climbEncoder.getDeviceID())
-      .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder);
-
-    motorOneConfig.SoftwareLimitSwitch
-      .withForwardSoftLimitEnable(true)
-      .withReverseSoftLimitEnable(true)
-      .withForwardSoftLimitThreshold(0.26)
-      .withReverseSoftLimitThreshold(0.0);
-
-    encoderConfig.MagnetSensor
-      .withMagnetOffset(-0.92236328125)
-      .withAbsoluteSensorDiscontinuityPoint(0.95)
-      .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
-
+    motorOneConfig
+      .MotorOutput
+        .withInverted(InvertedValue.Clockwise_Positive)
+        .withNeutralMode(NeutralModeValue.Brake);
+    motorOneConfig
+      .Feedback
+        .withRotorToSensorRatio(125.0)
+        .withSensorToMechanismRatio(1.66666666667)
+        .withFeedbackRemoteSensorID(m_climbEncoder.getDeviceID())
+        .withFeedbackSensorSource(FeedbackSensorSourceValue.FusedCANcoder);
+    motorOneConfig
+      .Slot0
+        .withKP(1000);
+    motorOneConfig
+      .Voltage
+        .withPeakReverseVoltage(-3);
+    motorOneConfig
+      .SoftwareLimitSwitch
+        .withForwardSoftLimitEnable(true)
+        .withReverseSoftLimitEnable(true)
+        .withForwardSoftLimitThreshold(0.26)
+        .withReverseSoftLimitThreshold(0.0);
+    encoderConfig
+      .MagnetSensor
+        .withMagnetOffset(-0.92236328125)
+        .withAbsoluteSensorDiscontinuityPoint(0.95)
+        .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
 
     this.m_climbMotor1.getConfigurator().apply(motorOneConfig);
     this.m_climbEncoder.getConfigurator().apply(encoderConfig);
+
+    m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.STOW_ANGLE));
   }
 
 
@@ -79,29 +88,21 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * Stow the climber so it is inside the frame perimeter. If in climb position, the climber will deploy.
    * @return Command to move the climb motor to stow position
    */
-  public Command stow() {
-    if (!inClimbPosition()) {
-      return this.runOnce(() -> m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.STOW_ANGLE)));
-    } else {
-      return deploy();
-    }
+  public void stow() {
+    m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.STOW_ANGLE));
   }
 
   /**
    * Deploy the climber and retract or stow servo
    * @return Command to deploy the climb motor and move servo appropriately
    */
-  public Command deploy() {
+  public void deploy() {
     if (inClimbPosition()) {
-      return Commands.sequence(
-        deployClimbMotor(),
-        runOnce(() -> m_climbServo.setAngle(Constants.Climb.SERVO_STOW_ANGLE.magnitude()))
-      );
+      deployClimbMotor();
+      m_climbServo.set(Constants.Climb.SERVO_STOW_ANGLE);
     } else {
-      return Commands.sequence(
-        runOnce(() -> m_climbServo.setAngle(Constants.Climb.SERVO_RETRACT_ANGLE.magnitude())),
-        deployClimbMotor()
-      );
+      m_climbServo.set(Constants.Climb.SERVO_RETRACT_ANGLE);
+      deployClimbMotor();
     }
   }
 
@@ -109,12 +110,8 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * Move the climber to CLIMB_ANGLE if climber is in deployed position. Otherwise deploy climber.
    * @return Command to move the climb motor to climb position
    */
-  public Command climb() {
-    if (inDeployPosition()) {
-      return this.runOnce(() -> m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.CLIMB_ANGLE)));
-    } else {
-      return deploy();
-    }
+  public void climb() {
+    m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.CLIMB_ANGLE));
   }
 
   /**
@@ -145,15 +142,15 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * @return A boolean for whether or not the climber is in the deploy position
    */
   public boolean inDeployPosition() {
-    return s_climbInstance.getClimberAngle().isNear(Constants.Climb.DEPLOY_ANGLE, Constants.Climb.CLIMB_TOLERANCE)
-      && getServoAngle().equals(Constants.Climb.SERVO_RETRACT_ANGLE);
+    return s_climbInstance.getClimberAngle().isNear(Constants.Climb.DEPLOY_ANGLE, Constants.Climb.CLIMB_TOLERANCE);
+      // && getServoAngle().equals(Constants.Climb.SERVO_RETRACT_ANGLE);
   }
 
   /**
    * Gets the climb's encoders values
    */
   private Angle getClimberAngle() {
-    return this.m_climbEncoder.getAbsolutePosition().getValue();
+    return this.m_climbMotor1.getPosition().getValue();
   }
 
   /**
@@ -162,14 +159,36 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private Angle getServoAngle() {
     // TODO: Figure out this angle conversion math
-    return Degrees.of(0);
+    return Rotations.of(0);
+  }
+
+  public void setClimbServo() {
+    this.m_climbServo.set(1);
+  }
+
+  public void setClimbServoZero() {
+    this.m_climbServo.set(0);
+  }
+
+  public void setClimbServoPointFive() {
+    this.m_climbServo.set(0.5);
   }
 
   /**
    * Move the climb motor to deploy position
    */
-  private Command deployClimbMotor() {
-    return this.runOnce(() -> m_climbMotor1.setControl(new MotionMagicVoltage(Constants.Climb.DEPLOY_ANGLE)));
+  private void deployClimbMotor() {
+    m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.DEPLOY_ANGLE));
+  }
+
+  private BooleanSupplier climbServo1Button = () -> false;
+  private BooleanSupplier climbServo2Button = () -> false;
+  private BooleanSupplier climbServo3Button = () -> false;
+
+  public void configureBindings(BooleanSupplier a, BooleanSupplier b, BooleanSupplier c) {
+    climbServo1Button = a;
+    climbServo2Button = b;
+    climbServo3Button = c;
   }
 
   @Override
@@ -179,6 +198,20 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/inStowPosition", inStowPosition());
     Logger.recordOutput(getName() + "/inClimbPosition", inClimbPosition());
     Logger.recordOutput(getName() + "/inDeployPosition", inDeployPosition());
+    if (climbServo1Button.getAsBoolean()) {
+      setClimbServo();
+      Logger.recordOutput(getName() + "/chud", "ONE/LEFT");
+    } else 
+    if (climbServo2Button.getAsBoolean()) {
+      setClimbServoZero();
+      Logger.recordOutput(getName() + "/chud", "ZERO/RIGHT");
+    } else 
+    if (climbServo3Button.getAsBoolean()) {
+      setClimbServoPointFive();
+      Logger.recordOutput(getName() + "/chud", "POINTFIVE/DOWN");
+    } else {
+      Logger.recordOutput(getName() + "/chud", "NO BUTTON");
+    }
   }
 
   @Override

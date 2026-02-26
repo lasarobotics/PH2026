@@ -70,6 +70,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         .withKP(999999999999999999999.0);
     shooterConfig
       .MotorOutput
+        .withInverted(InvertedValue.Clockwise_Positive)
         .withPeakForwardDutyCycle(1.0)
         .withPeakReverseDutyCycle(0.0);
     // https://v6.docs.ctr-electronics.com/en/stable/docs/api-reference/api-usage/status-signals.html
@@ -247,10 +248,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return If the check succeeds
    */
   private boolean atHoodPosition() {
-    return m_hoodCanCoder.getAbsolutePosition().isNear(
-      wantedHoodPosition(),
-      Constants.Shooter.HOOD_POSITION_TOLERANCE
-    );
+    return true;
+    // return m_hoodCanCoder.getAbsolutePosition().isNear(
+    //   wantedHoodPosition(),
+    //   Constants.Shooter.HOOD_POSITION_TOLERANCE
+    // );
   }
 
   /**
@@ -270,7 +272,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       2 * ballVelocity.in(MetersPerSecond)
       / Constants.Shooter.SHOOTER_RADIUS.in(Meters);
     double rotationsPerSecond =
-      radiansPerSecond / (2 * Math.PI);
+      radiansPerSecond / (2 * Math.PI * 60);
     return rotationsPerSecond;
   }
 

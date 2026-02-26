@@ -68,6 +68,11 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         if (s_headHoncho.m_reverseIntakeButton.getAsBoolean()) {
           IntakeSubsystem.getInstance().reverseIntake();
         }
+        if (s_headHoncho.m_overRampButton.getAsBoolean()) {
+          ClimbSubsystem.getInstance().setClimbServo();
+        } else {
+          ClimbSubsystem.getInstance().setClimbServoZero();
+        }
       }
 
       @Override
@@ -75,10 +80,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         // if (s_headHoncho.m_overRampButton.getAsBoolean())
         //   return OVER_RAMP;
 
-        // if (
-        //   s_headHoncho.m_climbButtonHasFallen.getAsBoolean() &&
-        //   DriveSubsystem.inAllianceZone()
-        // ) return CLIMB;
+        if (
+          s_headHoncho.m_climbButtonHasFallen.getAsBoolean()
+        ) return CLIMB;
 
         // if (s_headHoncho.m_restButtonHasFallen.getAsBoolean()) return REST;
 
@@ -106,14 +110,17 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         // it just spews balls out
         IntakeSubsystem.getInstance().stopIntake();
         ShooterSubsystem.getInstance().stopOperation();
-        DriveSubsystem.getInstance().driveAutoClimb();
+        //DriveSubsystem.getInstance().driveAutoClimb();
         ClimbSubsystem.getInstance().deploy();
       }
 
       @Override
       public void execute() {
         if (s_headHoncho.m_climbButtonHasFallen.getAsBoolean() && ClimbSubsystem.getInstance().inDeployPosition()) {
+          Logger.recordOutput("HeadHoncho/executeClimbButtonReady", true);
           ClimbSubsystem.getInstance().climb();
+        } else {
+          Logger.recordOutput("HeadHoncho/executeClimbButtonReady", false);
         }
       }
 
@@ -129,6 +136,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       public void initialize() {
         ClimbSubsystem.getInstance().deploy();
       }
+
       @Override
       public void execute() {
         if (ClimbSubsystem.getInstance().inDeployPosition()) {

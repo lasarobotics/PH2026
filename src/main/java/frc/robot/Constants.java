@@ -66,12 +66,10 @@ public final class Constants {
     // https://docs.google.com/spreadsheets/d/1W-cpAlIJaHPbepHAKy7-uNkREk7_ITiVmTQvAB0_ZDM/edit
     public static final double SHOOTER_HOLD_SPEED = 0;
 
-    public static final double SHOOTER_SPEED_TOLERANCE = 0; // TODO
+    public static final double SHOOTER_SPEED_TOLERANCE = 10; // TODO
     public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(1); // TODO
 
     public static final double SHOOTER_TIME_MARGIN = 0; // TODO
-
-    public static final double HOOD_TO_MOTOR_RATIO = 0; // TODO
 
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;
@@ -84,8 +82,9 @@ public final class Constants {
     // TODO find actual value
     // Probably going to be pretty high? Unknown
     public static final Angle DUMB_HOOD_POSITION = Degrees.of(80);
-    // TODO find actual value
-    public static final double DUMB_SHOOTER_SPEED = 0;
+    // In rotations per second
+    // currently based on empirical measurement
+    public static final double DUMB_SHOOTER_SPEED = 30;
   }
 
   public static class Drive {
@@ -96,15 +95,16 @@ public final class Constants {
         RotationsPerSecond.of(0.75); // TODO measure
     public static final AngularAcceleration MAX_ANGULAR_ACCELERATION =
         RotationsPerSecondPerSecond.of(1); // TODO  measure
-    public static final double SLOW_SPEED_SCALAR = 0.3;
-    public static final double FAST_SPEED_SCALAR = 1.0;
+    // normally 0.3 and 1.0
+    public static final double SLOW_SPEED_SCALAR = 0.15;
+    public static final double FAST_SPEED_SCALAR = 0.5;
 
-    public static final String SHOOTER_LIMELIGHT_NAME = "shooter";
-    public static final String CLIMB_LIMELIGHT_NAME = "climb";
-    public static final String BACK_LIMELIGHT_NAME = "back";
+    public static final String SHOOTER_LIMELIGHT_NAME = "limelight-shooter";
+    public static final String CLIMB_LIMELIGHT_NAME = "limelight-climb";
+    public static final String BACK_LIMELIGHT_NAME = "limelight-back";
 
     public static final int THROTTLE_OFF = 200;
-    public static final int THROTTLE_IDLE = 25;
+    public static final int THROTTLE_IDLE = 100;
     public static final int THROTTLE_RUNNING = 0;
 
     public static final int[] ALL_APRIL_TAGS = new int[]{};
@@ -285,7 +285,7 @@ public final class Constants {
     public static final int ARM_ENCODER_ID = 42;
 
     // TODO: find values of intake positions
-    public static final Dimensionless INTAKE_SPEED = Value.of(0.6);
+    public static final Dimensionless INTAKE_SPEED = Value.of(1);
 
     // preliminary values
     public static final Angle STOW_ANGLE = Rotations.of(0);
@@ -326,18 +326,17 @@ public final class Constants {
     public static final int CLIMB_MOTOR_1_ID = 60;
     public static final int ARM_ENCODER_ID = 62;
 
-    // TODO: Find out where the servo is
     public static final int SERVO_CHANNEL = 0;
 
     public static final double CLIMB_SPEED_RPS = 3000.0 / 60.0;
-    public static final Angle CLIMB_ANGLE = Degrees.of(70);
-    public static final Angle DEPLOY_ANGLE = Degrees.of(95);
-    public static final Angle STOW_ANGLE = Degrees.of(0);
+    public static final Angle CLIMB_ANGLE = Rotations.of(0.09);
+    public static final Angle DEPLOY_ANGLE = Rotations.of(0.26);
+    public static final Angle STOW_ANGLE = Rotations.of(0);
     public static final Angle CLIMB_TOLERANCE = Degrees.of(2);
 
     // TODO: Find the values of climb servo constants
-    public static final Angle SERVO_RETRACT_ANGLE = Degrees.of(0);
-    public static final Angle SERVO_STOW_ANGLE = Degrees.of(0);
+    public static double SERVO_RETRACT_ANGLE = 0.7;
+    public static final double SERVO_STOW_ANGLE = 0.7;
   }
 
   public static class Auto {

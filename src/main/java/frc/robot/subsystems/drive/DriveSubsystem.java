@@ -102,7 +102,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override 
       public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
         if (!DriverStation.isAutonomous()) return DRIVER_CONTROL;
+
         return this;
       }
     },
@@ -145,6 +147,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
         if (DriverStation.isAutonomous()) return AUTO;
 
         if (s_requestedDriveState == DriveStates.OVER_RAMP) {
@@ -240,6 +243,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
         if (s_requestedDriveState == DriveStates.OVER_RAMP) {
           return OVER_RAMP;
         }
@@ -312,6 +316,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
         if (s_requestedDriveState == DriveStates.OVER_RAMP) {
           return OVER_RAMP;
         }
@@ -391,6 +396,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public DriveStates nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
         if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
@@ -502,6 +508,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
         // driver must hold ramp button throughout the ramp
         // if driver lets go of ramp button goes back to driver_control
         if (!HeadHoncho.getInstance().wantToCrossRamp() || HeadHoncho.getInstance().wantToCancel()) { // allow driver to go back to drive state if let go
