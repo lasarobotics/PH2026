@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.MetersPerSecond;
 import org.lasarobotics.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -174,30 +175,6 @@ public class AutoHoncho {
         return this;
       }
     },
-  }
-
-  // this is more of a POC/example than actual auto
-  public enum CrossRampAuto implements SystemState {
-    START {
-      @Override
-      public void initialize() {
-        DriveSubsystem.getInstance().driveOverRamp();
-        s_wantToCrossBump = true;
-      }
-
-      @Override
-      public void execute() {
-        if (DriveSubsystem.getInstance().getState()
-            != DriveSubsystem.DriveStates.OVER_RAMP) {
-          s_wantToCrossBump = false;
-        }
-      }
-
-      @Override
-      public SystemState nextState() {
-        return this;
-      }
-    }
   }
 
   // this is more of a POC/example than actual auto
