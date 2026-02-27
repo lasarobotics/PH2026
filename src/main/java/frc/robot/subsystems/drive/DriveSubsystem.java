@@ -7,7 +7,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 
 import java.util.Map;
 import java.util.HashMap;
-import java.util.Optional;
 import java.util.function.DoubleSupplier;
 
 import org.lasarobotics.fsm.StateMachine;
@@ -67,11 +66,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         s_driveSubsystem.setAllLimelightsToAllTags();
 
-        Optional<LimelightHelpers.PoseEstimate> pose_estimate =
+        LimelightHelpers.PoseEstimate pose_estimate =
           getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
-        if (pose_estimate.isPresent()) {
-          s_drivetrain.resetPose(pose_estimate.get().pose);
+        if (pose_estimate != null) {
+          s_drivetrain.resetPose(pose_estimate.pose);
         }
       }
 
@@ -211,11 +210,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        Optional<LimelightHelpers.PoseEstimate> pose_estimate =
+        LimelightHelpers.PoseEstimate pose_estimate =
           getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
-        if (pose_estimate.isPresent()) {
-          s_drivetrain.resetPose(pose_estimate.get().pose);
+        if (pose_estimate != null) {
+          s_drivetrain.resetPose(pose_estimate.pose);
         }
 
         double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
@@ -297,11 +296,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        Optional<LimelightHelpers.PoseEstimate> pose_estimate =
+        LimelightHelpers.PoseEstimate pose_estimate =
           getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
-        if (pose_estimate.isPresent()) {
-          s_drivetrain.resetPose(pose_estimate.get().pose);
+        if (pose_estimate != null) {
+          s_drivetrain.resetPose(pose_estimate.pose);
         }
 
         s_driveSubsystem.goTo(
@@ -379,11 +378,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        Optional<LimelightHelpers.PoseEstimate> pose_estimate =
+        LimelightHelpers.PoseEstimate pose_estimate =
           getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
-        if (pose_estimate.isPresent()) {
-          s_drivetrain.resetPose(pose_estimate.get().pose);
+        if (pose_estimate != null) {
+          s_drivetrain.resetPose(pose_estimate.pose);
         }
 
         s_drivetrain.setControl(
@@ -575,7 +574,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static Map<String, Boolean> s_limelightSeesTag;
   private static Map<String, Double> s_limelightHeartbeat;
 
-  private static boolean s_shouldDoGlobalPoseEstimation = false;
+  // volatile because thread safety or something
+  // idk my friend andrew told me to
+  private static volatile boolean s_shouldDoGlobalPoseEstimation = false;
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -646,7 +647,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     m_limelight_thread.start();
   }
 
-  private Optional<LimelightHelpers.PoseEstimate> getFilteredLimelightPose(String limelight) {
+  private LimelightHelpers.PoseEstimate getFilteredLimelightPose(String limelight) {
     LimelightHelpers.PoseEstimate pose_estimate =
       LimelightHelpers.getBotPoseEstimate_wpiBlue(limelight);
 
@@ -657,7 +658,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       savedHb == null ||
       s_limelightHeartbeat.get(limelight) == hb
     ) {
-      return Optional.empty();
+      return null;
     } else {
       s_limelightHeartbeat.put(
         limelight,
@@ -666,22 +667,22 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
 
     if (pose_estimate == null) {
-      return Optional.empty();
+      return null;
     }
 
     if (Math.abs(s_drivetrain.getState().Speeds.omegaRadiansPerSecond) > 2 * Math.PI) {
-      return Optional.empty();
+      return null;
     }
 
     if (pose_estimate.tagCount == 0) {
-      return Optional.empty();
+      return null;
     }
 
     if (Double.isNaN(pose_estimate.pose.getX()) || Double.isNaN(pose_estimate.pose.getY()) || Double.isNaN(pose_estimate.pose.getRotation().getDegrees())) {
-      return Optional.empty();
+      return null;
     }
 
-    return Optional.of(pose_estimate);
+    return pose_estimate;
   }
 
   /**
@@ -703,10 +704,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           continue;
         }
 
-        Optional<LimelightHelpers.PoseEstimate> pose_estimate_maybe =
+        LimelightHelpers.PoseEstimate pose_estimate_maybe =
           getFilteredLimelightPose(limelight);
 
-        if (pose_estimate_maybe.isEmpty()) {
+        if (pose_estimate_maybe == null) {
           s_limelightSeesTag.put(
             limelight,
             false
@@ -715,12 +716,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           continue;
         }
 
-        LimelightHelpers.PoseEstimate pose_estimate = pose_estimate_maybe.get();
+        LimelightHelpers.PoseEstimate pose_estimate = pose_estimate_maybe;
 
         s_drivetrain.addVisionMeasurement(
           pose_estimate.pose, Utils.fpgaToCurrentTime(pose_estimate.timestampSeconds)
         );
-        Logger.recordOutput(getName() + "/" + limelight + "/pose_estimate", pose_estimate.pose);
+        // Logger.recordOutput(getName() + "/" + limelight + "/pose_estimate", pose_estimate.pose);
 
         s_limelightSeesTag.put(
           limelight,

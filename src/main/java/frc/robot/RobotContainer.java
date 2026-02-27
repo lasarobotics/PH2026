@@ -78,10 +78,6 @@ public class RobotContainer {
    * joysticks}.
    */
   private void configureBindings() {
-    ClimbSubsystem.getInstance().configureBindings(
-      // 0 is right, 1 is left
-      m_driverController.povLeft(),m_driverController.povRight(), m_driverController.povDown()
-    );
 
     HeadHoncho.getInstance().configureBindings(
       // shoot button

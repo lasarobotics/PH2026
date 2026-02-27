@@ -4,8 +4,6 @@
 
 package frc.robot.subsystems.climb;
 
-import java.util.function.BooleanSupplier;
-
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
@@ -149,7 +147,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   private Angle getClimberAngle() {
     return this.m_climbMotor1.getPosition().getValue();
   }
-
+  
   public void setClimbServo() {
     this.m_climbServo.set(1);
   }
@@ -169,15 +167,6 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.DEPLOY_ANGLE));
   }
 
-  private BooleanSupplier climbServo1Button = () -> false;
-  private BooleanSupplier climbServo2Button = () -> false;
-  private BooleanSupplier climbServo3Button = () -> false;
-
-  public void configureBindings(BooleanSupplier a, BooleanSupplier b, BooleanSupplier c) {
-    climbServo1Button = a;
-    climbServo2Button = b;
-    climbServo3Button = c;
-  }
 
   @Override
   public void periodic() {
@@ -186,20 +175,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/inStowPosition", inStowPosition());
     Logger.recordOutput(getName() + "/inClimbPosition", inClimbPosition());
     Logger.recordOutput(getName() + "/inDeployPosition", inDeployPosition());
-    if (climbServo1Button.getAsBoolean()) {
-      setClimbServo();
-      Logger.recordOutput(getName() + "/chud", "ONE/LEFT");
-    } else 
-    if (climbServo2Button.getAsBoolean()) {
-      setClimbServoZero();
-      Logger.recordOutput(getName() + "/chud", "ZERO/RIGHT");
-    } else 
-    if (climbServo3Button.getAsBoolean()) {
-      setClimbServoPointFive();
-      Logger.recordOutput(getName() + "/chud", "POINTFIVE/DOWN");
-    } else {
-      Logger.recordOutput(getName() + "/chud", "NO BUTTON");
-    }
+    Logger.recordOutput(getName() + "/servoAngle", m_climbServo.get());
   }
 
   @Override
