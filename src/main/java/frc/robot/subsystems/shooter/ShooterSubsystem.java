@@ -272,7 +272,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       2 * ballVelocity.in(MetersPerSecond)
       / Constants.Shooter.SHOOTER_RADIUS.in(Meters);
     double rotationsPerSecond =
-      radiansPerSecond / (2 * Math.PI * 60);
+      radiansPerSecond / (2 * Math.PI);
     return rotationsPerSecond;
   }
 
