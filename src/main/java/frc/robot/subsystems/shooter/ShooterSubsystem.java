@@ -18,7 +18,6 @@ import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
-
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -90,17 +89,20 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     hoodConfig.Feedback
       .withRotorToSensorRatio(36.0 / 16.0)
       .withSensorToMechanismRatio(127.0 / 13.0)
-      .withFusedCANcoder(m_hoodCanCoder);
+      .withRemoteCANcoder(m_hoodCanCoder);
 
     hoodConfig.SoftwareLimitSwitch
       .withForwardSoftLimitEnable(true)
       .withReverseSoftLimitEnable(true)
       .withForwardSoftLimitThreshold(0)
-      .withReverseSoftLimitThreshold(-0.055);
+      .withReverseSoftLimitThreshold(-0.061279);
+    hoodConfig.Slot0
+      .withKP(100)
+      .withKS(10);
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor
-      .withMagnetOffset(0.575927734375)
+      .withMagnetOffset(0.649414)
       .withAbsoluteSensorDiscontinuityPoint(0.05)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
 
