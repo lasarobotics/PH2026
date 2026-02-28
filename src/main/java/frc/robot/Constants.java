@@ -92,7 +92,7 @@ public final class Constants {
 
     // TODO find actual value
     // Probably going to be pretty high? Unknown
-    public static final Angle DUMB_HOOD_POSITION = Degrees.of(80);
+    public static final Angle DUMB_HOOD_POSITION = Degrees.of(70);
     // In rotations per second
     // currently based on empirical measurement
     public static final double DUMB_SHOOTER_SPEED = 30;

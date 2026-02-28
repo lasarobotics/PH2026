@@ -49,13 +49,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       @Override
       public void initialize() {
         s_shouldDoGlobalPoseEstimation = false;
-      }
 
-      @Override
-      public void execute() {
-        // turn on shooter at a throttle
         LimelightHelpers.SetThrottle(
-          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
         );
         LimelightHelpers.SetThrottle(
           Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
@@ -63,6 +59,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         LimelightHelpers.SetThrottle(
           Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
         );
+      }
+
+      @Override
+      public void execute() {
+        // turn on shooter at a throttle  
 
         s_driveSubsystem.setAllLimelightsToAllTags();
 

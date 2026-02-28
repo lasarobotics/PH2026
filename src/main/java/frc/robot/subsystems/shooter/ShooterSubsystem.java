@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
@@ -9,15 +10,16 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
+
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -38,7 +40,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private CANcoder m_hoodCanCoder;
 
   private final VelocityDutyCycle m_shooterRequest;
-  private final MotionMagicVoltage m_hoodRequest;
+  private final PositionVoltage m_hoodRequest;
 
   private boolean m_isRunning = true;
 
@@ -58,7 +60,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
     m_shooterRequest = new VelocityDutyCycle(0);
-    m_hoodRequest = new MotionMagicVoltage(0);
+    m_hoodRequest = new PositionVoltage(0);
 
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
@@ -66,7 +68,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         .withSensorToMechanismRatio(1.0/0.75);
     shooterConfig
       .Slot0
-        .withKP(999999999999999999999.0);
+        .withKP(999999.0);
     shooterConfig
       .MotorOutput
         .withInverted(InvertedValue.Clockwise_Positive)
@@ -102,13 +104,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor
-      .withMagnetOffset(0.649414)
+      .withMagnetOffset(0.500244140625)
       .withAbsoluteSensorDiscontinuityPoint(0.05)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
 
     m_shooterMotorLeader.getConfigurator().apply(shooterConfig);
-    m_shooterMotorFollowerOne.getConfigurator().apply(shooterConfig);
-    m_shooterMotorFollowerTwo.getConfigurator().apply(shooterConfig);
+    // m_shooterMotorFollowerOne.getConfigurator().apply(shooterConfig);
+    // m_shooterMotorFollowerTwo.getConfigurator().apply(shooterConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
     m_hoodMotor.getConfigurator().apply(hoodConfig);
     m_hoodCanCoder.getConfigurator().apply(canCoderConfig);
@@ -218,9 +220,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * {@link frc.robot.AimUtil#getExitAngle() getExitAngle()}.
    */
   private void adjustHood() {
-    //m_hoodMotor.setControl(
-     // m_hoodRequest.withPosition(wantedHoodPosition())
-    //);
+   Angle positionAngle = wantedHoodPosition().minus(Degrees.of(80.0));
+    m_hoodMotor.setControl(
+      m_hoodRequest.withPosition(positionAngle)
+    );
   }
 
   /**
@@ -250,11 +253,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return If the check succeeds
    */
   private boolean atHoodPosition() {
-    return true;
-    // return m_hoodCanCoder.getAbsolutePosition().isNear(
-    //   wantedHoodPosition(),
-    //   Constants.Shooter.HOOD_POSITION_TOLERANCE
-    // );
+    //getValue() is an Angle which is stupid but its ok
+    Angle degrees = m_hoodMotor.getPosition().getValue().plus(Degrees.of(80));
+    Logger.recordOutput(getName() + "/hoodDegrees", degrees.in(Degrees));
+    return degrees.isNear(wantedHoodPosition(), Constants.Shooter.HOOD_POSITION_TOLERANCE);
   }
 
   /**
@@ -314,7 +316,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
 
     if (m_isRunning) {
-      //adjustHood();
+      adjustHood();
 
       if (shooting || forceShooting || dumbShooting) {
         runShooter();
