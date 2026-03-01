@@ -50,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         .withInverted(InvertedValue.Clockwise_Positive);
     armConfig
       .Slot0
-        .withKP(75)
+        .withKP(40)
         .withKS(.185)
         .withKG(.4)
         .withGravityType(GravityTypeValue.Arm_Cosine)
@@ -82,7 +82,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.732666) // measured value
+        .withMagnetOffset(-0.71168901562) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);

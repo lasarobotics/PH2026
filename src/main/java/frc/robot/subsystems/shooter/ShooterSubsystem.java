@@ -68,7 +68,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
       .Feedback
-        .withSensorToMechanismRatio(1.0/0.75);
+        .withSensorToMechanismRatio(36/48);
     shooterConfig
       .Slot0
         .withKP(999999.0);
@@ -175,17 +175,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorLeader.setVoltage(0);
   }
 
-  /**
-   * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
-   * to the (constant)
-   * {@link Constants.Shooter#SHOOTER_HOLD_SPEED shooter hold speed}
-   * and let the others coast.
-   */
-  private void holdShooter() {
-    m_shooterMotorLeader.setControl(
-      m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
-    );
-  }
+  // /**
+  //  * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
+  //  * to the (constant)
+  //  * {@link Constants.Shooter#SHOOTER_HOLD_SPEED shooter hold speed}
+  //  * and let the others coast.
+  //  */
+  // private void holdShooter() {
+  //   m_shooterMotorLeader.setControl(
+  //     m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
+  //   );
+  // }
 
   /**
    * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
@@ -363,7 +363,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
           stopIndexer();
         }
       } else {
-        holdShooter();
+        // holdShooter();
+        stopShooter();
         stopIndexer();
       }
     } else {

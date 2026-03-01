@@ -65,7 +65,8 @@ public final class Constants {
     public static final double SHOOTER_HOLD_SPEED = 20;
 
     // shooter speed tolerance is in rotations per second
-    public static final double SHOOTER_SPEED_TOLERANCE = 0.5;
+    // it's so high because we're using bang-bang
+    public static final double SHOOTER_SPEED_TOLERANCE = 5;
     public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(0.5);
 
     // how long we can be shooting after the end of the shift
@@ -99,7 +100,7 @@ public final class Constants {
     public static final Angle DUMB_HOOD_POSITION = Rotations.of(-0.06);
     // In rotations per second
     // currently based on empirical measurement
-    public static final double DUMB_SHOOTER_SPEED = 24.5;
+    public static final double DUMB_SHOOTER_SPEED = 43.5;
   }
 
   public static class Drive {
