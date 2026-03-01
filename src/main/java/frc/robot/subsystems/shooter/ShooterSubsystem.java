@@ -7,10 +7,10 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -52,9 +52,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   private ShooterSubsystem() {
-    m_shooterMotorLeader = new TalonFX(Constants.Shooter.LEADER_SHOOTER_MOTOR_ID);
-    m_shooterMotorFollowerOne = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_ONE_MOTOR_ID);
-    m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID);
+    m_shooterMotorLeader = new TalonFX(Constants.Shooter.LEADER_SHOOTER_MOTOR_ID, "canivore");
+    m_shooterMotorFollowerOne = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_ONE_MOTOR_ID, "canivore");
+    m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID, "canivore");
     m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
@@ -107,10 +107,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       .withMagnetOffset(0.500244140625)
       .withAbsoluteSensorDiscontinuityPoint(0.05)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
-
+      
     m_shooterMotorLeader.getConfigurator().apply(shooterConfig);
-    // m_shooterMotorFollowerOne.getConfigurator().apply(shooterConfig);
-    // m_shooterMotorFollowerTwo.getConfigurator().apply(shooterConfig);
+    m_shooterMotorFollowerOne.getConfigurator().apply(shooterConfig);
+    m_shooterMotorFollowerTwo.getConfigurator().apply(shooterConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
     m_hoodMotor.getConfigurator().apply(hoodConfig);
     m_hoodCanCoder.getConfigurator().apply(canCoderConfig);
@@ -135,7 +135,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * stop motors.
    */
   public void stopOperation() {
-    m_isRunning = false;
+    m_isRunning = true;
   }
 
   /**
@@ -314,6 +314,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/wantToShoot", shooting);
     Logger.recordOutput(getName() + "/wantToDumbShoot", dumbShooting);
     Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
+    Logger.recordOutput(getName() + "/inAllianceZone", DriveSubsystem.inAllianceZone());
+    
 
     if (m_isRunning) {
       adjustHood();
@@ -376,7 +378,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/wantedShooterSpeed",
       wantedShooterSpeed());
     Logger.recordOutput(getName() + "/wantedHoodPosition",
-      wantedHoodPosition());
+      wantedHoodPosition().in(Degrees));
     Logger.recordOutput(getName() + "/isRunning",
       m_isRunning);
   }

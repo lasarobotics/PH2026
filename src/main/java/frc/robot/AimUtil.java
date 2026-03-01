@@ -126,7 +126,7 @@ public class AimUtil {
     hangTime = results.hangTime();
   
     Logger.recordOutput("AimUtil/ballVelocity", ballVelocity);
-    Logger.recordOutput("AimUtil/exitAngle", exitAngle);
+    Logger.recordOutput("AimUtil/exitAngle", exitAngle.in(Degrees));
     Logger.recordOutput("AimUtil/robotHeading", robotHeading);
     Logger.recordOutput("AimUtil/hangTime", hangTime);
   }

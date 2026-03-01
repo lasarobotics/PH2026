@@ -92,10 +92,10 @@ public final class Constants {
 
     // TODO find actual value
     // Probably going to be pretty high? Unknown
-    public static final Angle DUMB_HOOD_POSITION = Degrees.of(70);
+    public static final Angle DUMB_HOOD_POSITION = Rotations.of(-0.06);
     // In rotations per second
     // currently based on empirical measurement
-    public static final double DUMB_SHOOTER_SPEED = 30;
+    public static final double DUMB_SHOOTER_SPEED = 24.5;
   }
 
   public static class Drive {

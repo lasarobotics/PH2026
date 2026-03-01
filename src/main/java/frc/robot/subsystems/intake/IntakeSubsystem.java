@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -77,19 +78,21 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       .MotionMagic
         .withMotionMagicCruiseVelocity(10) // measured value
         .withMotionMagicAcceleration(8); // measured value
+    armConfig
+      .MotorOutput
+        .withNeutralMode(NeutralModeValue.Brake);
 
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.6630859375) // measured value
+        .withMagnetOffset(-0.732666) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
-
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
     m_armMotor.getConfigurator().apply(armConfig);
     m_intakeEncoder.getConfigurator().apply(intakeEncoderConfig);
     
-    stowIntake();
+    //stowIntake();
   }
 
   /**

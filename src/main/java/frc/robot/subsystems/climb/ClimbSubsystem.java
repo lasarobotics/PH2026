@@ -85,6 +85,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to move the climb motor to stow position
    */
   public void stow() {
+    Logger.recordOutput(getName() + "/commanded", "stow");
     m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.STOW_ANGLE));
   }
 
@@ -93,6 +94,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to deploy the climb motor and move servo appropriately
    */
   public void deploy() {
+    Logger.recordOutput(getName() + "/commanded", "deploy");
     if (inClimbPosition()) {
       deployClimbMotor();
       m_climbServo.set(Constants.Climb.SERVO_STOW_ANGLE);
@@ -107,6 +109,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * @return Command to move the climb motor to climb position
    */
   public void climb() {
+    Logger.recordOutput(getName() + "/commanded", "climb");
     m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.CLIMB_ANGLE));
   }
 
@@ -114,6 +117,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    * Stops all climber motors
    */
   public void stopMotor() {
+    Logger.recordOutput(getName() + "/commanded", "stop");
     m_climbMotor1.stopMotor();
   }
 
