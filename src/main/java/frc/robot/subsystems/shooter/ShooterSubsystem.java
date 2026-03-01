@@ -3,13 +3,14 @@ package frc.robot.subsystems.shooter;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
@@ -41,6 +42,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private final VelocityDutyCycle m_shooterRequest;
   private final PositionVoltage m_hoodRequest;
+  private final DutyCycleOut m_indexerRequest;
 
   private boolean m_isRunning = true;
 
@@ -61,6 +63,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     m_shooterRequest = new VelocityDutyCycle(0);
     m_hoodRequest = new PositionVoltage(0);
+    m_indexerRequest = new DutyCycleOut(0);
 
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
@@ -135,7 +138,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * stop motors.
    */
   public void stopOperation() {
-    m_isRunning = true;
+    m_isRunning = false;
   }
 
   /**
@@ -157,10 +160,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Set the speed of the {@link #m_indexerMotor indexer motor}
    * to the (constant)
-   * {@link Constants.Shooter#indexerHoldSpeed indexer hold speed}.
+   * {@link Constants.Shooter#INDEXER_MOTOR_SPEED indexer run speed}.
    */
   private void runIndexer() {
-    m_indexerMotor.setVoltage(Constants.Shooter.INDEXER_MOTOR_SPEED);
+    m_indexerMotor.setControl(
+      m_indexerRequest.withOutput(Constants.Shooter.INDEXER_MOTOR_SPEED)
+    );
   }
 
   /**
@@ -220,7 +225,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * {@link frc.robot.AimUtil#getExitAngle() getExitAngle()}.
    */
   private void adjustHood() {
-   Angle positionAngle = wantedHoodPosition().minus(Degrees.of(80.0));
+   Angle positionAngle = wantedHoodPosition();
     m_hoodMotor.setControl(
       m_hoodRequest.withPosition(positionAngle)
     );
@@ -253,10 +258,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return If the check succeeds
    */
   private boolean atHoodPosition() {
-    //getValue() is an Angle which is stupid but its ok
-    Angle degrees = m_hoodMotor.getPosition().getValue().plus(Degrees.of(80));
-    Logger.recordOutput(getName() + "/hoodDegrees", degrees.in(Degrees));
-    return degrees.isNear(wantedHoodPosition(), Constants.Shooter.HOOD_POSITION_TOLERANCE);
+    return m_hoodMotor.getPosition().getValue().isNear(
+      wantedHoodPosition(),
+      Constants.Shooter.HOOD_POSITION_TOLERANCE
+    );
   }
 
   /**
@@ -276,7 +281,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       2 * ballVelocity.in(MetersPerSecond)
       / Constants.Shooter.SHOOTER_RADIUS.in(Meters);
     double rotationsPerSecond =
-      radiansPerSecond / (2 * Math.PI * 60);
+      radiansPerSecond / (2 * Math.PI);
     return rotationsPerSecond;
   }
 
@@ -284,14 +289,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Returns the exit angle wanted by AimUtil, unless
    * the driver wants to dumb shoot, in which case this
    * method returns the constant dumb hood position.
-   * @return The angle that the hood should be at.
+   * @return The angle that the hood should be at. This
+   * value accounts for the offset of the hood relative
+   * to the exit angle.
    */
   private Angle wantedHoodPosition() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
       return Constants.Shooter.DUMB_HOOD_POSITION;
     }
 
-    return AimUtil.getExitAngle();
+    return AimUtil.getExitAngle().minus(Degrees.of(80.0));
   }
 
   @Override
@@ -301,9 +308,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Periodic shooter logic. Basically (if in operation):
     // Always adjust hood
     // If holding shoot button:
-    // (pass/shoot/forceshoot/dumbshoot)
+    // (shoot/forceshoot/dumbshoot)
     //    - Set shoot motor to shoot speed
-    //    - Toggle indexer motor based on if ready to shoot/pass
+    //    - Toggle indexer motor based on if ready to shoot
     //    - Indexer is always turned on if forceshoot is held
     // If not holding button, set shoot motor to hold speed
     // and stop indexer
@@ -364,11 +371,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
     
     Logger.recordOutput(getName() + "/shooterSpeed",
-      m_shooterMotorLeader.get());
+      m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(getName() + "/indexerSpeed",
       m_indexerMotor.get());
     Logger.recordOutput(getName() + "/hoodPosition",
-      m_hoodMotor.getPosition().getValueAsDouble());
+      m_hoodMotor.getPosition().getValue().in(Degrees));
     Logger.recordOutput(getName() + "/atShootSpeed",
       atShootSpeed());
     Logger.recordOutput(getName() + "/shooterReady",

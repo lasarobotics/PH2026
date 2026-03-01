@@ -40,14 +40,9 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     m_isIntaking = false;
     m_isIntakeRunning = false;
 
-    // Create configs for TalonFX motors
-    // TODO: set the configs for these motors
-    // for reference:
-    // https://github.com/lasarobotics/PH2025/blob/master/src/main/java/frc/robot/subsystems/lift/LiftSubsystem.java#L1359-L1422
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
     TalonFXConfiguration armConfig = new TalonFXConfiguration();
 
-    // TODO: set the config for the cancoder
     CANcoderConfiguration intakeEncoderConfig = new CANcoderConfiguration();
 
     armConfig
@@ -71,8 +66,10 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         .withReverseSoftLimitEnable(true)
         // Note:
         // .29 is the physical limit with no bumper
-        // I think .28 should be good? idk TODO figure out
-        .withForwardSoftLimitThreshold(.28) // measured value
+        // I think .28 should be good?
+        // update: dropped to .26 considering that .255 is the setpoint
+        // for the intake being down
+        .withForwardSoftLimitThreshold(.26) // measured value
         .withReverseSoftLimitThreshold(0); // zero position
     armConfig
       .MotionMagic

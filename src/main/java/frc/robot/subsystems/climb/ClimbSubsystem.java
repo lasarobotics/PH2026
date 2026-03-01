@@ -41,7 +41,6 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
     this.m_climbEncoder = new CANcoder(Constants.Climb.ARM_ENCODER_ID);
     this.m_climbServo = new Servo(Constants.Climb.SERVO_CHANNEL);
 
-    // TODO: Verify motor configs
     TalonFXConfiguration motorOneConfig = new TalonFXConfiguration();
     CANcoderConfiguration encoderConfig = new CANcoderConfiguration();
     
