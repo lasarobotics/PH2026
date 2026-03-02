@@ -100,14 +100,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       .withForwardSoftLimitEnable(true)
       .withReverseSoftLimitEnable(true)
       .withForwardSoftLimitThreshold(0)
-      .withReverseSoftLimitThreshold(-0.061279);
+      .withReverseSoftLimitThreshold(-0.090576);
     hoodConfig.Slot0
-      .withKP(100)
-      .withKS(10);
+      .withKP(150)
+      .withKS(1.5);
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor
-      .withMagnetOffset(0.500244140625)
+      .withMagnetOffset(0.405)
       .withAbsoluteSensorDiscontinuityPoint(0.05)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
       
