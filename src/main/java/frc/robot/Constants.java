@@ -357,22 +357,22 @@ public final class Constants {
 
     public static final Pose2d BLUE_TOWER =
         new Pose2d(
-            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(-90));  
+            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(0));  
     public static final Pose2d BLUE_TOWER_DEPOT_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(1.6), Meters.of(3.9)), Rotation2d.fromDegrees(-90));  
+            new Translation2d(Meters.of(1.6), Meters.of(3.9)), Rotation2d.fromDegrees(0));  
     public static final Pose2d BLUE_TOWER_OUTPOST_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(1.6), Meters.of(2.954)), Rotation2d.fromDegrees(-90));  
+            new Translation2d(Meters.of(1.6), Meters.of(2.954)), Rotation2d.fromDegrees(0));  
     public static final Pose2d RED_TOWER =
         new Pose2d(
-            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(90)); 
+            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(180)); 
     public static final Pose2d RED_TOWER_DEPOT_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(14.919), Meters.of(4.2)), Rotation2d.fromDegrees(90));  
+            new Translation2d(Meters.of(14.919), Meters.of(4.2)), Rotation2d.fromDegrees(180));  
     public static final Pose2d RED_TOWER_OUTPOST_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(14.919), Meters.of(5.1)), Rotation2d.fromDegrees(90));  
+            new Translation2d(Meters.of(14.919), Meters.of(5.1)), Rotation2d.fromDegrees(180));  
 
     
     public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d(14.231, 2.235);
@@ -447,5 +447,7 @@ public final class Constants {
 
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_CLIMB_CHOOSER_NAME = "Auto Climb Position";
+    public static final String SMARTDASHBOARD_QUADRANT_CHOOSER_NAME = "Auto Start Position";
+    public static final String SMARTDASHBOARD_AUTO_TYPE_CHOOSER_NAME = "Auto Selector";
   }
 }

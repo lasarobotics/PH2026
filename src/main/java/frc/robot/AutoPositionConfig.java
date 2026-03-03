@@ -1,7 +1,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import frc.robot.subsystems.drive.DriveSubsystem;
 
 public class AutoPositionConfig {
   public enum Quadrant {
@@ -14,15 +13,12 @@ public class AutoPositionConfig {
   private Pose2d AllianceZoneSide;
   private Pose2d AllianceZoneOppositeSide;
   private Pose2d AllianceZoneCenter;
-  private Pose2d TowerPose;
   private Pose2d DepotEnterPose;
   private Pose2d DepotExitPose;
 
   public AutoPositionConfig(
     Quadrant quadrant
   ) {
-    this.TowerPose = DriveSubsystem.s_climbPosition;
-
     switch (quadrant) {
       case BLUE_LEFT:
         this.AllianceZoneSide =
@@ -35,6 +31,7 @@ public class AutoPositionConfig {
           Constants.Auto.BLUE_DEPOT_ENTER_POSE;
         this.DepotExitPose =
           Constants.Auto.BLUE_DEPOT_EXIT_POSE;
+        break;
 
       case BLUE_RIGHT:
         this.AllianceZoneSide =
@@ -47,6 +44,7 @@ public class AutoPositionConfig {
           Constants.Auto.BLUE_DEPOT_ENTER_POSE;
         this.DepotExitPose =
           Constants.Auto.BLUE_DEPOT_EXIT_POSE;
+        break;
 
       case RED_LEFT:
         this.AllianceZoneSide =
@@ -59,6 +57,7 @@ public class AutoPositionConfig {
           Constants.Auto.RED_DEPOT_ENTER_POSE;
         this.DepotExitPose =
           Constants.Auto.RED_DEPOT_EXIT_POSE;
+        break;
 
       case RED_RIGHT:
         this.AllianceZoneSide =
@@ -71,6 +70,7 @@ public class AutoPositionConfig {
           Constants.Auto.RED_DEPOT_ENTER_POSE;
         this.DepotExitPose =
           Constants.Auto.RED_DEPOT_EXIT_POSE;
+        break;
     }
   }
 
@@ -84,10 +84,6 @@ public class AutoPositionConfig {
 
   public Pose2d AllianceZoneCenter() {
     return AllianceZoneCenter;
-  }
-
-  public Pose2d TowerPose() {
-    return TowerPose;
   }
   
   public Pose2d DepotEnterPose() {

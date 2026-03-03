@@ -48,7 +48,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        boolean shoot = s_headHoncho.m_shootButton.getAsBoolean() || AutoHoncho.autoWantToShoot();
+        boolean shoot = s_headHoncho.m_shootButton.getAsBoolean() ||
+                        AutoHoncho.autoWantToShoot() ||
+                        s_headHoncho.m_dumbShootButton.getAsBoolean() ||
+                        AutoHoncho.autoWantToDumbShoot();
 
         Translation3d shootPos = wantedShootPosition();
         AimUtil.setTarget(
@@ -180,12 +183,24 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
     // Set up SendableChooser to get where to climb in auto
     m_climbChooser = new SendableChooser<>();
-    m_climbChooser.setDefaultOption("Left", getName());
-    m_climbChooser.addOption("Center", getName());
-    m_climbChooser.addOption("Right", getName());
+    m_climbChooser.setDefaultOption("Blue Left", "Blue Left");
+    m_climbChooser.addOption("Blue Right", "Blue Right");
+    m_climbChooser.addOption("Red Left", "Red Left");
+    m_climbChooser.addOption("Red Right", "Red Right");
+
+    AutoHoncho.s_autoQuadrantChooser.setDefaultOption("Blue Left", "Blue Left");
+    AutoHoncho.s_autoQuadrantChooser.addOption("Blue Right", "Blue Right");
+    AutoHoncho.s_autoQuadrantChooser.addOption("Red Left", "Red Left");
+    AutoHoncho.s_autoQuadrantChooser.addOption("Red Right", "Red Right");
+
+    AutoHoncho.s_autoTypeChooser.setDefaultOption("Basic Shoot", "Basic Shoot");
+    AutoHoncho.s_autoTypeChooser.addOption("Nothing", "Nothing");
+    AutoHoncho.s_autoTypeChooser.addOption("Shoot and Climb", "Shoot and Climb");
 
     // Update DriveSubsystem when the climbChooser changes
     m_climbChooser.onChange(DriveSubsystem::setClimbPosition);
+    AutoHoncho.s_autoQuadrantChooser.onChange(AutoHoncho::setAutoQuadrant);
+    AutoHoncho.s_autoTypeChooser.onChange(AutoHoncho::setAutoType);
   }
 
   public void periodic() {
@@ -206,7 +221,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   }
 
   public boolean wantToDumbShoot() {
-    return m_dumbShootButton.getAsBoolean();
+    return m_dumbShootButton.getAsBoolean() || AutoHoncho.autoWantToDumbShoot();
   }
 
   public boolean wantToForceShoot() {

@@ -2,18 +2,31 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
+import org.lasarobotics.fsm.StateMachine;
 import org.lasarobotics.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
+import frc.robot.AutoPositionConfig.Quadrant;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
-public class AutoHoncho {  
+public class AutoHoncho extends StateMachine implements AutoCloseable {  
   public static AutoPositionConfig positionConfig;
+  public static SystemState startingState;
+
+  public enum NothingAuto implements SystemState {
+    NOTHING {
+      @Override
+      public SystemState nextState() {
+        return this;
+      }
+    }
+  }
 
   public enum BasicShootAuto implements SystemState {
     START {
@@ -48,12 +61,13 @@ public class AutoHoncho {
     SHOOT {
       @Override
       public void initialize() {
-        s_wantToShoot = true;
+        DriveSubsystem.getInstance().driveAutoAim();
+        s_wantToDumbShoot = true;
       }
 
       @Override
       public void end(boolean interrupted) {
-        s_wantToShoot = false;
+        s_wantToDumbShoot = false;
       }
 
       @Override
@@ -64,7 +78,7 @@ public class AutoHoncho {
   }
 
   public enum ShootAndClimbAuto implements SystemState {
-     START {
+    START {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
@@ -98,14 +112,14 @@ public class AutoHoncho {
 
       @Override
       public void initialize() {
-        s_wantToShoot = true;
-
+        s_wantToDumbShoot = true;
+        DriveSubsystem.getInstance().driveAutoAim();
         timer.start();
       }
 
       @Override
       public void end(boolean interrupted) {
-        s_wantToShoot = false;
+        s_wantToDumbShoot = false;
       }
 
       @Override
@@ -121,6 +135,7 @@ public class AutoHoncho {
 
       @Override
       public void initialize() {
+        DriveSubsystem.getInstance().driverControl();
         autoClimbPosition = DriveSubsystem.s_climbPosition;
         ClimbSubsystem.getInstance().deploy();
       }
@@ -128,7 +143,8 @@ public class AutoHoncho {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.TowerPose(),
+          // positionConfig.TowerPose(),
+          autoClimbPosition,
           MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -138,7 +154,8 @@ public class AutoHoncho {
       public SystemState nextState() {
         if (
           DriveSubsystem.atDestination(
-            positionConfig.TowerPose(),
+            // positionConfig.TowerPose(),
+            autoClimbPosition,
             Constants.Auto.LOW_DISTANCE_TOLERANCE, 
             Constants.Auto.LOW_ROTATION_TOLERANCE
           )
@@ -202,13 +219,76 @@ public class AutoHoncho {
   }
 
   private static boolean s_wantToShoot = false;
+  private static boolean s_wantToDumbShoot = false;
   private static boolean s_wantToCrossBump = false;
+
+  public static SendableChooser<String> s_autoQuadrantChooser = new SendableChooser<>();
+  public static SendableChooser<String> s_autoTypeChooser = new SendableChooser<>();
+
+  public static void setAutoQuadrant(String quadrant) {
+    Logger.recordOutput("AutoHoncho/setAutoQuadrant", quadrant);
+    Quadrant quad = null;
+    switch (quadrant) {
+      case "Blue Left":
+        quad = Quadrant.BLUE_LEFT;
+        break;
+      case "Blue Right":
+        quad = Quadrant.BLUE_RIGHT;
+        break;
+      case "Red Left":
+        quad = Quadrant.RED_LEFT;
+        break;
+      case "Red Right":
+        quad = Quadrant.RED_RIGHT;
+        break;
+      default:
+        break;
+    }
+    if (quad != null) {
+      positionConfig = new AutoPositionConfig(quad);
+    }
+  }
+
+  public static void setAutoType(String type) {
+    Logger.recordOutput("AutoHoncho/setAutoType", type);
+    switch (type) {
+      case "Nothing":
+        startingState = NothingAuto.NOTHING;
+        break;
+      case "Basic Shoot":
+        startingState = BasicShootAuto.START;
+        break;
+      case "Shoot and Climb":
+        startingState = ShootAndClimbAuto.START;
+        break;
+    }
+  }
+
+  public AutoHoncho() {
+    super(startingState);
+    if (startingState == null) {
+      Logger.recordOutput("AutoHoncho/creationAutoType", "null");
+    } else {
+      Logger.recordOutput("AutoHoncho/creationAutoType", startingState.toString());
+    }
+  }
+
+  public void periodic() {
+    Logger.recordOutput(getName() + "/currentState", getState().toString());
+  }
 
   public static boolean autoWantToShoot() {
     return s_wantToShoot;
   }
 
+  public static boolean autoWantToDumbShoot() {
+    return s_wantToDumbShoot;
+  }
+
   public static boolean autoWantToCrossRamp() {
     return s_wantToCrossBump;
   }
+
+  @Override
+  public void close() {}
 }

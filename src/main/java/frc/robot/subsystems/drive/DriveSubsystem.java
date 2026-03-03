@@ -106,6 +106,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         if (DriverStation.isDisabled()) return DISABLED;
         if (!DriverStation.isAutonomous()) return DRIVER_CONTROL;
 
+        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+        // if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
+
         return this;
       }
     },
@@ -654,6 +657,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     m_limelight_thread = new Thread(this::limelight_thread_func);
     m_limelight_thread.setDaemon(true);
     m_limelight_thread.start();
+    
+    Logger.recordOutput("DriveSubsystem/Odometry/target", new Pose2d(0.0, 0.0, new Rotation2d(0.0)));
   }
 
   private LimelightHelpers.PoseEstimate getFilteredLimelightPose(String limelight) {
@@ -806,8 +811,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     s_drivetrain.setControl(
       s_drive
-        .withVelocityX(MetersPerSecond.of(xComponent).times(-1))
-        .withVelocityY(MetersPerSecond.of(yComponent).times(-1))
+        // .withVelocityX(MetersPerSecond.of(xComponent).times(-1))
+        // .withVelocityY(MetersPerSecond.of(yComponent).times(-1))
+        .withVelocityX(MetersPerSecond.of(xComponent))
+        .withVelocityY(MetersPerSecond.of(yComponent))
         .withRotationalRate(rotationRate)
     );
   
@@ -852,6 +859,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
     }
 
+    Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
     Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
     Logger.recordOutput(getName() + "/subsystemState", getState().toString());
@@ -866,7 +874,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   public void driverControl() {
-    s_requestedDriveState = DriveStates.DRIVER_CONTROL;
+    if (DriverStation.isAutonomous()) {
+      s_requestedDriveState = DriveStates.AUTO;
+    } else {
+      s_requestedDriveState = DriveStates.DRIVER_CONTROL;
+    }
   }
 
   public void driveOverRamp() {
@@ -956,17 +968,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    */
   public static void setClimbPosition(String selectedValue) {
     switch (selectedValue) {
-      case "Right":
-        // TODO: Make this set the position to the right climb pose
-        s_climbPosition = new Pose2d();
+      case "Blue Right":
+        s_climbPosition = Constants.Field.BLUE_TOWER_OUTPOST_SIDE;
         break;
-      case "Center":
-        // TODO: Make this set the position to the center climb pose
-        s_climbPosition = new Pose2d();
+      case "Blue Left":
+        s_climbPosition = Constants.Field.BLUE_TOWER_DEPOT_SIDE;
         break;
-      default:
-        // TODO: Make this set the position to the left climb pose
-        s_climbPosition = new Pose2d();
+      case "Red Right":
+        s_climbPosition = Constants.Field.RED_TOWER_OUTPOST_SIDE;
+        break;
+      case "Red Left":
+        s_climbPosition = Constants.Field.RED_TOWER_DEPOT_SIDE;
         break;
     }
   }

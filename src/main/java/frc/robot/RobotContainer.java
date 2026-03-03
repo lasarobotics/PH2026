@@ -4,10 +4,14 @@
 
 package frc.robot;
 
+import org.lasarobotics.fsm.SystemState;
+
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.robot.AutoPositionConfig.Quadrant;
 import frc.robot.Constants.OperatorConstants;
 
 import frc.robot.subsystems.climb.ClimbSubsystem;
@@ -32,6 +36,14 @@ public class RobotContainer {
     SmartDashboard.putData(
       Constants.SmartDashboard.SMARTDASHBOARD_CLIMB_CHOOSER_NAME, 
       HeadHoncho.getInstance().getClimbChooser()
+    );
+    SmartDashboard.putData(
+      Constants.SmartDashboard.SMARTDASHBOARD_QUADRANT_CHOOSER_NAME, 
+      AutoHoncho.s_autoQuadrantChooser
+    );
+    SmartDashboard.putData(
+      Constants.SmartDashboard.SMARTDASHBOARD_AUTO_TYPE_CHOOSER_NAME, 
+      AutoHoncho.s_autoTypeChooser
     );
   }
 
@@ -117,6 +129,8 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return null;
+    return Commands.runOnce(
+      () -> Robot.autoHoncho = new AutoHoncho()
+    );
   }
 }

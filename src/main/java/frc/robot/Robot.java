@@ -30,6 +30,8 @@ public class Robot extends LoggedRobot {
 
   private RobotContainer m_robotContainer;
 
+  public static AutoHoncho autoHoncho;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -122,6 +124,9 @@ public class Robot extends LoggedRobot {
     // this line or comment it out.
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
+    }
+    if (autoHoncho != null) {
+      autoHoncho.close();
     }
 
     GameHelpers.zeroTimer();
