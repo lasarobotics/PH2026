@@ -148,23 +148,29 @@ public final class Constants {
     public static final int HOOD_MOTOR_ID = 34;
     public static final int HOOD_CANCODER_ID = 35;
 
-    // TODO find value for this
-    // voltage
-    public static final double INDEXER_MOTOR_SPEED = 0;
+    // duty cycle
+    // should be negative
+    public static final double INDEXER_MOTOR_SPEED = -1.0;
 
-    // TODO find value for this
-    // set shooter motor to constant speed
+    // set shooter motor to constant speed when not actively shooting
     // ideally, this will be somewhere in the
     // middle of how fast we generally shoot
-    // shooter spreadsheet indicates that 2800
-    // is about right (for ymax = 2.5m)
-    // https://docs.google.com/spreadsheets/d/1W-cpAlIJaHPbepHAKy7-uNkREk7_ITiVmTQvAB0_ZDM/edit
-    public static final double SHOOTER_HOLD_SPEED = 0;
+    // 20 rotations per second is probably right because we
+    // want to avoid being too far over
+    public static final double SHOOTER_HOLD_SPEED = 20;
 
-    public static final double SHOOTER_SPEED_TOLERANCE = 10; // TODO
-    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(1); // TODO
+    // shooter speed tolerance is in rotations per second
+    // it's so high because we're using bang-bang
+    public static final double SHOOTER_SPEED_TOLERANCE = 5;
+    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(0.5);
 
-    public static final double SHOOTER_TIME_MARGIN = 0; // TODO
+    // how long we can be shooting after the end of the shift
+    // this accounts for hang time:
+    // basically we can shoot if time in shift - hangtime >= margin
+    // so with 1.5s hangtime and 0s left in shift we have -1.5s
+    // hub takes like 1 to 2 seconds to count & counts for 3 seconds after end of period
+    // so -1.5 is probably alright
+    public static final double SHOOTER_TIME_MARGIN = -1.5;
 
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;
@@ -185,12 +191,11 @@ public final class Constants {
       )
     );
 
-    // TODO find actual value
-    // Probably going to be pretty high? Unknown
-    public static final Angle DUMB_HOOD_POSITION = Degrees.of(80);
+    // these values are for when the robot is pressed againt the tower
+    public static final Angle DUMB_HOOD_POSITION = Rotations.of(-0.06);
     // In rotations per second
     // currently based on empirical measurement
-    public static final double DUMB_SHOOTER_SPEED = 30;
+    public static final double DUMB_SHOOTER_SPEED = 43.5;
   }
 
   public static class Drive {
@@ -247,7 +252,7 @@ public final class Constants {
 
     // This is used as a percent tolerance
     // 5% seems reasonable, subject to change
-    public static final double ROTATION_TOLERANCE = 0.05; // TODO
+    public static final double ROTATION_TOLERANCE = 0.05;
 
     public static final double ROBOT_LATENCY = 0.15; //TODO: measure
 
@@ -262,9 +267,6 @@ public final class Constants {
         MAX_ANGULAR_RATE.in(RadiansPerSecond),
         MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond)
       );
-
-    // TODO: change offsets according to 418 wheels
-    public static final double EPSILON = 0.000001;
 
     public static final LinearVelocity[] OVER_RAMP_STAGE_MAX_SPEED = {
       MetersPerSecond.of(2.25),
@@ -390,20 +392,18 @@ public final class Constants {
     public static final int ARM_MOTOR_ID = 41;
     public static final int ARM_ENCODER_ID = 42;
 
-    // TODO: find values of intake positions
     public static final Dimensionless INTAKE_SPEED = Value.of(1);
 
     // preliminary values
     public static final Angle STOW_ANGLE = Rotations.of(0);
     // might want to reduce
     // this should be basically the value of the soft limit of the arm
-    // TODO update for bumper
     public static final Angle DEPLOY_ANGLE = Rotations.of(.255);
 
     // Tolerance of check for hopper being deployed
     // percent based on deploy angle
     // 5% probably reasonable for now
-    public static final double DEPLOY_TOLERANCE = 0.05; // TODO
+    public static final double DEPLOY_TOLERANCE = 0.05;
   }
 
   public static class Hopper {

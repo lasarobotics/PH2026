@@ -12,6 +12,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -39,14 +40,9 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     m_isIntaking = false;
     m_isIntakeRunning = false;
 
-    // Create configs for TalonFX motors
-    // TODO: set the configs for these motors
-    // for reference:
-    // https://github.com/lasarobotics/PH2025/blob/master/src/main/java/frc/robot/subsystems/lift/LiftSubsystem.java#L1359-L1422
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
     TalonFXConfiguration armConfig = new TalonFXConfiguration();
 
-    // TODO: set the config for the cancoder
     CANcoderConfiguration intakeEncoderConfig = new CANcoderConfiguration();
 
     armConfig
@@ -54,7 +50,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         .withInverted(InvertedValue.Clockwise_Positive);
     armConfig
       .Slot0
-        .withKP(75)
+        .withKP(40)
         .withKS(.185)
         .withKG(.4)
         .withGravityType(GravityTypeValue.Arm_Cosine)
@@ -70,26 +66,30 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         .withReverseSoftLimitEnable(true)
         // Note:
         // .29 is the physical limit with no bumper
-        // I think .28 should be good? idk TODO figure out
-        .withForwardSoftLimitThreshold(.28) // measured value
+        // I think .28 should be good?
+        // update: dropped to .26 considering that .255 is the setpoint
+        // for the intake being down
+        .withForwardSoftLimitThreshold(.26) // measured value
         .withReverseSoftLimitThreshold(0); // zero position
     armConfig
       .MotionMagic
         .withMotionMagicCruiseVelocity(10) // measured value
         .withMotionMagicAcceleration(8); // measured value
+    armConfig
+      .MotorOutput
+        .withNeutralMode(NeutralModeValue.Brake);
 
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.6630859375) // measured value
+        .withMagnetOffset(-0.71168901562) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
-
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
     m_armMotor.getConfigurator().apply(armConfig);
     m_intakeEncoder.getConfigurator().apply(intakeEncoderConfig);
     
-    stowIntake();
+    //stowIntake();
   }
 
   /**

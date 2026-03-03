@@ -1,20 +1,22 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
-import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
@@ -39,7 +41,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private CANcoder m_hoodCanCoder;
 
   private final VelocityDutyCycle m_shooterRequest;
-  private final MotionMagicVoltage m_hoodRequest;
+  private final PositionVoltage m_hoodRequest;
+  private final DutyCycleOut m_indexerRequest;
 
   private boolean m_isRunning = true;
 
@@ -51,23 +54,24 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   private ShooterSubsystem() {
-    m_shooterMotorLeader = new TalonFX(Constants.Shooter.LEADER_SHOOTER_MOTOR_ID);
-    m_shooterMotorFollowerOne = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_ONE_MOTOR_ID);
-    m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID);
+    m_shooterMotorLeader = new TalonFX(Constants.Shooter.LEADER_SHOOTER_MOTOR_ID, "canivore");
+    m_shooterMotorFollowerOne = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_ONE_MOTOR_ID, "canivore");
+    m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID, "canivore");
     m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
     m_shooterRequest = new VelocityDutyCycle(0);
-    m_hoodRequest = new MotionMagicVoltage(0);
+    m_hoodRequest = new PositionVoltage(0);
+    m_indexerRequest = new DutyCycleOut(0);
 
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
       .Feedback
-        .withSensorToMechanismRatio(1.0/0.75);
+        .withSensorToMechanismRatio(36/48);
     shooterConfig
       .Slot0
-        .withKP(999999999999999999999.0);
+        .withKP(999999.0);
     shooterConfig
       .MotorOutput
         .withInverted(InvertedValue.Clockwise_Positive)
@@ -90,20 +94,23 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     hoodConfig.Feedback
       .withRotorToSensorRatio(36.0 / 16.0)
       .withSensorToMechanismRatio(127.0 / 13.0)
-      .withFusedCANcoder(m_hoodCanCoder);
+      .withRemoteCANcoder(m_hoodCanCoder);
 
     hoodConfig.SoftwareLimitSwitch
       .withForwardSoftLimitEnable(true)
       .withReverseSoftLimitEnable(true)
       .withForwardSoftLimitThreshold(0)
-      .withReverseSoftLimitThreshold(-0.055);
+      .withReverseSoftLimitThreshold(-0.061279);
+    hoodConfig.Slot0
+      .withKP(100)
+      .withKS(10);
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor
-      .withMagnetOffset(0.575927734375)
+      .withMagnetOffset(0.500244140625)
       .withAbsoluteSensorDiscontinuityPoint(0.05)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
-
+      
     m_shooterMotorLeader.getConfigurator().apply(shooterConfig);
     m_shooterMotorFollowerOne.getConfigurator().apply(shooterConfig);
     m_shooterMotorFollowerTwo.getConfigurator().apply(shooterConfig);
@@ -153,10 +160,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Set the speed of the {@link #m_indexerMotor indexer motor}
    * to the (constant)
-   * {@link Constants.Shooter#indexerHoldSpeed indexer hold speed}.
+   * {@link Constants.Shooter#INDEXER_MOTOR_SPEED indexer run speed}.
    */
   private void runIndexer() {
-    m_indexerMotor.setVoltage(Constants.Shooter.INDEXER_MOTOR_SPEED);
+    m_indexerMotor.setControl(
+      m_indexerRequest.withOutput(Constants.Shooter.INDEXER_MOTOR_SPEED)
+    );
   }
 
   /**
@@ -166,17 +175,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorLeader.setVoltage(0);
   }
 
-  /**
-   * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
-   * to the (constant)
-   * {@link Constants.Shooter#SHOOTER_HOLD_SPEED shooter hold speed}
-   * and let the others coast.
-   */
-  private void holdShooter() {
-    m_shooterMotorLeader.setControl(
-      m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
-    );
-  }
+  // /**
+  //  * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
+  //  * to the (constant)
+  //  * {@link Constants.Shooter#SHOOTER_HOLD_SPEED shooter hold speed}
+  //  * and let the others coast.
+  //  */
+  // private void holdShooter() {
+  //   m_shooterMotorLeader.setControl(
+  //     m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
+  //   );
+  // }
 
   /**
    * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
@@ -216,9 +225,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * {@link frc.robot.AimUtil#getExitAngle() getExitAngle()}.
    */
   private void adjustHood() {
-    //m_hoodMotor.setControl(
-     // m_hoodRequest.withPosition(wantedHoodPosition())
-    //);
+   Angle positionAngle = wantedHoodPosition();
+    m_hoodMotor.setControl(
+      m_hoodRequest.withPosition(positionAngle)
+    );
   }
 
   /**
@@ -248,11 +258,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * @return If the check succeeds
    */
   private boolean atHoodPosition() {
-    return true;
-    // return m_hoodCanCoder.getAbsolutePosition().isNear(
-    //   wantedHoodPosition(),
-    //   Constants.Shooter.HOOD_POSITION_TOLERANCE
-    // );
+    return m_hoodMotor.getPosition().getValue().isNear(
+      wantedHoodPosition(),
+      Constants.Shooter.HOOD_POSITION_TOLERANCE
+    );
   }
 
   /**
@@ -272,7 +281,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       2 * ballVelocity.in(MetersPerSecond)
       / Constants.Shooter.SHOOTER_RADIUS.in(Meters);
     double rotationsPerSecond =
-      radiansPerSecond / (2 * Math.PI * 60);
+      radiansPerSecond / (2 * Math.PI);
     return rotationsPerSecond;
   }
 
@@ -280,14 +289,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Returns the exit angle wanted by AimUtil, unless
    * the driver wants to dumb shoot, in which case this
    * method returns the constant dumb hood position.
-   * @return The angle that the hood should be at.
+   * @return The angle that the hood should be at. This
+   * value accounts for the offset of the hood relative
+   * to the exit angle.
    */
   private Angle wantedHoodPosition() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
       return Constants.Shooter.DUMB_HOOD_POSITION;
     }
 
-    return AimUtil.getExitAngle();
+    return AimUtil.getExitAngle().minus(Degrees.of(80.0));
   }
 
   @Override
@@ -297,9 +308,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // Periodic shooter logic. Basically (if in operation):
     // Always adjust hood
     // If holding shoot button:
-    // (pass/shoot/forceshoot/dumbshoot)
+    // (shoot/forceshoot/dumbshoot)
     //    - Set shoot motor to shoot speed
-    //    - Toggle indexer motor based on if ready to shoot/pass
+    //    - Toggle indexer motor based on if ready to shoot
     //    - Indexer is always turned on if forceshoot is held
     // If not holding button, set shoot motor to hold speed
     // and stop indexer
@@ -310,9 +321,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/wantToShoot", shooting);
     Logger.recordOutput(getName() + "/wantToDumbShoot", dumbShooting);
     Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
+    Logger.recordOutput(getName() + "/inAllianceZone", DriveSubsystem.inAllianceZone());
+    
 
     if (m_isRunning) {
-      //adjustHood();
+      adjustHood();
 
       if (shooting || forceShooting || dumbShooting) {
         runShooter();
@@ -350,7 +363,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
           stopIndexer();
         }
       } else {
-        holdShooter();
+        // holdShooter();
+        stopShooter();
         stopIndexer();
       }
     } else {
@@ -358,11 +372,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
     
     Logger.recordOutput(getName() + "/shooterSpeed",
-      m_shooterMotorLeader.get());
+      m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(getName() + "/indexerSpeed",
       m_indexerMotor.get());
     Logger.recordOutput(getName() + "/hoodPosition",
-      m_hoodMotor.getPosition().getValueAsDouble());
+      m_hoodMotor.getPosition().getValue().in(Degrees));
     Logger.recordOutput(getName() + "/atShootSpeed",
       atShootSpeed());
     Logger.recordOutput(getName() + "/shooterReady",
@@ -372,7 +386,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/wantedShooterSpeed",
       wantedShooterSpeed());
     Logger.recordOutput(getName() + "/wantedHoodPosition",
-      wantedHoodPosition());
+      wantedHoodPosition().in(Degrees));
     Logger.recordOutput(getName() + "/isRunning",
       m_isRunning);
   }

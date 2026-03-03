@@ -98,14 +98,16 @@ public class GameHelpers {
    * This method gets the amount of time until the current alliance's
    * hub becomes inactive. If the hub is inactive, returns a negative
    * number representing how long it has been since the last active
-   * period ended.
+   * period ended. If there is an invalid state (e.g. auton, no game data)
+   * then return 50. This is a big enough number for any usage but small
+   * enough to make logging it in AdvantageScope usable.
    * @return The amount of time left to score (in seconds)
    */
   public static double scoringTimeLeft() {
     double time = matchTimeLeft();
 
     if (DriverStation.isAutonomous()) {
-      return Double.MAX_VALUE;
+      return 50;
     }
     if (time <= 0) {
       return 0;
@@ -113,7 +115,7 @@ public class GameHelpers {
 
     int wonNumber = wonAuto();
     if (wonNumber == -1) {
-      return Double.MAX_VALUE;
+      return 50;
     }
     boolean wonAuto = (wonNumber == 1);
 
@@ -152,6 +154,6 @@ public class GameHelpers {
 
     // I'm not sure how we would actually get here, especially
     // accounting for the negative logic in the loop
-    return Double.MAX_VALUE;
+    return 50;
   }
 }
