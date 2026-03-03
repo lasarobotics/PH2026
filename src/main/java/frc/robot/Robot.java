@@ -121,7 +121,8 @@ public class Robot extends LoggedRobot {
       m_autonomousCommand.cancel();
     }
     if (autoHoncho != null) {
-      CommandScheduler.getInstance().cancel(autoHoncho.getCurrentCommand());
+      // this doesn't do anything btw
+      // CommandScheduler.getInstance().cancel(autoHoncho.getCurrentCommand());
       autoHoncho.close();
     }
 

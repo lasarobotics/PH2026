@@ -7,6 +7,7 @@ import org.lasarobotics.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.AutoPositionConfig.Quadrant;
@@ -47,6 +48,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
         if (
           DriveSubsystem.atDestination(
             positionConfig.AllianceZoneSide(), 
@@ -72,6 +75,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
         return this;
       }
     }
@@ -96,6 +101,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
         if (
           DriveSubsystem.atDestination(
             positionConfig.AllianceZoneSide(), 
@@ -124,9 +131,12 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
         if (timer.hasElapsed(Constants.Auto.EightBallShootingTime)) {
           return GO_TO_CLIMB;
         }
+
         return this;
       }
     },
@@ -150,8 +160,16 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
+
+      @Override
+      public void end(boolean interrupted) {
+        DriveSubsystem.getInstance().stopMoving();
+      }
+
       @Override
       public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
         if (
           DriveSubsystem.atDestination(
             // positionConfig.TowerPose(),
@@ -160,13 +178,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             Constants.Auto.LOW_ROTATION_TOLERANCE
           )
         ) return CLIMB;
-        
-        return this;
-      }
 
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
+        return this;
       }
     },
     CLIMB {
@@ -188,6 +201,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
         // TODO: Leave this state? Auto should end with climb...
         return this;
       }
@@ -213,6 +228,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+        
         return this;
       }
     }

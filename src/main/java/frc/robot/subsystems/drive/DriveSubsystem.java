@@ -29,6 +29,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
@@ -788,6 +789,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     AngularVelocity maxRotationRate
   ) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
+    Logger.recordOutput("DriveSubsystem/Odometry/lastGotoTimestamp", Timer.getFPGATimestamp());
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
     Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
@@ -967,6 +969,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param selectedValue A String of either "Left", "Right", or "Center" indicating where to climb
    */
   public static void setClimbPosition(String selectedValue) {
+    Logger.recordOutput("DriveSubsystem/climbPosition", selectedValue);
     switch (selectedValue) {
       case "Blue Right":
         s_climbPosition = Constants.Field.BLUE_TOWER_OUTPOST_SIDE;
