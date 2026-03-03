@@ -127,8 +127,6 @@ public class RobotContainer {
    */
   public Command getAutonomousCommand() {
     // An example command will be run in autonomous
-    return Commands.runOnce(
-      () -> Robot.autoHoncho = new AutoHoncho()
-    );
+    return null;
   }
 }

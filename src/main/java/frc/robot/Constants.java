@@ -46,13 +46,13 @@ public final class Constants {
   }
 
   public static class Auto {
-    public static final double EightBallShootingTime = 3;
+    public static final double EightBallShootingTime = 5;
 
     public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.2);
-    public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.05);
+    public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.025);
 
     public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(20);
-    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2);
+    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(0.5);
 
     public static final Pose2d BLUE_RIGHT_POSE = new Pose2d(
       new Translation2d(
