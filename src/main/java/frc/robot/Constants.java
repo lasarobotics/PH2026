@@ -267,7 +267,6 @@ public final class Constants {
 
     public static final String SHOOTER_LIMELIGHT_NAME = "limelight-shooter";
     public static final String CLIMB_LIMELIGHT_NAME = "limelight-climb";
-    public static final String BACK_LIMELIGHT_NAME = "limelight-back";
 
     public static final int THROTTLE_OFF = 200;
     public static final int THROTTLE_IDLE = 100;
