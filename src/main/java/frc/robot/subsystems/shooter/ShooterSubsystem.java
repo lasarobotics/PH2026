@@ -99,16 +99,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     hoodConfig.SoftwareLimitSwitch
       .withForwardSoftLimitEnable(true)
       .withReverseSoftLimitEnable(true)
-      .withForwardSoftLimitThreshold(-0.02451) // TODO remove once bolt is gone
-      .withReverseSoftLimitThreshold(-0.090576);
+      .withForwardSoftLimitThreshold(-0.012207) // TODO remove once bolt is gone
+      .withReverseSoftLimitThreshold(-0.09668);
     hoodConfig.Slot0
       .withKP(150)
       .withKS(1.5);
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor
-      .withMagnetOffset(0.405)
       .withAbsoluteSensorDiscontinuityPoint(0.05)
+      .withMagnetOffset(0.405)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
       
     m_shooterMotorLeader.getConfigurator().apply(shooterConfig);
