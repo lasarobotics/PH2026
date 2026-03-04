@@ -99,15 +99,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     hoodConfig.SoftwareLimitSwitch
       .withForwardSoftLimitEnable(true)
       .withReverseSoftLimitEnable(true)
-      .withForwardSoftLimitThreshold(0)
-      .withReverseSoftLimitThreshold(-0.061279);
+      .withForwardSoftLimitThreshold(-0.02451) // TODO remove once bolt is gone
+      .withReverseSoftLimitThreshold(-0.090576);
     hoodConfig.Slot0
-      .withKP(100)
-      .withKS(10);
+      .withKP(150)
+      .withKS(1.5);
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor
-      .withMagnetOffset(0.500244140625)
+      .withMagnetOffset(0.405)
       .withAbsoluteSensorDiscontinuityPoint(0.05)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
       
@@ -204,9 +204,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * the desired speed according to {@link #wantedShooterSpeed()}
    */
   private boolean atShootSpeed() {
-    return m_shooterMotorLeader.getVelocity().isNear(
-      wantedShooterSpeed(),
-      Constants.Shooter.SHOOTER_SPEED_TOLERANCE
+    // TODO add comments
+    return (
+      m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond) >=
+        wantedShooterSpeed()
     );
   }
 

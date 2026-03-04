@@ -117,16 +117,21 @@ public class Robot extends LoggedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
+    // if (AutoHoncho.s_autoTypeChooser.getSelected().equals("Shoot and Climb")) {
+    //   HeadHoncho.getInstance().unclimbState();
+    // }
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
     if (autoHoncho != null) {
-      // this doesn't do anything btw
-      // CommandScheduler.getInstance().cancel(autoHoncho.getCurrentCommand());
+      // this doesn't do anything btw probably
+      CommandScheduler.getInstance().cancel(autoHoncho.getCurrentCommand());
       autoHoncho.close();
     }
 
     GameHelpers.zeroTimer();
+    IntakeSubsystem.getInstance().stopIntake();
   }
 
   /** This function is called periodically during operator control. */

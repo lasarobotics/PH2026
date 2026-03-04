@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -21,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 public class HeadHoncho extends StateMachine implements AutoCloseable {
   
+  private static HeadHonchoStates s_targetState = HeadHonchoStates.NORMAL;
+
   public enum HeadHonchoStates implements SystemState {
     REST {
       @Override
@@ -42,7 +45,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void initialize() {
         ShooterSubsystem.getInstance().startOperation();
-        // ClimbSubsystem.getInstance().stow();
+        ClimbSubsystem.getInstance().stow();
       }
 
       @Override
@@ -82,6 +85,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         // if (s_headHoncho.m_overRampButton.getAsBoolean())
         //   return OVER_RAMP;
+        if (s_targetState.equals(HeadHonchoStates.UNCLIMB)) {
+          return UNCLIMB;
+        }
 
         if (
           s_headHoncho.m_climbButtonHasFallen.getAsBoolean()
@@ -114,7 +120,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         IntakeSubsystem.getInstance().stopIntake();
         ShooterSubsystem.getInstance().stopOperation();
         //DriveSubsystem.getInstance().driveAutoClimb();
-        ClimbSubsystem.getInstance().deploy();
+        ClimbSubsystem.getInstance().deployArm();
       }
 
       @Override
@@ -135,21 +141,28 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       }
     },
     UNCLIMB {
+      Timer servoTimer = new Timer();
+
       @Override
       public void initialize() {
-        ClimbSubsystem.getInstance().deploy();
+        ClimbSubsystem.getInstance().deployArm();
+
+        servoTimer.reset();
       }
 
       @Override
       public void execute() {
         if (ClimbSubsystem.getInstance().inDeployPosition()) {
-          DriveSubsystem.getInstance().leaveClimb();
+          ClimbSubsystem.getInstance().retractServo();
+          servoTimer.start();
         }
       }
 
       @Override
       public SystemState nextState() {
-        if (DriveSubsystem.getInstance().isPastTower() || s_headHoncho.m_cancelButton.getAsBoolean()) return NORMAL;
+        if (servoTimer.hasElapsed(1.5)) {
+          return NORMAL;
+        }
 
         return this;
       }
@@ -213,6 +226,13 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    */
   public SendableChooser<String> getClimbChooser() {
     return m_climbChooser;
+  }
+
+  /**
+   * Set next state for HeadHoncho to be unclimb
+   */
+  public void unclimbState() {
+    s_targetState = HeadHonchoStates.UNCLIMB;
   }
 
   public boolean wantToShoot() {

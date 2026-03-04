@@ -34,7 +34,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.AllianceZoneSide(),
+          // positionConfig.AllianceZoneSide(),
+          positionConfig.TowerShootingPose(),
           MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -52,7 +53,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
         if (
           DriveSubsystem.atDestination(
-            positionConfig.AllianceZoneSide(), 
+            positionConfig.TowerShootingPose(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -87,7 +88,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.AllianceZoneSide(),
+          positionConfig.TowerShootingPose(),
           MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -105,7 +106,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
         if (
           DriveSubsystem.atDestination(
-            positionConfig.AllianceZoneSide(), 
+            positionConfig.TowerShootingPose(),
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -134,11 +135,47 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
 
         if (timer.hasElapsed(Constants.Auto.EightBallShootingTime)) {
-          return GO_TO_CLIMB;
+          IntakeSubsystem.getInstance().stopIntake();
+          //ClimbSubsystem.getInstance().deployArm();
+          ClimbSubsystem.getInstance().stowServo();
+          return GO_TO_CLIMB_ALIGN_POSITION;
         }
 
         return this;
       }
+    },
+    GO_TO_CLIMB_ALIGN_POSITION { 
+      Pose2d autoClimbAlignPosition;
+
+      @Override
+      public void initialize() {
+        autoClimbAlignPosition = DriveSubsystem.s_climbAlignPosition; 
+      }
+
+      @Override
+       public void execute() {
+        DriveSubsystem.getInstance().goTo(
+        // positionConfig.TowerPose(),
+        autoClimbAlignPosition,
+        MetersPerSecond.of(0),
+        Constants.Drive.MAX_SPEED.div(3),
+        Constants.Drive.MAX_ANGULAR_RATE.div(5)
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (
+          DriveSubsystem.atDestination(
+            // positionConfig.TowerPose(),
+            autoClimbAlignPosition,
+            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
+            Constants.Auto.LOW_ROTATION_TOLERANCE
+           )) return GO_TO_CLIMB;
+          
+          return this;
+      }
+
     },
     GO_TO_CLIMB {
       Pose2d autoClimbPosition;
@@ -147,7 +184,6 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void initialize() {
         DriveSubsystem.getInstance().driverControl();
         autoClimbPosition = DriveSubsystem.s_climbPosition;
-        ClimbSubsystem.getInstance().deploy();
       }
 
       @Override
@@ -156,8 +192,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           // positionConfig.TowerPose(),
           autoClimbPosition,
           MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_ANGULAR_RATE
+          Constants.Drive.CLIMB_MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE.div(5)
         );
       }
 
@@ -178,14 +214,12 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             Constants.Auto.LOW_ROTATION_TOLERANCE
           )
         ) return CLIMB;
-
         return this;
       }
     },
     CLIMB {
       @Override
       public void initialize() {
-        IntakeSubsystem.getInstance().stopIntake();
         ShooterSubsystem.getInstance().stopOperation();
       }
 
@@ -196,6 +230,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           ClimbSubsystem.getInstance().climb();
         } else {
           Logger.recordOutput("HeadHoncho/executeClimbButtonReady", false);
+          // we are fried here lol
         }
       }
 
@@ -203,11 +238,45 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
 
-        // TODO: Leave this state? Auto should end with climb...
         return this;
       }
     },
   }
+
+  // Go to the neutral zone right away and get as much fuel as you can and then go shoot it
+  // public enum NZBlitzAuto implements SystemState {
+  //   START {
+  //     @Override
+  //     public void execute() {
+  //       DriveSubsystem.getInstance().goTo(
+  //         positionConfig.TowerShootingPose(),
+  //         MetersPerSecond.of(0),
+  //         Constants.Drive.MAX_SPEED,
+  //         Constants.Drive.MAX_ANGULAR_RATE
+  //       );
+  //     }
+
+  //     @Override
+  //     public void end(boolean interrupted) {
+  //       DriveSubsystem.getInstance().stopMoving();
+  //     }
+
+  //     @Override
+  //     public SystemState nextState() {
+  //       if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+  //       if (
+  //         DriveSubsystem.atDestination(
+  //           positionConfig.TowerShootingPose(),
+  //           Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+  //           Constants.Auto.HIGH_ROTATION_TOLERANCE
+  //         )
+  //       ) return SHOOT;
+        
+  //       return this;
+  //     }
+  //   }
+  // }
 
   // this is more of a POC/example than actual auto
   public enum CrossRampAuto implements SystemState {
@@ -278,6 +347,9 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       case "Shoot and Climb":
         startingState = ShootAndClimbAuto.START;
         break;
+      // case "Neutral Zone Blitz":
+      //   startingState = NZBlitzAuto.START;
+      //   break;
     }
   }
 

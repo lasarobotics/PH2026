@@ -69,8 +69,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         // I think .28 should be good?
         // update: dropped to .26 considering that .255 is the setpoint
         // for the intake being down
-        .withForwardSoftLimitThreshold(.26) // measured value
-        .withReverseSoftLimitThreshold(0); // zero position
+        .withForwardSoftLimitThreshold(0.27) // measured value
+        .withReverseSoftLimitThreshold(0.010742); // zero position
     armConfig
       .MotionMagic
         .withMotionMagicCruiseVelocity(10) // measured value
@@ -82,7 +82,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.71168901562) // measured value
+        .withMagnetOffset(0.177490234375) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);

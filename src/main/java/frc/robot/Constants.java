@@ -48,11 +48,11 @@ public final class Constants {
   public static class Auto {
     public static final double EightBallShootingTime = 5;
 
-    public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.2);
+    public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.15);
     public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.025);
 
-    public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(20);
-    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(0.5);
+    public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(2.5);
+    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(0.5); 
 
     public static final Pose2d BLUE_RIGHT_POSE = new Pose2d(
       new Translation2d(
@@ -70,6 +70,15 @@ public final class Constants {
         Degrees.of(-45)
       )
     );
+    public static final Pose2d BLUE_TOWER_SHOOTING_POSE = new Pose2d(
+      new Translation2d(
+        1.7,
+        4.05
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );  
     public static final Pose2d BLUE_CENTER_POSE = new Pose2d(
       new Translation2d(
         2, 4
@@ -112,6 +121,15 @@ public final class Constants {
         Degrees.of(135)
       )
     );
+    public static final Pose2d RED_TOWER_SHOOTING_POSE = new Pose2d(
+      new Translation2d(
+        14.8,
+        4.2
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
     public static final Pose2d RED_CENTER_POSE = new Pose2d(
       new Translation2d(
         14, 4
@@ -138,6 +156,42 @@ public final class Constants {
         Degrees.of(90)
       )
     );
+    public static final Pose2d BLUE_LEFT_NZSTART_POSE = new Pose2d(
+      new Translation2d(
+        7.752,
+        6.836
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+    public static final Pose2d BLUE_LEFT_NZEND_POSE = new Pose2d(
+      new Translation2d(
+        7.752,
+        2.1
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+    public static final Pose2d BLUE_RIGHT_NZSTART_POSE = new Pose2d(
+      new Translation2d(
+        7.752,
+        2.1
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
+    public static final Pose2d BLUE_RIGHT_NZEND_POSE = new Pose2d(
+      new Translation2d(
+        7.752,
+        6.836
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
   }
 
   public static class Shooter {
@@ -160,9 +214,9 @@ public final class Constants {
     public static final double SHOOTER_HOLD_SPEED = 20;
 
     // shooter speed tolerance is in rotations per second
-    // it's so high because we're using bang-bang
-    public static final double SHOOTER_SPEED_TOLERANCE = 5;
-    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(0.5);
+    public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 2;
+    public static final double SHOOTER_SPEED_ABOVE_TOLERANCE = 4;
+    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(5);
 
     // how long we can be shooting after the end of the shift
     // this accounts for hang time:
@@ -195,11 +249,12 @@ public final class Constants {
     public static final Angle DUMB_HOOD_POSITION = Rotations.of(-0.06);
     // In rotations per second
     // currently based on empirical measurement
-    public static final double DUMB_SHOOTER_SPEED = 43.5;
+    public static final double DUMB_SHOOTER_SPEED = 34.5;
   }
 
   public static class Drive {
     public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
+    public static final LinearVelocity CLIMB_MAX_SPEED = MetersPerSecond.of(0.1);
     public static final LinearAcceleration MAX_ACCELERATION =
         MetersPerSecondPerSecond.of(3); // TODO measure
     public static final AngularVelocity MAX_ANGULAR_RATE =
@@ -359,22 +414,37 @@ public final class Constants {
 
     public static final Pose2d BLUE_TOWER =
         new Pose2d(
-            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(0));  
+            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(0));
+
     public static final Pose2d BLUE_TOWER_DEPOT_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(1.6), Meters.of(3.9)), Rotation2d.fromDegrees(0));  
+            new Translation2d(Meters.of(1.53), Meters.of(3.918)), Rotation2d.fromDegrees(0));  
     public static final Pose2d BLUE_TOWER_OUTPOST_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(1.6), Meters.of(2.954)), Rotation2d.fromDegrees(0));  
+            new Translation2d(Meters.of(1.53), Meters.of(3.030)), Rotation2d.fromDegrees(0));  
+    public static final Pose2d BLUE_TOWER_DEPOT_ALIGN_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(2), Meters.of(3.918)), Rotation2d.fromDegrees(0));  
+    public static final Pose2d BLUE_TOWER_OUTPOST_ALIGN_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(2), Meters.of(3.030)), Rotation2d.fromDegrees(0));
+
     public static final Pose2d RED_TOWER =
         new Pose2d(
-            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(180)); 
+            new Translation2d(Meters.of(14.919), Meters.of(4.299)), Rotation2d.fromDegrees(180));
+
     public static final Pose2d RED_TOWER_DEPOT_SIDE =
         new Pose2d(
             new Translation2d(Meters.of(14.919), Meters.of(4.2)), Rotation2d.fromDegrees(180));  
     public static final Pose2d RED_TOWER_OUTPOST_SIDE =
         new Pose2d(
             new Translation2d(Meters.of(14.919), Meters.of(5.1)), Rotation2d.fromDegrees(180));  
+   public static final Pose2d RED_TOWER_DEPOT_ALIGN_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(12.919), Meters.of(4.2)), Rotation2d.fromDegrees(180));  
+    public static final Pose2d RED_TOWER_OUTPOST_ALIGN_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(12.919), Meters.of(5.1)), Rotation2d.fromDegrees(180));  
 
     
     public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d(14.231, 2.235);
@@ -395,10 +465,10 @@ public final class Constants {
     public static final Dimensionless INTAKE_SPEED = Value.of(1);
 
     // preliminary values
-    public static final Angle STOW_ANGLE = Rotations.of(0);
+    public static final Angle STOW_ANGLE = Rotations.of(0.014); // TODO change maybe
     // might want to reduce
     // this should be basically the value of the soft limit of the arm
-    public static final Angle DEPLOY_ANGLE = Rotations.of(.255);
+    public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);
 
     // Tolerance of check for hopper being deployed
     // percent based on deploy angle
@@ -441,8 +511,8 @@ public final class Constants {
     public static final Angle CLIMB_TOLERANCE = Degrees.of(2);
 
     // TODO: Find the values of climb servo constants
-    public static double SERVO_RETRACT_ANGLE = 0.7;
-    public static final double SERVO_STOW_ANGLE = 0.7;
+    public static final double SERVO_RETRACT_ANGLE = 0.7;
+    public static final double SERVO_STOW_ANGLE = 0.1; // Arbitrary number (it was 0.7 originally) I need something to tell the two apart
   }
 
   public static class SmartDashboard {

@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
@@ -49,17 +50,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     DISABLED {
       @Override
       public void initialize() {
-        s_shouldDoGlobalPoseEstimation = false;
+        s_shouldDoGlobalPoseEstimation = true;
 
-        // disable all limelights
+        // all limelights idle
         LimelightHelpers.SetThrottle(
-          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
+          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
         LimelightHelpers.SetThrottle(
-          Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
+          Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
         LimelightHelpers.SetThrottle(
-          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
+          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
 
         getInstance().setAllLimelightsToAllTags();
@@ -67,12 +68,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        LimelightHelpers.PoseEstimate pose_estimate =
-          getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
+        // LimelightHelpers.PoseEstimate pose_estimate =
+        //   getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
-        if (pose_estimate != null) {
-          s_drivetrain.resetPose(pose_estimate.pose);
-        }
+        // if (pose_estimate != null) {
+        //   s_drivetrain.resetPose(pose_estimate.pose);
+        // }
       }
 
       @Override
@@ -87,7 +88,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     AUTO {
       @Override
       public void initialize() {
-        // turn on all at full
+        // turn on climb and shoot at full, back at idle
         LimelightHelpers.SetThrottle(
           Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
         );
@@ -95,7 +96,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
         );
         LimelightHelpers.SetThrottle(
-          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
+          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
         s_shouldDoGlobalPoseEstimation = true;
         
@@ -580,6 +581,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static Pose2d[] s_alliancePoses;
 
   public static Pose2d s_climbPosition;
+  public static Pose2d s_climbAlignPosition;
 
   //camera vars
   protected final Thread m_limelight_thread;
@@ -589,7 +591,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   // volatile because thread safety or something
   // idk my friend andrew told me to
-  private static volatile boolean s_shouldDoGlobalPoseEstimation = false;
+  private static volatile boolean s_shouldDoGlobalPoseEstimation = true;
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -654,6 +656,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     // TODO: Initialize the climb position to left
     s_climbPosition = new Pose2d();
 
+    // set throttle to idle here
+    LimelightHelpers.SetThrottle(
+      Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+    );
+    LimelightHelpers.SetThrottle(
+      Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+    );
+    LimelightHelpers.SetThrottle(
+      Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+    );
+
     //init limelight thread
     m_limelight_thread = new Thread(this::limelight_thread_func);
     m_limelight_thread.setDaemon(true);
@@ -705,7 +718,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    */
   public void limelight_thread_func() {
 
-    s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+    // trust limelights for rotation if disabled
+    // also trust them a little less
+    if (getState() == DriveStates.DISABLED) {
+      s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, 1));
+    } else {
+      s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+    }
 
     String[] limelights = {
       Constants.Drive.SHOOTER_LIMELIGHT_NAME,
@@ -811,6 +830,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     var xComponent = outputVelocity * directionOfTravel.getCos();
     var yComponent = outputVelocity * directionOfTravel.getSin();
 
+    Logger.recordOutput("DriveSubsystem/Odometry/outputVelocity", outputVelocity);
+    Logger.recordOutput("DriveSubsystem/Odometry/rotationRate", rotationRate);
+
     s_drivetrain.setControl(
       s_drive
         // .withVelocityX(MetersPerSecond.of(xComponent).times(-1))
@@ -861,7 +883,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
     }
 
-    Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
+    Logger.recordOutput(getName() + "/doingGlobalPoseEstimation", s_shouldDoGlobalPoseEstimation);
+    Logger.recordOutput(getName() + "percieved_alliance", DriverStation.getAlliance().toString());
     Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
     Logger.recordOutput(getName() + "/subsystemState", getState().toString());
@@ -927,13 +950,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   ) {
     Pose2d robotPose = s_drivetrain.getState().Pose;
     double distance = Math.abs(robotPose.getTranslation().getDistance(target.getTranslation()));
+    double rotationError = robotPose.getRotation().minus(target.getRotation()).getMeasure().abs(Degrees);
     
     if (
-      distance < acceptableDistanceError.in(Meters)
-      && robotPose.getRotation().getMeasure().isNear(
-        target.getRotation().getMeasure(),
-        acceptableRotationError
-      )
+      distance < acceptableDistanceError.in(Meters) &&
+      rotationError < acceptableRotationError.in(Degrees)
     ) {
       return true;
     } else {
@@ -972,15 +993,19 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     Logger.recordOutput("DriveSubsystem/climbPosition", selectedValue);
     switch (selectedValue) {
       case "Blue Right":
+        s_climbAlignPosition = Constants.Field.BLUE_TOWER_OUTPOST_ALIGN_POSE;
         s_climbPosition = Constants.Field.BLUE_TOWER_OUTPOST_SIDE;
         break;
       case "Blue Left":
+          s_climbAlignPosition = Constants.Field.BLUE_TOWER_DEPOT_ALIGN_POSE;
         s_climbPosition = Constants.Field.BLUE_TOWER_DEPOT_SIDE;
         break;
       case "Red Right":
+          s_climbAlignPosition = Constants.Field.RED_TOWER_OUTPOST_ALIGN_POSE;
         s_climbPosition = Constants.Field.RED_TOWER_OUTPOST_SIDE;
         break;
       case "Red Left":
+          s_climbAlignPosition = Constants.Field.RED_TOWER_DEPOT_ALIGN_POSE;
         s_climbPosition = Constants.Field.RED_TOWER_DEPOT_SIDE;
         break;
     }

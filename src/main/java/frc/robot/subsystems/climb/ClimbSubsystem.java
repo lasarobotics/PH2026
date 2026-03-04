@@ -68,14 +68,14 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
         .withReverseSoftLimitThreshold(0.0);
     encoderConfig
       .MagnetSensor
-        .withMagnetOffset(-0.92236328125)
+        .withMagnetOffset(-0.762)
         .withAbsoluteSensorDiscontinuityPoint(0.95)
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
 
-    this.m_climbMotor1.getConfigurator().apply(motorOneConfig);
+    // this.m_climbMotor1.getConfigurator().apply(motorOneConfig);
     this.m_climbEncoder.getConfigurator().apply(encoderConfig);
 
-    m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.STOW_ANGLE));
+     m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.STOW_ANGLE));
   }
 
 
@@ -85,22 +85,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void stow() {
     Logger.recordOutput(getName() + "/commanded", "stow");
-    m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.STOW_ANGLE));
-  }
-
-  /**
-   * Deploy the climber and retract or stow servo
-   * @return Command to deploy the climb motor and move servo appropriately
-   */
-  public void deploy() {
-    Logger.recordOutput(getName() + "/commanded", "deploy");
-    if (inClimbPosition()) {
-      deployClimbMotor();
-      m_climbServo.set(Constants.Climb.SERVO_STOW_ANGLE);
-    } else {
-      m_climbServo.set(Constants.Climb.SERVO_RETRACT_ANGLE);
-      deployClimbMotor();
-    }
+     m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.STOW_ANGLE));
   }
 
   /**
@@ -109,7 +94,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void climb() {
     Logger.recordOutput(getName() + "/commanded", "climb");
-    m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.CLIMB_ANGLE));
+     m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.CLIMB_ANGLE));
   }
 
   /**
@@ -117,7 +102,7 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void stopMotor() {
     Logger.recordOutput(getName() + "/commanded", "stop");
-    m_climbMotor1.stopMotor();
+    // m_climbMotor1.stopMotor();
   }
 
   /**
@@ -166,8 +151,23 @@ public class ClimbSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Move the climb motor to deploy position
    */
-  private void deployClimbMotor() {
+  public void deployArm() {
+    Logger.recordOutput(getName() + "/commanded", "deploy");
     m_climbMotor1.setControl(new PositionVoltage(Constants.Climb.DEPLOY_ANGLE));
+  }
+
+  /**
+   * Move climb servo to the retract position
+   */
+  public void retractServo() {
+    m_climbServo.set(Constants.Climb.SERVO_RETRACT_ANGLE);
+  }
+
+  /**
+   * Move climb servo to the stow position
+   */
+  public void stowServo() {
+    m_climbServo.set(Constants.Climb.SERVO_STOW_ANGLE);
   }
 
 
