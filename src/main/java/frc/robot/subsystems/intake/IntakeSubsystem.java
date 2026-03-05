@@ -155,7 +155,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * Start intake of fuel using intake motor
    */
   private void startIntakeMotor() {
-    m_intakeMotor.set(Constants.Intake.INTAKE_SPEED.in(Value));
+    m_intakeMotor.set(Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
 
@@ -163,7 +163,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * Sets intake motor running in reverse
    */
   private void reverseIntakeMotor() {
-    m_intakeMotor.set(-Constants.Intake.INTAKE_SPEED.in(Value));
+    m_intakeMotor.set(-Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
 
@@ -178,7 +178,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    *  Move the intake arm to the extended out position
    */
-  private void deployIntake() {
+  public void deployIntake() {
     m_armMotor.setControl(
       m_armPositionSetter.withPosition(Constants.Intake.DEPLOY_ANGLE)
     );

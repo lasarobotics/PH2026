@@ -29,6 +29,7 @@ import frc.robot.Constants;
 import frc.robot.GameHelpers;
 import frc.robot.HeadHoncho;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystem;
 
 public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
@@ -330,6 +331,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
       if (shooting || forceShooting || dumbShooting) {
         runShooter();
+        IntakeSubsystem.getInstance().deployIntake();
 
         // If the shooter is ready (rpm, position, hood) and
         // the time/pass check succeeds, then ready to shoot

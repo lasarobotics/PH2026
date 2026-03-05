@@ -418,7 +418,7 @@ public final class Constants {
         RotationsPerSecondPerSecond.of(1); // TODO  measure
     // normally 0.3 and 1.0
     public static final double SLOW_SPEED_SCALAR = 0.15;
-    public static final double FAST_SPEED_SCALAR = 0.5;
+    public static final double FAST_SPEED_SCALAR = .75;
 
     public static final String SHOOTER_LIMELIGHT_NAME = "limelight-shooter";
     public static final String CLIMB_LIMELIGHT_NAME = "limelight-climb";
@@ -616,7 +616,7 @@ public final class Constants {
     public static final int ARM_MOTOR_ID = 41;
     public static final int ARM_ENCODER_ID = 42;
 
-    public static final Dimensionless INTAKE_SPEED = Value.of(1);
+    public static final double INTAKE_SPEED = 1.0;
 
     // preliminary values
     public static final Angle STOW_ANGLE = Rotations.of(0.014); // TODO change maybe

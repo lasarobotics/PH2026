@@ -542,6 +542,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   // Separate FieldCentric request for goTo() — uses BlueAlliance perspective
   // so field-frame velocities are interpreted correctly on both alliances
   private static SwerveRequest.FieldCentric s_autoGoTo;
+  private static SwerveRequest.FieldCentric s_autoDrive;
 
   private static Pose2d s_limelightPose;
   private static double s_limelightPoseTimeStamp;
@@ -557,6 +558,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static final int WP_CLIMB = 0;
 
   private static final Double DEADBAND_SCALAR = 0.085;
+  private static final Double ROTATIONAL_DEADBAND_SCALAR = 0.1;
+  private static final Double AUTO_DEADBAND_SCALAR = 0.02;
+  private static final Double AUTO_ROTATIONAL_DEADBAND_SCALAR = 0.02;
 
   // Distance threshold below which we remove the velocity floor
   // to allow the robot to actually settle at the target
@@ -568,10 +572,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static AngularVelocity s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE;
   private static Distance s_climbAlignDistanceError = Meters.of(0.2);
   private static Angle s_climbAlignRotationError = Radians.of(0.1);
+  private static boolean s_blueAlliancePerspective = false;
 
   private static PIDController s_headingController;
   private static PIDController s_autoAimController;
-  private static PIDController s_autoDrive;
+  private static PIDController s_gotoDriveController;
 
   private static DriveStates s_requestedDriveState;
 
@@ -634,7 +639,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_drive =
       new SwerveRequest.FieldCentric()
         .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
-        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1))
+        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(DriveSubsystem.ROTATIONAL_DEADBAND_SCALAR))
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
@@ -650,6 +655,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
     
+        
+    s_autoDrive =
+      new SwerveRequest.FieldCentric()
+        .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.AUTO_DEADBAND_SCALAR))
+        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(DriveSubsystem.AUTO_ROTATIONAL_DEADBAND_SCALAR))
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
+    
     s_headingController = new PIDController(3, 0.0, 0.0);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
@@ -658,7 +672,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoAimController = new PIDController(5, 0.0, 0.0);
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 
-    s_autoDrive = new PIDController(1.75, 0.0, 0.0);
+    s_gotoDriveController = new PIDController(1.75, 0.0, 0.0);
     s_autoDrive.setTolerance(0.05); // (AI Fix) 5cm position tolerance
 
     // TODO: Initialize the climb position to left
@@ -898,10 +912,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", true);
       if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(Alliance.Red)) {
         s_drivetrain.setOperatorPerspectiveForward(
-            CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
+          CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
+        s_blueAlliancePerspective = false;
       } else {
         s_drivetrain.setOperatorPerspectiveForward(
-            CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation);
+          CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation);
+        s_blueAlliancePerspective = true;
       }
       m_hasAppliedOperatorPerspective = true;
     } else {
