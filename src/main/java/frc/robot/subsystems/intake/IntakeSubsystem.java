@@ -69,8 +69,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         // I think .28 should be good?
         // update: dropped to .26 considering that .255 is the setpoint
         // for the intake being down
-        .withForwardSoftLimitThreshold(.26) // measured value
-        .withReverseSoftLimitThreshold(0); // zero position
+        .withForwardSoftLimitThreshold(0.27) // measured value
+        .withReverseSoftLimitThreshold(0.010742); // zero position
     armConfig
       .MotionMagic
         .withMotionMagicCruiseVelocity(10) // measured value
@@ -82,7 +82,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.71168901562) // measured value
+        .withMagnetOffset(0.177490234375) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
@@ -155,7 +155,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * Start intake of fuel using intake motor
    */
   private void startIntakeMotor() {
-    m_intakeMotor.set(Constants.Intake.INTAKE_SPEED.in(Value));
+    m_intakeMotor.set(Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
 
@@ -163,7 +163,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * Sets intake motor running in reverse
    */
   private void reverseIntakeMotor() {
-    m_intakeMotor.set(-Constants.Intake.INTAKE_SPEED.in(Value));
+    m_intakeMotor.set(-Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
 
@@ -178,7 +178,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    *  Move the intake arm to the extended out position
    */
-  private void deployIntake() {
+  public void deployIntake() {
     m_armMotor.setControl(
       m_armPositionSetter.withPosition(Constants.Intake.DEPLOY_ANGLE)
     );

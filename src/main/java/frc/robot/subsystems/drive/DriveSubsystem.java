@@ -1,5 +1,6 @@
 package frc.robot.subsystems.drive;
 
+import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
@@ -19,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -29,6 +31,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
@@ -48,17 +51,14 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     DISABLED {
       @Override
       public void initialize() {
-        s_shouldDoGlobalPoseEstimation = false;
+        s_shouldDoGlobalPoseEstimation = true;
 
-        // disable all limelights
+        // all limelights idle
         LimelightHelpers.SetThrottle(
-          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
+          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
         LimelightHelpers.SetThrottle(
-          Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
-        );
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
+          Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
 
         getInstance().setAllLimelightsToAllTags();
@@ -66,12 +66,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        LimelightHelpers.PoseEstimate pose_estimate =
-          getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
+        // LimelightHelpers.PoseEstimate pose_estimate =
+        //   getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
-        if (pose_estimate != null) {
-          s_drivetrain.resetPose(pose_estimate.pose);
-        }
+        // if (pose_estimate != null) {
+        //   s_drivetrain.resetPose(pose_estimate.pose);
+        // }
       }
 
       @Override
@@ -86,15 +86,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     AUTO {
       @Override
       public void initialize() {
-        // turn on all at full
+        // turn on climb and shoot at full, back at idle
         LimelightHelpers.SetThrottle(
           Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
         );
         LimelightHelpers.SetThrottle(
           Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
-        );
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
         );
         s_shouldDoGlobalPoseEstimation = true;
         
@@ -105,6 +102,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         if (DriverStation.isDisabled()) return DISABLED;
         if (!DriverStation.isAutonomous()) return DRIVER_CONTROL;
+
+        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+        // if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
 
         return this;
       }
@@ -118,9 +118,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         );
         LimelightHelpers.SetThrottle(
           Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
-        );
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
         s_shouldDoGlobalPoseEstimation = true;
         
@@ -175,9 +172,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           LimelightHelpers.SetThrottle(
             Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
           );
-          LimelightHelpers.SetThrottle(
-            Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
-          );
           s_shouldDoGlobalPoseEstimation = true;
 
           s_driveSubsystem.setAllLimelightsToAllTags();
@@ -186,9 +180,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           // ergo local
           LimelightHelpers.SetThrottle(
             Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
-          );
-          LimelightHelpers.SetThrottle(
-            Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
           );
           s_shouldDoGlobalPoseEstimation = false;
 
@@ -274,9 +265,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         LimelightHelpers.SetThrottle(
           Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
         );
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
-        );
         s_shouldDoGlobalPoseEstimation = false;
 
         if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
@@ -339,14 +327,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           s_climbAlignRotationError = Radians.of(0.01);
 
           if (
-            !DriverStation.isAutonomous() &&
             atDestination(
               s_climbPosition,
               DriveSubsystem.s_climbAlignDistanceError,
               DriveSubsystem.s_climbAlignRotationError
             )
-          ) {
-            return SLOW_DRIVER_ALIGN;
+          ) {          
+            return 
+              DriverStation.isAutonomous() ?
+                AUTO :
+                SLOW_DRIVER_ALIGN;
           }
         }
 
@@ -367,9 +357,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         );
         LimelightHelpers.SetThrottle(
           Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
-        );
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
         );
         s_shouldDoGlobalPoseEstimation = true;
 
@@ -416,10 +403,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       private Pose2d currentTarget;
       private int sequenceIndex;
       private double directionSign;
+      private boolean finished; // (AI Fix)
 
       @Override
       public void initialize() {
         sequenceIndex = 0;
+        finished = false; // (AI Fix)
         rampSequence = new Pose2d[3];
 
         Translation2d[] translations = getInstance().getBestRampSequence();
@@ -456,9 +445,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         LimelightHelpers.SetThrottle(
           Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
         );
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.BACK_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
-        );
         s_shouldDoGlobalPoseEstimation = true;
 
         s_driveSubsystem.setAllLimelightsToAllTags();
@@ -468,6 +454,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
+        // (AI Fix)
+        if (finished) {
+          // Already done — hold position at zero velocity
+          getInstance().stopMoving();
+          return;
+        }
+
         // if sign of current vs target is the same as final vs start
         // (i.e. same direction)
         // or if at exact same point (want to avoid getting stuck)
@@ -485,12 +478,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         Logger.recordOutput("DriveSubsystem/sequenceIndex", sequenceIndex);
 
         if (sequenceIndex > 2) {
-          // when all 3 ramp pos are done, js stop the robot at the last pos
-          s_drivetrain.setControl(
-            s_drive
-              .withVelocityX(MetersPerSecond.of(0.0))
-              .withVelocityY(MetersPerSecond.of(0.0))
-              .withRotationalRate(0.0));
+          // when all 3 ramp pos are done, stop the robot
+          finished = true;
+          getInstance().stopMoving();
           // leave execute() so we do not call goTo again
           return;
         }
@@ -520,11 +510,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         // if driver lets go of ramp button goes back to driver_control
         if (!HeadHoncho.getInstance().wantToCrossRamp() || HeadHoncho.getInstance().wantToCancel()) { // allow driver to go back to drive state if let go
           s_requestedDriveState = DriveStates.DRIVER_CONTROL;
-          return DRIVER_CONTROL;
+          return 
+            DriverStation.isAutonomous() ?
+              AUTO :
+              DRIVER_CONTROL;
         }
-        if (sequenceIndex > 2) { // once it reaches last "stage" of ramp it goes to driver
+        if (finished) { // once it reaches last "stage" of ramp it goes back
           s_requestedDriveState = DriveStates.DRIVER_CONTROL;
-          return DRIVER_CONTROL;
+          return 
+            DriverStation.isAutonomous() ?
+              AUTO :
+              DRIVER_CONTROL;
         }
 
         return this;
@@ -535,6 +531,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DriveSubsystem s_driveSubsystem;
   private static CommandSwerveDrivetrain s_drivetrain;
   private static SwerveRequest.FieldCentric s_drive;
+  // Separate FieldCentric request for goTo() — uses BlueAlliance perspective
+  // so field-frame velocities are interpreted correctly on both alliances
+  private static SwerveRequest.FieldCentric s_autoDrive;
 
   private static Pose2d s_limelightPose;
   private static double s_limelightPoseTimeStamp;
@@ -550,6 +549,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static final int WP_CLIMB = 0;
 
   private static final Double DEADBAND_SCALAR = 0.085;
+  private static final Double ROTATIONAL_DEADBAND_SCALAR = 0.1;
+  private static final Double AUTO_DEADBAND_SCALAR = 0.02;
+  private static final Double AUTO_ROTATIONAL_DEADBAND_SCALAR = 0.02;
+
+  // Distance threshold below which we remove the velocity floor
+  // to allow the robot to actually settle at the target
+  private static final double GOTO_SETTLE_DISTANCE = 0.15; // meters
 
   private boolean m_hasAppliedOperatorPerspective = false;
 
@@ -560,13 +566,14 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private static PIDController s_headingController;
   private static PIDController s_autoAimController;
-  private static PIDController s_autoDrive;
+  private static PIDController s_autoDriveController;
 
   private static DriveStates s_requestedDriveState;
 
   private static Pose2d[] s_alliancePoses;
 
   public static Pose2d s_climbPosition;
+  public static Pose2d s_climbAlignPosition;
 
   //camera vars
   protected final Thread m_limelight_thread;
@@ -576,7 +583,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   // volatile because thread safety or something
   // idk my friend andrew told me to
-  private static volatile boolean s_shouldDoGlobalPoseEstimation = false;
+  private static volatile boolean s_shouldDoGlobalPoseEstimation = true;
 
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
@@ -603,12 +610,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     // init sees tag just to be safe
     s_limelightSeesTag.put(Constants.Drive.SHOOTER_LIMELIGHT_NAME, false);
     s_limelightSeesTag.put(Constants.Drive.CLIMB_LIMELIGHT_NAME, false);
-    s_limelightSeesTag.put(Constants.Drive.BACK_LIMELIGHT_NAME, false);
 
     // init heartbeat to avoid crash on enable
     s_limelightHeartbeat.put(Constants.Drive.SHOOTER_LIMELIGHT_NAME, 0.0);
     s_limelightHeartbeat.put(Constants.Drive.CLIMB_LIMELIGHT_NAME, 0.0);
-    s_limelightHeartbeat.put(Constants.Drive.BACK_LIMELIGHT_NAME, 0.0);
 
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
       s_alliancePoses = redPoses;
@@ -620,13 +625,34 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     s_drivetrain = TunerConstants.createDrivetrain();
 
+    // Operator-perspective drive request for teleop (driver sticks)
     s_drive =
       new SwerveRequest.FieldCentric()
         .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
-        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1)) // Add a
+        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1))
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
+
+    // ai slop todo remove
+    // Blue-alliance-perspective drive request for goTo() autonomous driving
+    // This ensures field-frame velocities computed from odometry (blue-origin)
+    // are interpreted correctly regardless of which alliance we're on.
+    // s_autoGoTo =
+    //   new SwerveRequest.FieldCentric()
+    //     .withDeadband(0)
+    //     .withRotationalDeadband(0)
+    //     .withDriveRequestType(DriveRequestType.Velocity)
+    //     .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+    //     .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
+        
+    s_autoDrive =
+      new SwerveRequest.FieldCentric()
+        .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.AUTO_DEADBAND_SCALAR))
+        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(DriveSubsystem.AUTO_ROTATIONAL_DEADBAND_SCALAR))
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
     
     s_headingController = new PIDController(3, 0.0, 0.0);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
@@ -636,15 +662,26 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoAimController = new PIDController(5, 0.0, 0.0);
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 
-    s_autoDrive = new PIDController(1.75, 0.0, 0.0);
+    s_autoDriveController = new PIDController(1.75, 0.0, 0.0);
+    s_autoDriveController.setTolerance(0.05); // (AI Fix) 5cm position tolerance
 
     // TODO: Initialize the climb position to left
     s_climbPosition = new Pose2d();
+
+    // set throttle to idle here
+    LimelightHelpers.SetThrottle(
+      Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+    );
+    LimelightHelpers.SetThrottle(
+      Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+    );
 
     //init limelight thread
     m_limelight_thread = new Thread(this::limelight_thread_func);
     m_limelight_thread.setDaemon(true);
     m_limelight_thread.start();
+    
+    Logger.recordOutput("DriveSubsystem/Odometry/target", new Pose2d(0.0, 0.0, new Rotation2d(0.0)));
   }
 
   private LimelightHelpers.PoseEstimate getFilteredLimelightPose(String limelight) {
@@ -690,15 +727,23 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    */
   public void limelight_thread_func() {
 
-    s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-
     String[] limelights = {
       Constants.Drive.SHOOTER_LIMELIGHT_NAME,
-      Constants.Drive.CLIMB_LIMELIGHT_NAME,
-      Constants.Drive.BACK_LIMELIGHT_NAME
+      Constants.Drive.CLIMB_LIMELIGHT_NAME
     };
 
     while (true) {
+      // (AI Fix) Re-check state each iteration so std devs update
+      // as the robot transitions between DISABLED and enabled states
+      if (getState() == DriveStates.DISABLED) {
+        // trust limelights for rotation if disabled
+        // also trust them a little less overall
+        s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, 1));
+      } else {
+        // when running, ignore limelight rotation entirely
+        s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+      }
+
       for (String limelight : limelights) {
         if (!s_shouldDoGlobalPoseEstimation) {
           continue;
@@ -721,7 +766,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         s_drivetrain.addVisionMeasurement(
           pose_estimate.pose, Utils.fpgaToCurrentTime(pose_estimate.timestampSeconds)
         );
-        // Logger.recordOutput(getName() + "/" + limelight + "/pose_estimate", pose_estimate.pose);
 
         s_limelightSeesTag.put(
           limelight,
@@ -743,10 +787,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Constants.Drive.CLIMB_LIMELIGHT_NAME,
       Constants.Drive.ALL_APRIL_TAGS
     );
-    LimelightHelpers.SetFiducialIDFiltersOverride(
-      Constants.Drive.BACK_LIMELIGHT_NAME,
-      Constants.Drive.ALL_APRIL_TAGS
-    );
   }
 
   public void bindControls(
@@ -760,12 +800,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
-   * Auto-aligns to a specific target (in other words, goes to a specific target)
-   * @param target The target that you want to go to
+   * Auto-aligns to a specific target (in other words, goes to a specific target).
+   * Uses a separate BlueAlliance-perspective FieldCentric request so that
+   * field-frame velocities are correct on both alliances.
+   * @param target The target Pose2d (in WPILib blue-origin field coordinates)
    * @param exitVelocity The target speed of the robot once done
    * @param maxVelocity max velocity the robot can go
    * @param maxRotationRate max rate of rotation the robot can rotate at
-   * @return whether ropbot has reached target or not
    */
   public void goTo(
     Pose2d target,
@@ -774,6 +815,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     AngularVelocity maxRotationRate
   ) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
+    Logger.recordOutput("DriveSubsystem/Odometry/lastGotoTimestamp", Timer.getFPGATimestamp());
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
     Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
@@ -786,28 +828,55 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
 
-    var outputVelocity = 
-      Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity.in(MetersPerSecond), maxVelocity.in(MetersPerSecond));
+    // (AI Fix) Proper velocity calculation ---
+    // The PID is trying to drive `distance` to 0, so its output is negative.
+    // We negate it to get a positive "drive toward target" speed.
+    double rawDriveOutput = -s_autoDriveController.calculate(distance, 0.0);
 
-    var rotationRate = 
-      Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate.in(RadiansPerSecond));
+    // (AI Fix) Only add the velocity floor when far enough from the target
+    // so the robot can actually settle when close.
+    double velocityFloor = distance > GOTO_SETTLE_DISTANCE ? 0.2 : 0.0;
+
+    // (AI Fix) Clamp to [0, maxVelocity] — never drive backwards away from target
+    var outputVelocity = MathUtil.clamp(
+      rawDriveOutput + velocityFloor + exitVelocity.in(MetersPerSecond),
+      0.0,
+      maxVelocity.in(MetersPerSecond)
+    );
+
+    // (AI Fix) Clamp rotation rate symmetrically ---
+    double maxRotRad = maxRotationRate.in(RadiansPerSecond);
+    var rotationRate = MathUtil.clamp(
+      s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()),
+      -maxRotRad,
+      maxRotRad
+    );
 
     var xComponent = outputVelocity * directionOfTravel.getCos();
     var yComponent = outputVelocity * directionOfTravel.getSin();
 
+    Logger.recordOutput("DriveSubsystem/Odometry/outputVelocity", outputVelocity);
+    Logger.recordOutput("DriveSubsystem/Odometry/rotationRate", rotationRate);
+
+    // (AI Fix) Use s_autoGoTo (BlueAlliance perspective) instead of s_drive ---
+    // goTo() computes velocities in the WPILib blue-origin field frame.
+    // s_drive uses OperatorPerspective which flips 180° on Red alliance,
+    // causing the robot to drive in the wrong direction.
     s_drivetrain.setControl(
-      s_drive
-        .withVelocityX(MetersPerSecond.of(xComponent).times(-1))
-        .withVelocityY(MetersPerSecond.of(yComponent).times(-1))
+      s_autoDrive
+        .withVelocityX(MetersPerSecond.of(xComponent))
+        .withVelocityY(MetersPerSecond.of(yComponent))
         .withRotationalRate(rotationRate)
     );
   
-    Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
+    // (AI Fix) Use angle wrapping for logged heading error ---
+    Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate",
+      Math.abs(MathUtil.angleModulus(robotPose.getRotation().getRadians() - target.getRotation().getRadians())));
   }
 
   public void stopMoving() {
     s_drivetrain.setControl(
-      s_drive
+      s_autoDrive
         .withVelocityX(MetersPerSecond.of(0.0))
         .withVelocityY(MetersPerSecond.of(0.0))
         .withRotationalRate(0.0)
@@ -832,9 +901,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", true);
       if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(Alliance.Red)) {
+        Logger.recordOutput(getName() + "/setOperatorPerspective", Alliance.Red);
         s_drivetrain.setOperatorPerspectiveForward(
             CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
       } else {
+        Logger.recordOutput(getName() + "/setOperatorPerspective", Alliance.Blue);
         s_drivetrain.setOperatorPerspectiveForward(
             CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation);
       }
@@ -843,6 +914,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
     }
 
+    Logger.recordOutput(getName() + "/doingGlobalPoseEstimation", s_shouldDoGlobalPoseEstimation);
+    Logger.recordOutput(getName() + "/percieved_alliance", DriverStation.getAlliance().toString());
     Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
     Logger.recordOutput(getName() + "/subsystemState", getState().toString());
@@ -857,7 +930,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   public void driverControl() {
-    s_requestedDriveState = DriveStates.DRIVER_CONTROL;
+    if (DriverStation.isAutonomous()) {
+      s_requestedDriveState = DriveStates.AUTO;
+    } else {
+      s_requestedDriveState = DriveStates.DRIVER_CONTROL;
+    }
   }
 
   public void driveOverRamp() {
@@ -875,7 +952,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   /**
    * Checks robot's alliance and then checks if robot is in its alliance zone
-   * @return true if robot is in alliance zone, false oterwise
+   * @return true if robot is in alliance zone, false otherwise
    */
   public static boolean inAllianceZone() {
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) &&
@@ -894,7 +971,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param target position robot is trying to reach
    * @param acceptableDistanceError how much error is acceptable in terms of distance to the target
    * @param acceptableRotationError how much error is acceptable in terms of angle relative to desired Pose2d
-   * (in radians)
+   * (compared in degrees internally — pass the Angle in whatever unit, it gets converted)
    * @return true if robot is at destination, false otherwise
    */
   public static boolean atDestination(
@@ -904,13 +981,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   ) {
     Pose2d robotPose = s_drivetrain.getState().Pose;
     double distance = Math.abs(robotPose.getTranslation().getDistance(target.getTranslation()));
+    double rotationError = robotPose.getRotation().minus(target.getRotation()).getMeasure().abs(Degrees);
     
     if (
-      distance < acceptableDistanceError.in(Meters)
-      && robotPose.getRotation().getMeasure().isNear(
-        target.getRotation().getMeasure(),
-        acceptableRotationError
-      )
+      distance < acceptableDistanceError.in(Meters) &&
+      rotationError < acceptableRotationError.in(Degrees)
     ) {
       return true;
     } else {
@@ -946,18 +1021,23 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param selectedValue A String of either "Left", "Right", or "Center" indicating where to climb
    */
   public static void setClimbPosition(String selectedValue) {
+    Logger.recordOutput("DriveSubsystem/climbPosition", selectedValue);
     switch (selectedValue) {
-      case "Right":
-        // TODO: Make this set the position to the right climb pose
-        s_climbPosition = new Pose2d();
+      case "Blue Right":
+        s_climbAlignPosition = Constants.Field.BLUE_TOWER_OUTPOST_ALIGN_POSE;
+        s_climbPosition = Constants.Field.BLUE_TOWER_OUTPOST_SIDE;
         break;
-      case "Center":
-        // TODO: Make this set the position to the center climb pose
-        s_climbPosition = new Pose2d();
+      case "Blue Left":
+          s_climbAlignPosition = Constants.Field.BLUE_TOWER_DEPOT_ALIGN_POSE;
+        s_climbPosition = Constants.Field.BLUE_TOWER_DEPOT_SIDE;
         break;
-      default:
-        // TODO: Make this set the position to the left climb pose
-        s_climbPosition = new Pose2d();
+      case "Red Right":
+          s_climbAlignPosition = Constants.Field.RED_TOWER_OUTPOST_ALIGN_POSE;
+        s_climbPosition = Constants.Field.RED_TOWER_OUTPOST_SIDE;
+        break;
+      case "Red Left":
+          s_climbAlignPosition = Constants.Field.RED_TOWER_DEPOT_ALIGN_POSE;
+        s_climbPosition = Constants.Field.RED_TOWER_DEPOT_SIDE;
         break;
     }
   }

@@ -29,6 +29,8 @@ public class Robot extends LoggedRobot {
 
   private RobotContainer m_robotContainer;
 
+  public AutoHoncho autoHoncho;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -98,12 +100,7 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    m_autonomousCommand = m_robotContainer.getAutonomousCommand();
-
-    // schedule the autonomous command (example)
-    if (m_autonomousCommand != null) {
-      CommandScheduler.getInstance().schedule(m_autonomousCommand);
-    }
+    autoHoncho = new AutoHoncho();
   }
 
   /** This function is called periodically during autonomous. */
@@ -119,11 +116,21 @@ public class Robot extends LoggedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
+    // if (AutoHoncho.s_autoTypeChooser.getSelected().equals("Shoot and Climb")) {
+    //   HeadHoncho.getInstance().unclimbState();
+    // }
+
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();
     }
+    if (autoHoncho != null) {
+      // this doesn't do anything btw probably
+      CommandScheduler.getInstance().cancel(autoHoncho.getCurrentCommand());
+      autoHoncho.close();
+    }
 
     GameHelpers.zeroTimer();
+    IntakeSubsystem.getInstance().stopIntake();
   }
 
   /** This function is called periodically during operator control. */

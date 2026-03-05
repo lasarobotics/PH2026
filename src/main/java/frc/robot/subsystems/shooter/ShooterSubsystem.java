@@ -29,6 +29,7 @@ import frc.robot.Constants;
 import frc.robot.GameHelpers;
 import frc.robot.HeadHoncho;
 import frc.robot.subsystems.drive.DriveSubsystem;
+import frc.robot.subsystems.intake.IntakeSubsystem;
 
 public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
@@ -99,16 +100,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     hoodConfig.SoftwareLimitSwitch
       .withForwardSoftLimitEnable(true)
       .withReverseSoftLimitEnable(true)
-      .withForwardSoftLimitThreshold(0)
-      .withReverseSoftLimitThreshold(-0.090576);
+      .withForwardSoftLimitThreshold(-0.012207) // TODO remove once bolt is gone
+      .withReverseSoftLimitThreshold(-0.09668);
     hoodConfig.Slot0
       .withKP(150)
       .withKS(1.5);
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor
-      .withMagnetOffset(0.405)
       .withAbsoluteSensorDiscontinuityPoint(0.05)
+      .withMagnetOffset(0.405)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
       
     m_shooterMotorLeader.getConfigurator().apply(shooterConfig);
@@ -204,9 +205,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * the desired speed according to {@link #wantedShooterSpeed()}
    */
   private boolean atShootSpeed() {
-    return m_shooterMotorLeader.getVelocity().isNear(
-      wantedShooterSpeed(),
-      Constants.Shooter.SHOOTER_SPEED_TOLERANCE
+    // TODO add comments
+    return (
+      m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond) >=
+        wantedShooterSpeed()
     );
   }
 
@@ -329,6 +331,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
       if (shooting || forceShooting || dumbShooting) {
         runShooter();
+        IntakeSubsystem.getInstance().deployIntake();
 
         // If the shooter is ready (rpm, position, hood) and
         // the time/pass check succeeds, then ready to shoot

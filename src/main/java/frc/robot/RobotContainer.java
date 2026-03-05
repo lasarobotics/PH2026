@@ -31,6 +31,14 @@ public class RobotContainer {
       Constants.SmartDashboard.SMARTDASHBOARD_CLIMB_CHOOSER_NAME, 
       HeadHoncho.getInstance().getClimbChooser()
     );
+    SmartDashboard.putData(
+      Constants.SmartDashboard.SMARTDASHBOARD_QUADRANT_CHOOSER_NAME, 
+      AutoHoncho.s_autoQuadrantChooser
+    );
+    SmartDashboard.putData(
+      Constants.SmartDashboard.SMARTDASHBOARD_AUTO_TYPE_CHOOSER_NAME, 
+      AutoHoncho.s_autoTypeChooser
+    );
   }
 
   private boolean m_intakePrevious = false;
@@ -88,7 +96,7 @@ public class RobotContainer {
       m_driverController.x(),
       // reverse intake button
       m_driverController.a(),
-      // over ramp button 
+      // over ramp button
       m_driverController.leftTrigger(),
       // reset odom button
       m_driverController.start(),

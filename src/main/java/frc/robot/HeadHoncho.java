@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
@@ -21,6 +22,8 @@ import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 public class HeadHoncho extends StateMachine implements AutoCloseable {
   
+  private static HeadHonchoStates s_targetState = HeadHonchoStates.NORMAL;
+
   public enum HeadHonchoStates implements SystemState {
     REST {
       @Override
@@ -42,12 +45,15 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void initialize() {
         ShooterSubsystem.getInstance().startOperation();
-        // ClimbSubsystem.getInstance().stow();
+        ClimbSubsystem.getInstance().stow();
       }
 
       @Override
       public void execute() {
-        boolean shoot = s_headHoncho.m_shootButton.getAsBoolean() || AutoHoncho.autoWantToShoot();
+        boolean shoot = s_headHoncho.m_shootButton.getAsBoolean() ||
+                        AutoHoncho.autoWantToShoot() ||
+                        s_headHoncho.m_dumbShootButton.getAsBoolean() ||
+                        AutoHoncho.autoWantToDumbShoot();
 
         Translation3d shootPos = wantedShootPosition();
         AimUtil.setTarget(
@@ -79,6 +85,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         // if (s_headHoncho.m_overRampButton.getAsBoolean())
         //   return OVER_RAMP;
+        if (s_targetState.equals(HeadHonchoStates.UNCLIMB)) {
+          return UNCLIMB;
+        }
 
         if (
           s_headHoncho.m_climbButtonHasFallen.getAsBoolean()
@@ -111,7 +120,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         IntakeSubsystem.getInstance().stopIntake();
         ShooterSubsystem.getInstance().stopOperation();
         //DriveSubsystem.getInstance().driveAutoClimb();
-        ClimbSubsystem.getInstance().deploy();
+        ClimbSubsystem.getInstance().deployArm();
       }
 
       @Override
@@ -132,21 +141,28 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       }
     },
     UNCLIMB {
+      Timer servoTimer = new Timer();
+
       @Override
       public void initialize() {
-        ClimbSubsystem.getInstance().deploy();
+        ClimbSubsystem.getInstance().deployArm();
+
+        servoTimer.reset();
       }
 
       @Override
       public void execute() {
         if (ClimbSubsystem.getInstance().inDeployPosition()) {
-          DriveSubsystem.getInstance().leaveClimb();
+          ClimbSubsystem.getInstance().retractServo();
+          servoTimer.start();
         }
       }
 
       @Override
       public SystemState nextState() {
-        if (DriveSubsystem.getInstance().isPastTower() || s_headHoncho.m_cancelButton.getAsBoolean()) return NORMAL;
+        if (servoTimer.hasElapsed(1.5)) {
+          return NORMAL;
+        }
 
         return this;
       }
@@ -179,12 +195,27 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
     // Set up SendableChooser to get where to climb in auto
     m_climbChooser = new SendableChooser<>();
-    m_climbChooser.setDefaultOption("Left", getName());
-    m_climbChooser.addOption("Center", getName());
-    m_climbChooser.addOption("Right", getName());
+    m_climbChooser.setDefaultOption("Blue Left", "Blue Left");
+    m_climbChooser.addOption("Blue Right", "Blue Right");
+    m_climbChooser.addOption("Red Left", "Red Left");
+    m_climbChooser.addOption("Red Right", "Red Right");
+
+    AutoHoncho.s_autoQuadrantChooser.setDefaultOption("Blue Left", "Blue Left");
+    AutoHoncho.s_autoQuadrantChooser.addOption("Blue Right", "Blue Right");
+    AutoHoncho.s_autoQuadrantChooser.addOption("Red Left", "Red Left");
+    AutoHoncho.s_autoQuadrantChooser.addOption("Red Right", "Red Right");
+
+    AutoHoncho.s_autoTypeChooser.setDefaultOption("Basic Shoot", "Basic Shoot");
+    AutoHoncho.s_autoTypeChooser.addOption("Neutral Zone Lite", "Neutral Zone Lite");
+    AutoHoncho.s_autoTypeChooser.addOption("Neutral Zone Max", "Neutral Zone Max");
+    AutoHoncho.s_autoTypeChooser.addOption("Depot", "Depot");
+    AutoHoncho.s_autoTypeChooser.addOption("Nothing", "Nothing");
+    AutoHoncho.s_autoTypeChooser.addOption("Shoot and Climb", "Shoot and Climb");
 
     // Update DriveSubsystem when the climbChooser changes
     m_climbChooser.onChange(DriveSubsystem::setClimbPosition);
+    AutoHoncho.s_autoQuadrantChooser.onChange(AutoHoncho::setAutoQuadrant);
+    AutoHoncho.s_autoTypeChooser.onChange(AutoHoncho::setAutoType);
   }
 
   public void periodic() {
@@ -200,12 +231,19 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     return m_climbChooser;
   }
 
+  /**
+   * Set next state for HeadHoncho to be unclimb
+   */
+  public void unclimbState() {
+    s_targetState = HeadHonchoStates.UNCLIMB;
+  }
+
   public boolean wantToShoot() {
     return m_shootButton.getAsBoolean() || AutoHoncho.autoWantToShoot();
   }
 
   public boolean wantToDumbShoot() {
-    return m_dumbShootButton.getAsBoolean();
+    return m_dumbShootButton.getAsBoolean() || AutoHoncho.autoWantToDumbShoot();
   }
 
   public boolean wantToForceShoot() {
@@ -217,7 +255,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   }
 
   public boolean wantToCrossRamp() {
-    return m_overRampButton.getAsBoolean();
+    return m_overRampButton.getAsBoolean() || AutoHoncho.autoWantToCrossRamp();
   }
 
   /**
