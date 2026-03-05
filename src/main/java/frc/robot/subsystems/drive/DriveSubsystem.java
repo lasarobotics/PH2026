@@ -20,6 +20,7 @@ import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -326,7 +327,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           s_climbAlignRotationError = Radians.of(0.01);
 
           if (
-            !DriverStation.isAutonomous() &&
             atDestination(
               s_climbPosition,
               DriveSubsystem.s_climbAlignDistanceError,
@@ -403,10 +403,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       private Pose2d currentTarget;
       private int sequenceIndex;
       private double directionSign;
+      private boolean finished; // (AI Fix)
 
       @Override
       public void initialize() {
         sequenceIndex = 0;
+        finished = false; // (AI Fix)
         rampSequence = new Pose2d[3];
 
         Translation2d[] translations = getInstance().getBestRampSequence();
@@ -452,6 +454,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
+        // (AI Fix)
+        if (finished) {
+          // Already done — hold position at zero velocity
+          s_drivetrain.setControl(
+            s_autoGoTo
+              .withVelocityX(MetersPerSecond.of(0.0))
+              .withVelocityY(MetersPerSecond.of(0.0))
+              .withRotationalRate(0.0));
+          return;
+        }
+
         // if sign of current vs target is the same as final vs start
         // (i.e. same direction)
         // or if at exact same point (want to avoid getting stuck)
@@ -469,9 +482,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         Logger.recordOutput("DriveSubsystem/sequenceIndex", sequenceIndex);
 
         if (sequenceIndex > 2) {
-          // when all 3 ramp pos are done, js stop the robot at the last pos
+          // when all 3 ramp pos are done, stop the robot
+          finished = true;
           s_drivetrain.setControl(
-            s_drive
+            s_autoGoTo
               .withVelocityX(MetersPerSecond.of(0.0))
               .withVelocityY(MetersPerSecond.of(0.0))
               .withRotationalRate(0.0));
@@ -509,7 +523,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
               AUTO :
               DRIVER_CONTROL;
         }
-        if (sequenceIndex > 2) { // once it reaches last "stage" of ramp it goes to driver
+        if (finished) { // once it reaches last "stage" of ramp it goes back
           s_requestedDriveState = DriveStates.DRIVER_CONTROL;
           return 
             DriverStation.isAutonomous() ?
@@ -525,6 +539,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DriveSubsystem s_driveSubsystem;
   private static CommandSwerveDrivetrain s_drivetrain;
   private static SwerveRequest.FieldCentric s_drive;
+  // Separate FieldCentric request for goTo() — uses BlueAlliance perspective
+  // so field-frame velocities are interpreted correctly on both alliances
+  private static SwerveRequest.FieldCentric s_autoGoTo;
 
   private static Pose2d s_limelightPose;
   private static double s_limelightPoseTimeStamp;
@@ -540,6 +557,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static final int WP_CLIMB = 0;
 
   private static final Double DEADBAND_SCALAR = 0.085;
+
+  // Distance threshold below which we remove the velocity floor
+  // to allow the robot to actually settle at the target
+  private static final double GOTO_SETTLE_DISTANCE = 0.15; // meters
 
   private boolean m_hasAppliedOperatorPerspective = false;
 
@@ -609,13 +630,25 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     s_drivetrain = TunerConstants.createDrivetrain();
 
+    // Operator-perspective drive request for teleop (driver sticks)
     s_drive =
       new SwerveRequest.FieldCentric()
         .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
-        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1)) // Add a
+        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1))
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
+
+    // Blue-alliance-perspective drive request for goTo() autonomous driving
+    // This ensures field-frame velocities computed from odometry (blue-origin)
+    // are interpreted correctly regardless of which alliance we're on.
+    s_autoGoTo =
+      new SwerveRequest.FieldCentric()
+        .withDeadband(0)
+        .withRotationalDeadband(0)
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
     
     s_headingController = new PIDController(3, 0.0, 0.0);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
@@ -626,6 +659,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 
     s_autoDrive = new PIDController(1.75, 0.0, 0.0);
+    s_autoDrive.setTolerance(0.05); // (AI Fix) 5cm position tolerance
 
     // TODO: Initialize the climb position to left
     s_climbPosition = new Pose2d();
@@ -689,20 +723,23 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    */
   public void limelight_thread_func() {
 
-    // trust limelights for rotation if disabled
-    // also trust them a little less
-    if (getState() == DriveStates.DISABLED) {
-      s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, 1));
-    } else {
-      s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-    }
-
     String[] limelights = {
       Constants.Drive.SHOOTER_LIMELIGHT_NAME,
       Constants.Drive.CLIMB_LIMELIGHT_NAME
     };
 
     while (true) {
+      // (AI Fix) Re-check state each iteration so std devs update
+      // as the robot transitions between DISABLED and enabled states
+      if (getState() == DriveStates.DISABLED) {
+        // trust limelights for rotation if disabled
+        // also trust them a little less overall
+        s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, 1));
+      } else {
+        // when running, ignore limelight rotation entirely
+        s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
+      }
+
       for (String limelight : limelights) {
         if (!s_shouldDoGlobalPoseEstimation) {
           continue;
@@ -725,7 +762,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         s_drivetrain.addVisionMeasurement(
           pose_estimate.pose, Utils.fpgaToCurrentTime(pose_estimate.timestampSeconds)
         );
-        // Logger.recordOutput(getName() + "/" + limelight + "/pose_estimate", pose_estimate.pose);
 
         s_limelightSeesTag.put(
           limelight,
@@ -760,12 +796,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
-   * Auto-aligns to a specific target (in other words, goes to a specific target)
-   * @param target The target that you want to go to
+   * Auto-aligns to a specific target (in other words, goes to a specific target).
+   * Uses a separate BlueAlliance-perspective FieldCentric request so that
+   * field-frame velocities are correct on both alliances.
+   * @param target The target Pose2d (in WPILib blue-origin field coordinates)
    * @param exitVelocity The target speed of the robot once done
    * @param maxVelocity max velocity the robot can go
    * @param maxRotationRate max rate of rotation the robot can rotate at
-   * @return whether ropbot has reached target or not
    */
   public void goTo(
     Pose2d target,
@@ -787,11 +824,29 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
 
-    var outputVelocity = 
-      Math.min(Math.abs(s_autoDrive.calculate(distance, 0.0)) + 0.2 + exitVelocity.in(MetersPerSecond), maxVelocity.in(MetersPerSecond));
+    // (AI Fix) Proper velocity calculation ---
+    // The PID is trying to drive `distance` to 0, so its output is negative.
+    // We negate it to get a positive "drive toward target" speed.
+    double rawDriveOutput = -s_autoDrive.calculate(distance, 0.0);
 
-    var rotationRate = 
-      Math.min(s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()), maxRotationRate.in(RadiansPerSecond));
+    // (AI Fix) Only add the velocity floor when far enough from the target
+    // so the robot can actually settle when close.
+    double velocityFloor = distance > GOTO_SETTLE_DISTANCE ? 0.2 : 0.0;
+
+    // (AI Fix) Clamp to [0, maxVelocity] — never drive backwards away from target
+    var outputVelocity = MathUtil.clamp(
+      rawDriveOutput + velocityFloor + exitVelocity.in(MetersPerSecond),
+      0.0,
+      maxVelocity.in(MetersPerSecond)
+    );
+
+    // (AI Fix) Clamp rotation rate symmetrically ---
+    double maxRotRad = maxRotationRate.in(RadiansPerSecond);
+    var rotationRate = MathUtil.clamp(
+      s_headingController.calculate(robotPose.getRotation().getRadians(), target.getRotation().getRadians()),
+      -maxRotRad,
+      maxRotRad
+    );
 
     var xComponent = outputVelocity * directionOfTravel.getCos();
     var yComponent = outputVelocity * directionOfTravel.getSin();
@@ -799,21 +854,25 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     Logger.recordOutput("DriveSubsystem/Odometry/outputVelocity", outputVelocity);
     Logger.recordOutput("DriveSubsystem/Odometry/rotationRate", rotationRate);
 
+    // (AI Fix) Use s_autoGoTo (BlueAlliance perspective) instead of s_drive ---
+    // goTo() computes velocities in the WPILib blue-origin field frame.
+    // s_drive uses OperatorPerspective which flips 180° on Red alliance,
+    // causing the robot to drive in the wrong direction.
     s_drivetrain.setControl(
-      s_drive
-        // .withVelocityX(MetersPerSecond.of(xComponent).times(-1))
-        // .withVelocityY(MetersPerSecond.of(yComponent).times(-1))
+      s_autoGoTo
         .withVelocityX(MetersPerSecond.of(xComponent))
         .withVelocityY(MetersPerSecond.of(yComponent))
         .withRotationalRate(rotationRate)
     );
   
-    Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate", Math.abs(robotPose.getRotation().getRadians() - target.getRotation().getRadians()));
+    // (AI Fix) Use angle wrapping for logged heading error ---
+    Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate",
+      Math.abs(MathUtil.angleModulus(robotPose.getRotation().getRadians() - target.getRotation().getRadians())));
   }
 
   public void stopMoving() {
     s_drivetrain.setControl(
-      s_drive
+      s_autoGoTo
         .withVelocityX(MetersPerSecond.of(0.0))
         .withVelocityY(MetersPerSecond.of(0.0))
         .withRotationalRate(0.0)
@@ -887,7 +946,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   /**
    * Checks robot's alliance and then checks if robot is in its alliance zone
-   * @return true if robot is in alliance zone, false oterwise
+   * @return true if robot is in alliance zone, false otherwise
    */
   public static boolean inAllianceZone() {
     if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red) &&
@@ -906,7 +965,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @param target position robot is trying to reach
    * @param acceptableDistanceError how much error is acceptable in terms of distance to the target
    * @param acceptableRotationError how much error is acceptable in terms of angle relative to desired Pose2d
-   * (in radians)
+   * (compared in degrees internally — pass the Angle in whatever unit, it gets converted)
    * @return true if robot is at destination, false otherwise
    */
   public static boolean atDestination(

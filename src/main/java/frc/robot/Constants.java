@@ -156,37 +156,190 @@ public final class Constants {
         Degrees.of(90)
       )
     );
-    public static final Pose2d BLUE_LEFT_NZSTART_POSE = new Pose2d(
+
+
+
+    public static final Pose2d BLUE_LEFT_ABUMP_NZ_POSE = new Pose2d(
       new Translation2d(
-        7.752,
-        6.836
+        5.982,
+        5.719
       ),
       new Rotation2d(
-        Degrees.of(90)
+        Degrees.of(0)
       )
     );
-    public static final Pose2d BLUE_LEFT_NZEND_POSE = new Pose2d(
+    public static final Pose2d BLUE_LEFT_ABUMP_AZ_POSE = new Pose2d(
       new Translation2d(
-        7.752,
-        2.1
+        3.283,
+        5.691
       ),
       new Rotation2d(
-        Degrees.of(90)
+        Degrees.of(0)
       )
     );
-    public static final Pose2d BLUE_RIGHT_NZSTART_POSE = new Pose2d(
+    public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = new Pose2d(
       new Translation2d(
-        7.752,
-        2.1
+        7.7,
+        6.878
       ),
       new Rotation2d(
         Degrees.of(-90)
       )
     );
-    public static final Pose2d BLUE_RIGHT_NZEND_POSE = new Pose2d(
+    public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = new Pose2d(
       new Translation2d(
-        7.752,
-        6.836
+        7.7,
+        4.478
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
+    public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = new Pose2d(
+      new Translation2d(
+        7.7,
+        1.865
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
+
+
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_POSE = new Pose2d(
+      new Translation2d(
+        5.982,
+        2.596
+      ),
+      new Rotation2d(
+        Degrees.of(0)
+      )
+    );
+    public static final Pose2d BLUE_RIGHT_ABUMP_AZ_POSE = new Pose2d(
+      new Translation2d(
+        3.283,
+        2.45
+      ),
+      new Rotation2d(
+        Degrees.of(0)
+      )
+    );
+    public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
+      new Translation2d(
+        7.7,
+        6.21
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+    public static final Pose2d BLUE_RIGHT_HUB_NZ_POSE = new Pose2d(
+      new Translation2d(
+        7.7,
+        3.5
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+    public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
+      new Translation2d(
+        7.7,
+        1.865
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+
+
+    public static final Pose2d RED_LEFT_ABUMP_NZ_POSE = new Pose2d(
+      new Translation2d(
+        10.64,
+        2.596
+      ),
+      new Rotation2d(
+        Degrees.of(0)
+      )
+    );
+    public static final Pose2d RED_LEFT_ABUMP_AZ_POSE = new Pose2d(
+      new Translation2d(
+        13.2,
+        2.18
+      ),
+      new Rotation2d(
+        Degrees.of(0)
+      )
+    );
+    public static final Pose2d RED_LEFT_DEPOT_NZ_POSE = new Pose2d(
+      new Translation2d(
+        8.912,
+        1.15
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+    public static final Pose2d RED_LEFT_HUB_NZ_POSE = new Pose2d(
+      new Translation2d(
+        8.912,
+        3.7
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+    public static final Pose2d RED_LEFT_OUTPOST_NZ_POSE = new Pose2d(
+      new Translation2d(
+        8.912,
+        6.344
+      ),
+      new Rotation2d(
+        Degrees.of(90)
+      )
+    );
+
+
+    public static final Pose2d RED_RIGHT_ABUMP_NZ_POSE = new Pose2d(
+      new Translation2d(
+        10.5,
+        5.719
+      ),
+      new Rotation2d(
+        Degrees.of(0)
+      )
+    );
+    public static final Pose2d RED_RIGHT_ABUMP_AZ_POSE = new Pose2d(
+      new Translation2d(
+        13.134,
+        5.691
+      ),
+      new Rotation2d(
+        Degrees.of(0)
+      )
+    );
+    public static final Pose2d RED_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
+      new Translation2d(
+        8.818,
+        6.878
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
+    public static final Pose2d RED_RIGHT_HUB_NZ_POSE = new Pose2d(
+      new Translation2d(
+        8.818,
+        4.478
+      ),
+      new Rotation2d(
+        Degrees.of(-90)
+      )
+    );
+    public static final Pose2d RED_RIGHT_DEPOT_NZ_POSE = new Pose2d(
+      new Translation2d(
+        8.818,
+        1.865
       ),
       new Rotation2d(
         Degrees.of(-90)
@@ -259,6 +412,8 @@ public final class Constants {
         MetersPerSecondPerSecond.of(3); // TODO measure
     public static final AngularVelocity MAX_ANGULAR_RATE =
         RotationsPerSecond.of(0.75); // TODO measure
+    public static final AngularVelocity AUTO_NAV_MAX_ANGULAR_RATE =
+      RadiansPerSecond.of(2.0); // ~115 deg/s — controllable for auto
     public static final AngularAcceleration MAX_ANGULAR_ACCELERATION =
         RotationsPerSecondPerSecond.of(1); // TODO  measure
     // normally 0.3 and 1.0
