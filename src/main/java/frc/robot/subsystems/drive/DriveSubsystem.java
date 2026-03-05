@@ -457,11 +457,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         // (AI Fix)
         if (finished) {
           // Already done — hold position at zero velocity
-          s_drivetrain.setControl(
-            s_autoGoTo
-              .withVelocityX(MetersPerSecond.of(0.0))
-              .withVelocityY(MetersPerSecond.of(0.0))
-              .withRotationalRate(0.0));
+          getInstance().stopMoving();
           return;
         }
 
@@ -484,11 +480,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         if (sequenceIndex > 2) {
           // when all 3 ramp pos are done, stop the robot
           finished = true;
-          s_drivetrain.setControl(
-            s_autoGoTo
-              .withVelocityX(MetersPerSecond.of(0.0))
-              .withVelocityY(MetersPerSecond.of(0.0))
-              .withRotationalRate(0.0));
+          getInstance().stopMoving();
           // leave execute() so we do not call goTo again
           return;
         }
@@ -541,7 +533,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static SwerveRequest.FieldCentric s_drive;
   // Separate FieldCentric request for goTo() — uses BlueAlliance perspective
   // so field-frame velocities are interpreted correctly on both alliances
-  private static SwerveRequest.FieldCentric s_autoGoTo;
   private static SwerveRequest.FieldCentric s_autoDrive;
 
   private static Pose2d s_limelightPose;
@@ -572,11 +563,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static AngularVelocity s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE;
   private static Distance s_climbAlignDistanceError = Meters.of(0.2);
   private static Angle s_climbAlignRotationError = Radians.of(0.1);
-  private static boolean s_blueAlliancePerspective = false;
 
   private static PIDController s_headingController;
   private static PIDController s_autoAimController;
-  private static PIDController s_gotoDriveController;
+  private static PIDController s_autoDriveController;
 
   private static DriveStates s_requestedDriveState;
 
@@ -639,22 +629,22 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_drive =
       new SwerveRequest.FieldCentric()
         .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
-        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(DriveSubsystem.ROTATIONAL_DEADBAND_SCALAR))
+        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1))
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
 
+    // ai slop todo remove
     // Blue-alliance-perspective drive request for goTo() autonomous driving
     // This ensures field-frame velocities computed from odometry (blue-origin)
     // are interpreted correctly regardless of which alliance we're on.
-    s_autoGoTo =
-      new SwerveRequest.FieldCentric()
-        .withDeadband(0)
-        .withRotationalDeadband(0)
-        .withDriveRequestType(DriveRequestType.Velocity)
-        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-        .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
-    
+    // s_autoGoTo =
+    //   new SwerveRequest.FieldCentric()
+    //     .withDeadband(0)
+    //     .withRotationalDeadband(0)
+    //     .withDriveRequestType(DriveRequestType.Velocity)
+    //     .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+    //     .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
         
     s_autoDrive =
       new SwerveRequest.FieldCentric()
@@ -672,8 +662,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoAimController = new PIDController(5, 0.0, 0.0);
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 
-    s_gotoDriveController = new PIDController(1.75, 0.0, 0.0);
-    s_autoDrive.setTolerance(0.05); // (AI Fix) 5cm position tolerance
+    s_autoDriveController = new PIDController(1.75, 0.0, 0.0);
+    s_autoDriveController.setTolerance(0.05); // (AI Fix) 5cm position tolerance
 
     // TODO: Initialize the climb position to left
     s_climbPosition = new Pose2d();
@@ -841,7 +831,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     // (AI Fix) Proper velocity calculation ---
     // The PID is trying to drive `distance` to 0, so its output is negative.
     // We negate it to get a positive "drive toward target" speed.
-    double rawDriveOutput = -s_autoDrive.calculate(distance, 0.0);
+    double rawDriveOutput = -s_autoDriveController.calculate(distance, 0.0);
 
     // (AI Fix) Only add the velocity floor when far enough from the target
     // so the robot can actually settle when close.
@@ -873,7 +863,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     // s_drive uses OperatorPerspective which flips 180° on Red alliance,
     // causing the robot to drive in the wrong direction.
     s_drivetrain.setControl(
-      s_autoGoTo
+      s_autoDrive
         .withVelocityX(MetersPerSecond.of(xComponent))
         .withVelocityY(MetersPerSecond.of(yComponent))
         .withRotationalRate(rotationRate)
@@ -886,7 +876,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   public void stopMoving() {
     s_drivetrain.setControl(
-      s_autoGoTo
+      s_autoDrive
         .withVelocityX(MetersPerSecond.of(0.0))
         .withVelocityY(MetersPerSecond.of(0.0))
         .withRotationalRate(0.0)
@@ -911,13 +901,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", true);
       if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(Alliance.Red)) {
+        Logger.recordOutput(getName() + "/setOperatorPerspective", Alliance.Red);
         s_drivetrain.setOperatorPerspectiveForward(
-          CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
-        s_blueAlliancePerspective = false;
+            CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
       } else {
+        Logger.recordOutput(getName() + "/setOperatorPerspective", Alliance.Blue);
         s_drivetrain.setOperatorPerspectiveForward(
-          CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation);
-        s_blueAlliancePerspective = true;
+            CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation);
       }
       m_hasAppliedOperatorPerspective = true;
     } else {
@@ -925,7 +915,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
 
     Logger.recordOutput(getName() + "/doingGlobalPoseEstimation", s_shouldDoGlobalPoseEstimation);
-    Logger.recordOutput(getName() + "percieved_alliance", DriverStation.getAlliance().toString());
+    Logger.recordOutput(getName() + "/percieved_alliance", DriverStation.getAlliance().toString());
     Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
     Logger.recordOutput(getName() + "/subsystemState", getState().toString());

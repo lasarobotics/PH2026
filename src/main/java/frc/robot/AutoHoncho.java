@@ -288,7 +288,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           // positionConfig.AllianceZoneSide(),
           positionConfig.NeutralZoneStartPosition(),
           MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -325,7 +325,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           // positionConfig.AllianceZoneSide(),
           positionConfig.NeutralZoneEndPosition(),
           MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -362,7 +362,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           // positionConfig.AllianceZoneSide(),
           positionConfig.AcrossBumpAZPosition(),
           MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -485,7 +485,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           // positionConfig.AllianceZoneSide(),
           positionConfig.NeutralZoneStartPosition(),
           MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -517,7 +517,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           // positionConfig.AllianceZoneSide(),
           positionConfig.NeutralZoneEndPositionFull(),
           MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -554,7 +554,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           // positionConfig.AllianceZoneSide(),
           positionConfig.AcrossBumpAZOppositePosition(),
           MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -580,6 +580,119 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
     },
     START_SHOOT {
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          // positionConfig.AllianceZoneSide(),
+          positionConfig.TowerShootingPose(),
+          MetersPerSecond.of(0),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        DriveSubsystem.getInstance().stopMoving();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.TowerShootingPose(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return SHOOT;
+        
+        return this;
+      }
+    },
+    SHOOT {
+      @Override
+      public void initialize() {
+        DriveSubsystem.getInstance().driveAutoAim();
+        s_wantToDumbShoot = true;
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        s_wantToDumbShoot = false;
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        return this;
+      }
+    }
+  }
+
+  public enum DepotAuto implements SystemState {
+    START {
+      @Override
+      public void initialize() {
+        IntakeSubsystem.getInstance().startIntake();
+      }
+
+      @Override
+      public void execute() {
+         DriveSubsystem.getInstance().goTo(
+          // positionConfig.AllianceZoneSide(),
+          positionConfig.DepotEnterPose(),
+          MetersPerSecond.of(0),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.TowerShootingPose(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return PLOW;
+
+        return this;
+      }
+    },
+    PLOW {
+      @Override
+      public void execute() {
+         DriveSubsystem.getInstance().goTo(
+          // positionConfig.AllianceZoneSide(),
+          positionConfig.DepotExitPose(),
+          MetersPerSecond.of(0),
+          Constants.Drive.MAX_SPEED.div(3),
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.DepotExitPose(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return GO_TO_DUMB_SHOOT;
+
+        return this;
+      }
+    },
+    GO_TO_DUMB_SHOOT {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
@@ -680,6 +793,9 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         break;
       case "Neutral Zone Max":
         startingState = NZMaxAuto.START;
+        break;
+      case "Depot":
+        startingState = DepotAuto.START;
         break;
     }
   }

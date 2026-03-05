@@ -292,7 +292,7 @@ public final class Constants {
     public static final Pose2d RED_LEFT_OUTPOST_NZ_POSE = new Pose2d(
       new Translation2d(
         8.912,
-        6.344
+        5.86
       ),
       new Rotation2d(
         Degrees.of(90)
@@ -339,7 +339,7 @@ public final class Constants {
     public static final Pose2d RED_RIGHT_DEPOT_NZ_POSE = new Pose2d(
       new Translation2d(
         8.818,
-        1.865
+        2.33
       ),
       new Rotation2d(
         Degrees.of(-90)
