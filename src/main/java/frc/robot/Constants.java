@@ -620,6 +620,8 @@ public final class Constants {
 
     public static final double INTAKE_SPEED = 1.0;
 
+    public static final double JIGGLE_TOLERANCE = 0.2;
+
     // preliminary values
     public static final Angle STOW_ANGLE = Rotations.of(0.0); // TODO change maybe
     // might want to reduce

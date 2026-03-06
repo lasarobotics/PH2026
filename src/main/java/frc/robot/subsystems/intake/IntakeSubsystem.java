@@ -84,7 +84,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(0.17626953125) // measured value
+        .withMagnetOffset(-0.2490234375) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
@@ -139,6 +139,9 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   public void jiggleOff() {
+    if (!m_isJiggling) {
+      return;
+    }
     m_isJiggling = false;
     if (m_isIntaking) {
       deployIntake();
@@ -177,6 +180,27 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     return m_armMotor.getPosition().getValue().isNear(
       Constants.Intake.STOW_ANGLE,
       Constants.Intake.DEPLOY_TOLERANCE
+    );
+  }
+  
+  public boolean intakeDeployedJiggleTolerance() {
+    return m_armMotor.getPosition().getValue().isNear(
+      Constants.Intake.DEPLOY_ANGLE,
+      Constants.Intake.JIGGLE_TOLERANCE
+    );
+  }
+  
+  public boolean intakeAtJigglePositionJiggleTolerance() {
+    return m_armMotor.getPosition().getValue().isNear(
+      Constants.Intake.JIGGLE_ANGLE,
+      Constants.Intake.JIGGLE_TOLERANCE
+    );
+  }
+  
+  public boolean intakeStowedJiggleTolerance() {
+    return m_armMotor.getPosition().getValue().isNear(
+      Constants.Intake.STOW_ANGLE,
+      Constants.Intake.JIGGLE_TOLERANCE
     );
   }
 
@@ -241,8 +265,9 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     if (m_isJiggling) {
       if (intakeDeployed()) {
         intakeToJigglePosition();
-      }
-      if (intakeAtJigglePosition()) {
+      } else if (intakeAtJigglePosition()) {
+        deployIntake();
+      } else {
         deployIntake();
       }
     }
