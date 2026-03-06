@@ -633,7 +633,7 @@ public final class Constants {
     // Tolerance of check for hopper being deployed
     // percent based on deploy angle
     // 5% probably reasonable for now
-    public static final double DEPLOY_TOLERANCE = 0.05;
+    public static final double DEPLOY_TOLERANCE = 0.20;
   }
 
   public static class Hopper {

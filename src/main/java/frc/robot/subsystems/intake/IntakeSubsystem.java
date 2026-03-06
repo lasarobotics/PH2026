@@ -84,7 +84,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.2490234375) // measured value
+        .withMagnetOffset(-0.16796875) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
