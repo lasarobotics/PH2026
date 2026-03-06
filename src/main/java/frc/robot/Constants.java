@@ -354,6 +354,7 @@ public final class Constants {
     public static final int INDEXER_MOTOR_ID = 33;
     public static final int HOOD_MOTOR_ID = 34;
     public static final int HOOD_CANCODER_ID = 35;
+    public static final int AGITATOR_MOTOR_ID = 36;
 
     // duty cycle
     // should be negative
@@ -402,7 +403,8 @@ public final class Constants {
     public static final Angle DUMB_HOOD_POSITION = Rotations.of(-0.06);
     // In rotations per second
     // currently based on empirical measurement
-    public static final double DUMB_SHOOTER_SPEED = 34.5;
+    // public static final double DUMB_SHOOTER_SPEED = 34.5;
+    public static final double DUMB_SHOOTER_SPEED = 34.25;
   }
 
   public static class Drive {
@@ -424,7 +426,7 @@ public final class Constants {
     public static final String CLIMB_LIMELIGHT_NAME = "limelight-climb";
 
     public static final int THROTTLE_OFF = 200;
-    public static final int THROTTLE_IDLE = 100;
+    public static final int THROTTLE_IDLE = 0;
     public static final int THROTTLE_RUNNING = 0;
 
     public static final int[] ALL_APRIL_TAGS = new int[]{};
@@ -619,10 +621,12 @@ public final class Constants {
     public static final double INTAKE_SPEED = 1.0;
 
     // preliminary values
-    public static final Angle STOW_ANGLE = Rotations.of(0.014); // TODO change maybe
+    public static final Angle STOW_ANGLE = Rotations.of(0.0); // TODO change maybe
     // might want to reduce
     // this should be basically the value of the soft limit of the arm
     public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);
+    // straight up jiggling it
+    public static final Angle JIGGLE_ANGLE = STOW_ANGLE.plus(DEPLOY_ANGLE).div(2);
 
     // Tolerance of check for hopper being deployed
     // percent based on deploy angle

@@ -890,6 +890,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     if (resettingOdom) {
       zeroOdometry();
     }
+    
+    Logger.recordOutput(getName() + "/limelightShooterTemperature", LimelightHelpers.getLatestResults(Constants.Drive.SHOOTER_LIMELIGHT_NAME).hardware.temperature);
+    Logger.recordOutput(getName() + "/limelightClimbTemperature", LimelightHelpers.getLatestResults(Constants.Drive.CLIMB_LIMELIGHT_NAME).hardware.temperature);
 
     /*
      * Periodically try to apply the operator perspective.

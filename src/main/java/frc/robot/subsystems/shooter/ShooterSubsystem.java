@@ -39,6 +39,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TalonFX m_shooterMotorFollowerTwo;
   private TalonFX m_indexerMotor;
   private TalonFX m_hoodMotor;
+  // private TalonFX m_agitatorMotor;
   private CANcoder m_hoodCanCoder;
 
   private final VelocityDutyCycle m_shooterRequest;
@@ -156,6 +157,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void stopIndexer() {
     m_indexerMotor.setVoltage(0);
+    IntakeSubsystem.getInstance().jiggleOff();
   }
 
   /**
@@ -167,8 +169,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.setControl(
       m_indexerRequest.withOutput(Constants.Shooter.INDEXER_MOTOR_SPEED)
     );
+    IntakeSubsystem.getInstance().jiggleOn();
   }
-
+  
   /**
    * Stop the {@link #m_shooterMotorLeader shooter motors} (coast to 0).
    */

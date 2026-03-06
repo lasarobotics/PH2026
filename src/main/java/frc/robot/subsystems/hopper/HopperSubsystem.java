@@ -46,7 +46,7 @@ public class HopperSubsystem extends SubsystemBase implements AutoCloseable {
     // to check if the top CANranges are blocked
     // (the canranges are on the hopper, so the distance changes)
     Distance topDistance = 
-      !IntakeSubsystem.getInstance().hopperDeployed() ?
+      !IntakeSubsystem.getInstance().intakeDeployed() ?
         Constants.Hopper.TOP_BLOCKED_DISTANCE_CLOSED :
         Constants.Hopper.TOP_BLOCKED_DISTANCE_OPEN;
     // Check the top row as a collective

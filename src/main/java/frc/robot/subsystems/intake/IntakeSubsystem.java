@@ -27,6 +27,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private CANcoder m_intakeEncoder;
 
   private boolean m_isIntaking;
+  private boolean m_isJiggling;
   private boolean m_isIntakeRunning;
 
   /** Creates a new IntakeSubsystem */
@@ -38,6 +39,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     m_armPositionSetter = new MotionMagicVoltage(Radians.zero());
 
     m_isIntaking = false;
+    m_isJiggling = false;
     m_isIntakeRunning = false;
 
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
@@ -70,19 +72,19 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         // update: dropped to .26 considering that .255 is the setpoint
         // for the intake being down
         .withForwardSoftLimitThreshold(0.27) // measured value
-        .withReverseSoftLimitThreshold(0.010742); // zero position
+        .withReverseSoftLimitThreshold(0.0); // zero position
     armConfig
       .MotionMagic
         .withMotionMagicCruiseVelocity(10) // measured value
         .withMotionMagicAcceleration(8); // measured value
     armConfig
       .MotorOutput
-        .withNeutralMode(NeutralModeValue.Brake);
+        .withNeutralMode(NeutralModeValue.Coast);
 
     intakeEncoderConfig
       .MagnetSensor
         .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(0.177490234375) // measured value
+        .withMagnetOffset(0.17626953125) // measured value
         .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
     // Apply configs for TalonFX motors
     m_intakeMotor.getConfigurator().apply(intakeConfig);
@@ -119,7 +121,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void startIntake() {
     deployIntake();
-    startIntakeMotor();
+    // startIntakeMotor();
     m_isIntaking = true;
   }
 
@@ -130,6 +132,19 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     stowIntake();
     stopIntakeMotor();
     m_isIntaking = false;
+  }
+
+  public void jiggleOn() {
+    m_isJiggling = true;
+  }
+
+  public void jiggleOff() {
+    m_isJiggling = false;
+    if (m_isIntaking) {
+      deployIntake();
+    } else {
+      stowIntake();
+    }
   }
 
   /**
@@ -144,9 +159,16 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * @return True if arm motor is at fully
    * extended setpoint within a certain tolerance.
    */
-  public boolean hopperDeployed() {
+  public boolean intakeDeployed() {
     return m_armMotor.getPosition().getValue().isNear(
       Constants.Intake.DEPLOY_ANGLE,
+      Constants.Intake.DEPLOY_TOLERANCE
+    );
+  }
+  
+  public boolean intakeAtJigglePosition() {
+    return m_armMotor.getPosition().getValue().isNear(
+      Constants.Intake.JIGGLE_ANGLE,
       Constants.Intake.DEPLOY_TOLERANCE
     );
   }
@@ -193,9 +215,31 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  private void intakeToJigglePosition() {
+    m_armMotor.setControl(
+      m_armPositionSetter.withPosition(Constants.Intake.JIGGLE_ANGLE)
+    );
+  }
+
   @Override
   public void periodic() {
     super.periodic();
+
+    if (m_isIntaking && intakeDeployed()) {
+      startIntakeMotor();
+    } else {
+      stopIntakeMotor();
+    }
+
+    if (m_isJiggling) {
+      if (intakeDeployed()) {
+        intakeToJigglePosition();
+      }
+      if (intakeAtJigglePosition()) {
+        deployIntake();
+      }
+    }
+
     Logger.recordOutput(getName() + "/intakeMotor", m_isIntakeRunning);
     Logger.recordOutput(getName() + "/isInIntake", m_isIntaking);
     Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getAbsolutePosition().getValue());
