@@ -10,6 +10,7 @@ import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -50,6 +51,8 @@ public class Robot extends LoggedRobot {
     Logger.addDataReceiver(new NT4Publisher());
 
     Logger.start();
+
+    RobotController.setBrownoutVoltage(6.25);
 
     m_robotContainer = new RobotContainer();
 
