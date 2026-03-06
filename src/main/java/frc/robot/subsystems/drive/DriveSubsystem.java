@@ -37,6 +37,7 @@ import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.HeadHoncho;
 import frc.robot.LimelightHelpers;
+import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.generated.TunerConstants;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
@@ -883,6 +884,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     );
   }
 
+  double shootertemp = 0.0;
+  double climbtemp = 0.0;
+
   @Override
   public void periodic() {
     boolean resettingOdom = HeadHoncho.getInstance().wantToResetOdometry();
@@ -890,9 +894,17 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     if (resettingOdom) {
       zeroOdometry();
     }
-    
-    Logger.recordOutput(getName() + "/limelightShooterTemperature", LimelightHelpers.getLatestResults(Constants.Drive.SHOOTER_LIMELIGHT_NAME).hardware.temperature);
-    Logger.recordOutput(getName() + "/limelightClimbTemperature", LimelightHelpers.getLatestResults(Constants.Drive.CLIMB_LIMELIGHT_NAME).hardware.temperature);
+
+    LimelightResults shooterResults = LimelightHelpers.getLatestResults(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
+    if (shooterResults != null && shooterResults.hardware != null) {
+      shootertemp = shooterResults.hardware.temperature;
+      Logger.recordOutput(getName() + "/limelightShooterTemperature", shootertemp);
+    }
+    LimelightResults climbResults = LimelightHelpers.getLatestResults(Constants.Drive.CLIMB_LIMELIGHT_NAME);
+    if (climbResults != null && climbResults.hardware != null) {
+      climbtemp = climbResults.hardware.temperature;
+      Logger.recordOutput(getName() + "/limelightClimbTemperature", climbtemp);
+    }
 
     /*
      * Periodically try to apply the operator perspective.

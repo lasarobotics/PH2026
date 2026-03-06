@@ -157,7 +157,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void stopIndexer() {
     m_indexerMotor.setVoltage(0);
-    IntakeSubsystem.getInstance().jiggleOff();
+    // IntakeSubsystem.getInstance().jiggleOff();
   }
 
   /**
@@ -169,7 +169,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.setControl(
       m_indexerRequest.withOutput(Constants.Shooter.INDEXER_MOTOR_SPEED)
     );
-    IntakeSubsystem.getInstance().jiggleOn();
+    // IntakeSubsystem.getInstance().jiggleOn();
   }
   
   /**
@@ -334,7 +334,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
       if (shooting || forceShooting || dumbShooting) {
         runShooter();
-        IntakeSubsystem.getInstance().deployIntake();
+        IntakeSubsystem.getInstance().jiggleOn();
+        // IntakeSubsystem.getInstance().deployIntake();
 
         // If the shooter is ready (rpm, position, hood) and
         // the time/pass check succeeds, then ready to shoot
@@ -370,10 +371,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         }
       } else {
         // holdShooter();
+        IntakeSubsystem.getInstance().jiggleOff();
         stopShooter();
         stopIndexer();
       }
     } else {
+      IntakeSubsystem.getInstance().jiggleOff();
       stopEverything();
     }
     

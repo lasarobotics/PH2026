@@ -172,6 +172,13 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       Constants.Intake.DEPLOY_TOLERANCE
     );
   }
+  
+  public boolean intakeStowed() {
+    return m_armMotor.getPosition().getValue().isNear(
+      Constants.Intake.STOW_ANGLE,
+      Constants.Intake.DEPLOY_TOLERANCE
+    );
+  }
 
   /**
    * Start intake of fuel using intake motor
@@ -240,8 +247,12 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       }
     }
 
+    Logger.recordOutput(getName() + "/intakeDeployed", intakeDeployed());
+    Logger.recordOutput(getName() + "/intakeAtJiggle", intakeAtJigglePosition());
+    Logger.recordOutput(getName() + "/intakeAtStow", intakeStowed());
     Logger.recordOutput(getName() + "/intakeMotor", m_isIntakeRunning);
-    Logger.recordOutput(getName() + "/isInIntake", m_isIntaking);
+    Logger.recordOutput(getName() + "/isJiggling", m_isJiggling);
+    Logger.recordOutput(getName() + "/isIntaking", m_isIntaking);
     Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getAbsolutePosition().getValue());
   }
   

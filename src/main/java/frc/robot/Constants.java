@@ -626,7 +626,7 @@ public final class Constants {
     // this should be basically the value of the soft limit of the arm
     public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);
     // straight up jiggling it
-    public static final Angle JIGGLE_ANGLE = STOW_ANGLE.plus(DEPLOY_ANGLE).div(2);
+    public static final Angle JIGGLE_ANGLE = Rotations.of(0.125);
 
     // Tolerance of check for hopper being deployed
     // percent based on deploy angle
