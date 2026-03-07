@@ -174,7 +174,7 @@ public final class Constants {
         5.691
       ),
       new Rotation2d(
-        Degrees.of(0)
+        Degrees.of(-45) // anti beaching, used to be 0 (Q48 Belton)
       )
     );
     public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = new Pose2d(
@@ -189,7 +189,7 @@ public final class Constants {
     public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = new Pose2d(
       new Translation2d(
         7.7,
-        4.478
+        4.663 // changed after hitting trench Q48 Belton (used to be 4.478)
       ),
       new Rotation2d(
         Degrees.of(-90)
@@ -221,7 +221,7 @@ public final class Constants {
         2.45
       ),
       new Rotation2d(
-        Degrees.of(0)
+        Degrees.of(-45) // anti beaching, used to be 0 (Q48 Belton)
       )
     );
     public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
@@ -268,7 +268,7 @@ public final class Constants {
         2.18
       ),
       new Rotation2d(
-        Degrees.of(0)
+        Degrees.of(-45) // anti beaching, used to be 0 (Q48 Belton)
       )
     );
     public static final Pose2d RED_LEFT_DEPOT_NZ_POSE = new Pose2d(
@@ -315,7 +315,7 @@ public final class Constants {
         5.691
       ),
       new Rotation2d(
-        Degrees.of(0)
+        Degrees.of(-45) // anti beaching, used to be 0 (Q48 Belton)
       )
     );
     public static final Pose2d RED_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
@@ -404,7 +404,8 @@ public final class Constants {
     // In rotations per second
     // currently based on empirical measurement
     // public static final double DUMB_SHOOTER_SPEED = 34.5;
-    public static final double DUMB_SHOOTER_SPEED = 34.25;
+    // public static final double DUMB_SHOOTER_SPEED = 34.25;
+    public static final double DUMB_SHOOTER_SPEED = 33.75;
   }
 
   public static class Drive {
@@ -633,7 +634,7 @@ public final class Constants {
     // Tolerance of check for hopper being deployed
     // percent based on deploy angle
     // 5% probably reasonable for now
-    public static final double DEPLOY_TOLERANCE = 0.20;
+    public static final Angle DEPLOY_TOLERANCE = Degrees.of(20);
   }
 
   public static class Hopper {

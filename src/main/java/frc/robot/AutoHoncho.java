@@ -345,6 +345,43 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
+        ) return PREOVERRAMP;
+
+        return this;
+      }
+    },
+    PREOVERRAMP {
+      @Override
+      public void initialize() {
+        IntakeSubsystem.getInstance().stopIntake();
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          // positionConfig.AllianceZoneSide(),
+          positionConfig.AcrossBumpNZPosition(),
+          MetersPerSecond.of(0),
+          Constants.Drive.MAX_SPEED.div(2),
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        DriveSubsystem.getInstance().stopMoving();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpNZPosition(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
         ) return OVERRAMP;
 
         return this;
@@ -779,9 +816,6 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
   public static void setAutoType(String type) {
     Logger.recordOutput("AutoHoncho/setAutoType", type);
     switch (type) {
-      case "Nothing":
-        startingState = NothingAuto.NOTHING;
-        break;
       case "Basic Shoot":
         startingState = BasicShootAuto.START;
         break;
@@ -797,6 +831,10 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       case "Depot":
         startingState = DepotAuto.START;
         break;
+      case "Nothing":
+      default:
+        startingState = NothingAuto.NOTHING;
+        break;
     }
   }
 
@@ -810,7 +848,12 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
   }
 
   public void periodic() {
-    Logger.recordOutput(getName() + "/currentState", getState().toString());
+    if (getState() == null) {
+      Logger.recordOutput(getName() + "/currentState", "null");
+    }
+    else {
+      Logger.recordOutput(getName() + "/currentState", getState().toString());
+    }
   }
 
   public static boolean autoWantToShoot() {

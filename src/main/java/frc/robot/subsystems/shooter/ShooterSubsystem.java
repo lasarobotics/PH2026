@@ -110,7 +110,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor
       .withAbsoluteSensorDiscontinuityPoint(0.05)
-      .withMagnetOffset(0.405)
+      .withMagnetOffset(0.799560546875)
       .withSensorDirection(SensorDirectionValue.Clockwise_Positive);
       
     m_shooterMotorLeader.getConfigurator().apply(shooterConfig);
