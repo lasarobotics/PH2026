@@ -18,7 +18,7 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 public class AutoHoncho extends StateMachine implements AutoCloseable {  
   public static AutoPositionConfig positionConfig;
-  public static SystemState startingState;
+  public static SystemState startingState = NothingAuto.NOTHING;
 
   public enum NothingAuto implements SystemState {
     NOTHING {
@@ -841,17 +841,16 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
   public AutoHoncho() {
     super(startingState);
     if (startingState == null) {
-      Logger.recordOutput("AutoHoncho/creationAutoType", "null");
+      Logger.recordOutput(getName() + "/creationAutoType", "null");
     } else {
-      Logger.recordOutput("AutoHoncho/creationAutoType", startingState.toString());
+      Logger.recordOutput(getName() + "/creationAutoType", startingState.toString());
     }
   }
 
   public void periodic() {
     if (getState() == null) {
       Logger.recordOutput(getName() + "/currentState", "null");
-    }
-    else {
+    } else {
       Logger.recordOutput(getName() + "/currentState", getState().toString());
     }
   }
