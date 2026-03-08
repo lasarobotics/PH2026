@@ -10,7 +10,15 @@ import edu.wpi.first.wpilibj.Timer;
 
 public class GameHelpers {
 
+  private static double startNumber = 20;
   private static Timer timer = new Timer();
+
+  public static void initializeStartNumber() {
+    startNumber = 
+      DriverStation.isAutonomous() ?
+        20 :
+        140;
+  }
 
   public static void zeroTimer() {
     timer.reset();
@@ -23,7 +31,7 @@ public class GameHelpers {
    * @return The time left in the match (in seconds)
    */
   public static double matchTimeLeft() {
-    return 140 - timer.get();
+    return startNumber - timer.get();
   }
 
   /**
