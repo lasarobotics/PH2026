@@ -393,9 +393,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DoubleSupplier s_strafeRequest = () -> 0;
   private static DoubleSupplier s_rotateRequest = () -> 0;
 
-  private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
-  private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
-
   private static final Double DEADBAND_SCALAR = 0.085;
   private static final Double AUTO_DEADBAND_SCALAR = 0.02;
   private static final Double AUTO_ROTATIONAL_DEADBAND_SCALAR = 0.02;
@@ -825,26 +822,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     );
   }
 
-  double shootertemp = 0.0;
-  double climbtemp = 0.0;
-
   @Override
   public void periodic() {
     boolean resettingOdom = HeadHoncho.getInstance().wantToResetOdometry();
 
     if (resettingOdom) {
       zeroOdometry();
-    }
-
-    LimelightResults shooterResults = LimelightHelpers.getLatestResults(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
-    if (shooterResults != null && shooterResults.hardware != null) {
-      shootertemp = shooterResults.hardware.temperature;
-      Logger.recordOutput(getName() + "/limelightShooterTemperature", shootertemp);
-    }
-    LimelightResults climbResults = LimelightHelpers.getLatestResults(Constants.Drive.CLIMB_LIMELIGHT_NAME);
-    if (climbResults != null && climbResults.hardware != null) {
-      climbtemp = climbResults.hardware.temperature;
-      Logger.recordOutput(getName() + "/limelightClimbTemperature", climbtemp);
     }
 
     /*
