@@ -10,14 +10,11 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.SignalLogger;
 
 import edu.wpi.first.networktables.NetworkTableInstance;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.DriverStation.MatchType;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.commands.LoggingInitializer;
 import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -54,7 +51,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("RuntimeType", isSimulation() ? "sim" : "real");
 
     SignalLogger.enableAutoLogging(false);
-    CommandScheduler.getInstance().schedule(new LoggingInitializer());
+    LoggingInitializer.getInstance();
 
     RobotController.setBrownoutVoltage(6.25);
 
@@ -102,17 +99,8 @@ public class Robot extends LoggedRobot {
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
   public void disabledInit() {
-    // basically if it's a real match and teleop is over
-    // it's probably the end of the match
-    if (
-      hasRunTeleop &&
-      DriverStation.getMatchType() != MatchType.None
-    ) {
-      // 165 is the max
-      // 140 sec teleop + 3 sec delay + 20 sec auto = 163
-      // so might as well get all of it
-      LimelightHelpers.triggerRewindCapture(Constants.Drive.SHOOTER_LIMELIGHT_NAME, 165);
-      LimelightHelpers.triggerRewindCapture(Constants.Drive.CLIMB_LIMELIGHT_NAME, 165);
+    if (hasRunTeleop) {
+      LoggingInitializer.getInstance().stopLogging();
     }
   }
 
