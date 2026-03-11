@@ -38,6 +38,7 @@ import frc.robot.Constants;
 import frc.robot.HeadHoncho;
 import frc.robot.LimelightHelpers;
 import frc.robot.LimelightHelpers.LimelightResults;
+import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.generated.TunerConstants;
 
 public class DriveSubsystem extends StateMachine implements AutoCloseable {
@@ -579,7 +580,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   //camera vars
   protected final Thread m_limelight_thread;
 
-  private static Map<String, Boolean> s_limelightSeesTag;
   private static Map<String, Double> s_limelightHeartbeat;
 
   // volatile because thread safety or something
@@ -605,12 +605,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     super(DriveStates.DISABLED);
     s_requestedDriveState = DriveStates.DISABLED;
     
-    s_limelightSeesTag = new HashMap<>();
     s_limelightHeartbeat = new HashMap<>();
-
-    // init sees tag just to be safe
-    s_limelightSeesTag.put(Constants.Drive.SHOOTER_LIMELIGHT_NAME, false);
-    s_limelightSeesTag.put(Constants.Drive.CLIMB_LIMELIGHT_NAME, false);
 
     // init heartbeat to avoid crash on enable
     s_limelightHeartbeat.put(Constants.Drive.SHOOTER_LIMELIGHT_NAME, 0.0);
@@ -720,6 +715,38 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       return null;
     }
 
+    // filtering for unreasonable poses
+    // https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-dimension-dwgs.pdf
+    // welded perimeter field is slightly larger
+    // 16.540988 meters x
+    // 8.069326 meters y
+    // bump is 16 cm off the ground
+    // and anything above 25cm is probably insane airtime & unreliable
+    if (
+      pose_estimate.pose.getX() < 0         ||
+      pose_estimate.pose.getX() > 16.540988 ||
+      pose_estimate.pose.getY() < 0         ||
+      pose_estimate.pose.getY() > 8.069326  ||
+      pose_estimate.pose.getZ() < 0         ||
+      pose_estimate.pose.getZ() > 0.25
+    ) {
+      return null;
+    }
+
+    // aggressive filtering for one tag
+    // https://docs.limelightvision.io/docs/docs-limelight/pipeline-apriltag/apriltag-robot-localization#using-wpilibs-pose-estimator
+    if (pose_estimate.tagCount == 1 && pose_estimate.rawFiducials.length == 1) {
+      RawFiducial tag = pose_estimate.rawFiducials[0];
+      // ignore anything that has too high ambiguity
+      if (tag.ambiguity > Constants.Drive.SINGLE_TAG_AMBIGUITY_CUTOFF) {
+        return null;
+      }
+      // we outright reject anything further than a certain distance
+      if (tag.distToCamera > Constants.Drive.SINGLE_TAG_DISTANCE_CUTOFF) {
+        return null;
+      }
+    }
+
     return pose_estimate;
   }
 
@@ -734,43 +761,46 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     };
 
     while (true) {
-      // (AI Fix) Re-check state each iteration so std devs update
-      // as the robot transitions between DISABLED and enabled states
-      if (getState() == DriveStates.DISABLED) {
-        // trust limelights for rotation if disabled
-        // also trust them a little less overall
-        s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, 1));
-      } else {
-        // when running, ignore limelight rotation entirely
-        s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.7, 0.7, 9999999));
-      }
-
       for (String limelight : limelights) {
         if (!s_shouldDoGlobalPoseEstimation) {
           continue;
         }
 
-        LimelightHelpers.PoseEstimate pose_estimate_maybe =
+        LimelightHelpers.PoseEstimate pose_estimate =
           getFilteredLimelightPose(limelight);
 
-        if (pose_estimate_maybe == null) {
-          s_limelightSeesTag.put(
-            limelight,
-            false
-          );
-
+        if (pose_estimate == null) {
           continue;
         }
 
-        LimelightHelpers.PoseEstimate pose_estimate = pose_estimate_maybe;
+        if (getState() == DriveStates.DISABLED) {
+          // trust limelights for rotation if disabled
+          // also trust them a little less overall
+          s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, 1));
+        } else {
+          // when running, ignore limelight rotation entirely
+          if (pose_estimate.tagCount > 1) {
+            // more than one tag
+            s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.5, 0.5, 9999999));
+          } else {
+            // if only one tag, increase uncertainty based on distance
+            // starts at 0.5 and then increases with a factor of 0.3 for every
+            // meter of distance
+            double distanceStdDev =
+              0.5 + (
+                pose_estimate.rawFiducials[0].distToCamera *
+                Constants.Drive.TAG_UNCERTAINTY_SCALING_FACTOR
+              );
+            s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(
+              distanceStdDev,
+              distanceStdDev,
+              9999999
+            ));
+          }
+        }
 
         s_drivetrain.addVisionMeasurement(
           pose_estimate.pose.toPose2d(), Utils.fpgaToCurrentTime(pose_estimate.timestampSeconds)
-        );
-
-        s_limelightSeesTag.put(
-          limelight,
-          true
         );
       }
       try {

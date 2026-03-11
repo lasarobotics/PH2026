@@ -425,6 +425,12 @@ public final class Constants {
 
     public static final String SHOOTER_LIMELIGHT_NAME = "limelight-shooter";
     public static final String CLIMB_LIMELIGHT_NAME = "limelight-climb";
+    public static final double SINGLE_TAG_AMBIGUITY_CUTOFF = 0.5;
+    public static final double SINGLE_TAG_DISTANCE_CUTOFF = 5;
+    // 5 meters should be about 2 meters of stddev (feels about right)
+    // the base stddev is 0.5 (defined in code in drivesubsystem)
+    // 1.5 / 5 = 0.3
+    public static final double TAG_UNCERTAINTY_SCALING_FACTOR = 0.3;
 
     public static final int THROTTLE_OFF = 200;
     public static final int THROTTLE_IDLE = 0;
