@@ -101,7 +101,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     hoodConfig.MotorOutput
       .withInverted(InvertedValue.CounterClockwise_Positive);
     hoodConfig.Feedback
-      .withRotorToSensorRatio(36.0 / 16.0)
+      .withRotorToSensorRatio(42.0 / 8.0)
       .withSensorToMechanismRatio(127.0 / 13.0)
       .withRemoteCANcoder(m_hoodCanCoder);
 
