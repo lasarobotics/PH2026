@@ -10,8 +10,6 @@ java {
 
 repositories {
   maven { url "https://jitpack.io" }
-  maven { url "https://maven.questnav.gg/releases" }
-  maven { url "https://maven.questnav.gg/snapshots" }
 }
 
 def ROBOT_MAIN_CLASS = "frc.robot.Main"
@@ -61,7 +59,6 @@ def includeDesktopSupport = true
 dependencies {
     implementation 'org.apache.commons:commons-math3:3.+'
     implementation 'com.github.lasarobotics:PurpleLib:v2026.0.1'
-    implementation 'gg.questnav:questnavlib-java:2026-1.0.0'
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()

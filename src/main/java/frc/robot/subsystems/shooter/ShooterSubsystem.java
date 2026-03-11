@@ -14,6 +14,7 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
+import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -42,12 +43,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   // private TalonFX m_agitatorMotor;
   private CANcoder m_hoodCanCoder;
 
-  private final VelocityDutyCycle m_shooterRequest;
+  private final VelocityVoltage m_shooterVoltageRequest;
+  private final VelocityDutyCycle m_shooterDutyCycleRequest;
   private final PositionVoltage m_hoodRequest;
   private final DutyCycleOut m_indexerRequest;
 
   private boolean m_isRunning = true;
 
+  /**
+   * Get an instance of ShooterSubsystem
+   * @return Subsystem instance
+   */
   public static ShooterSubsystem getInstance() {
     if (s_shooterSubsystem == null) {
       s_shooterSubsystem = new ShooterSubsystem();
@@ -63,14 +69,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
-    m_shooterRequest = new VelocityDutyCycle(0);
+    m_shooterVoltageRequest = new VelocityVoltage(0);
+    m_shooterDutyCycleRequest = new VelocityDutyCycle(0);
     m_hoodRequest = new PositionVoltage(0);
     m_indexerRequest = new DutyCycleOut(0);
 
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
       .Feedback
-        .withSensorToMechanismRatio(36/48);
+        .withSensorToMechanismRatio(36.0/48.0);
     shooterConfig
       .Slot0
         .withKP(999999.0);
@@ -179,36 +186,39 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorLeader.setVoltage(0);
   }
 
-  // /**
-  //  * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
-  //  * to the (constant)
-  //  * {@link Constants.Shooter#SHOOTER_HOLD_SPEED shooter hold speed}
-  //  * and let the others coast.
-  //  */
-  // private void holdShooter() {
-  //   m_shooterMotorLeader.setControl(
-  //     m_shooterRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
-  //   );
-  // }
-
   /**
    * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
-   * to the desired shooting speed
-   * according to {@link #wantedShooterSpeed()}
+   * to the desired shooting speed according to {@link #wantedShooterSpeed()}.
+   * If we're too far above the wanted shooter speed, run with a
+   * velocity (non-BangBang) controller. This is because BangBang can only
+   * drive up, and we don't want to be waiting for multiple seconds for the
+   * flywheel to spin down on its own. At a tolerance of 2 rotations per second,
+   * it takes somewhere between 0.1 and 0.2 seconds to spin down back to the
+   * target velocity.
    */
   private void runShooter() {
-    m_shooterMotorLeader.setControl(
-      m_shooterRequest.withVelocity(wantedShooterSpeed())
-    );
+    if (
+      m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond)
+      > wantedShooterSpeed() + Constants.Shooter.SHOOTER_SPEED_ABOVE_TOLERANCE
+    ) {
+      // too high above - run voltage request
+      m_shooterMotorLeader.setControl(
+        m_shooterVoltageRequest.withVelocity(wantedShooterSpeed())
+      );
+    } else {
+      // below or within tolerance - run bang bang
+      m_shooterMotorLeader.setControl(
+        m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
+      );
+    }
   }
 
   /**
-   * 
+   * Determine whether robot is at speed where it is able to shoot
    * @return If the master shooter motor is {@link Constants.Shooter#SHOOTER_SPEED_TOLERANCE near}
    * the desired speed according to {@link #wantedShooterSpeed()}
    */
   private boolean atShootSpeed() {
-    // TODO add comments
     return (
       m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond) >=
         wantedShooterSpeed()
@@ -278,15 +288,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private double wantedShooterSpeed() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
-      return Constants.Shooter.DUMB_SHOOTER_SPEED;
+      // return Constants.Shooter.DUMB_SHOOTER_SPEED;
+      return Constants.Shooter.DUMB_SHOOTER_SPEED.get();
     }
 
     LinearVelocity ballVelocity = AimUtil.getBallVelocity();
-    double radiansPerSecond =
-      2 * ballVelocity.in(MetersPerSecond)
-      / Constants.Shooter.SHOOTER_RADIUS.in(Meters);
     double rotationsPerSecond =
-      radiansPerSecond / (2 * Math.PI);
+      ballVelocity.in(MetersPerSecond) /
+      (2 * Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters));
     return rotationsPerSecond;
   }
 
@@ -300,7 +309,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private Angle wantedHoodPosition() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
-      return Constants.Shooter.DUMB_HOOD_POSITION;
+      // return Constants.Shooter.DUMB_HOOD_POSITION;
+      return Degrees.of(Constants.Shooter.DUMB_HOOD_POSITION.get())
+        .minus(Degrees.of(80));
     }
 
     return AimUtil.getExitAngle().minus(Degrees.of(80.0));

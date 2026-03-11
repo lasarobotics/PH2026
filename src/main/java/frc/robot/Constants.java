@@ -18,6 +18,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Value;
 
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -369,7 +371,7 @@ public final class Constants {
 
     // shooter speed tolerance is in rotations per second
     public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 2;
-    public static final double SHOOTER_SPEED_ABOVE_TOLERANCE = 4;
+    public static final double SHOOTER_SPEED_ABOVE_TOLERANCE = 2;
     public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(5);
 
     // how long we can be shooting after the end of the shift
@@ -400,12 +402,25 @@ public final class Constants {
     );
 
     // these values are for when the robot is pressed againt the tower
-    public static final Angle DUMB_HOOD_POSITION = Rotations.of(-0.06);
+    // public static final Angle DUMB_HOOD_POSITION = Rotations.of(-0.06);
+    public static final LoggedNetworkNumber DUMB_HOOD_POSITION
+      = new LoggedNetworkNumber("/Tuning/dumbHoodPosition", 80 - 21.6);
     // In rotations per second
     // currently based on empirical measurement
     // public static final double DUMB_SHOOTER_SPEED = 34.5;
     // public static final double DUMB_SHOOTER_SPEED = 34.25;
-    public static final double DUMB_SHOOTER_SPEED = 33.75;
+    // public static final double DUMB_SHOOTER_SPEED = 33.75;
+    public static final LoggedNetworkNumber DUMB_SHOOTER_SPEED
+      = new LoggedNetworkNumber("/Tuning/dumbHoodPosition", 33.75);
+
+    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
+    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 0);
+    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
+      = new LoggedNetworkNumber("/Tuning/hoodAngleScalar");
+    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
+      = new LoggedNetworkNumber("/Tuning/hoodAngleAddend");
   }
 
   public static class Drive {

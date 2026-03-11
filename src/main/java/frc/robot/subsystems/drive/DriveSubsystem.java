@@ -132,11 +132,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           s_drive
             .withVelocityX(
               Constants.Drive.MAX_SPEED
-                .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                .times(-s_strafeRequest.getAsDouble())
                 .times(Constants.Drive.FAST_SPEED_SCALAR))
             .withVelocityY(
               Constants.Drive.MAX_SPEED
-                .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                .times(-s_driveRequest.getAsDouble())
                 .times(Constants.Drive.FAST_SPEED_SCALAR))
             .withRotationalRate(
               Constants.Drive.MAX_ANGULAR_RATE
@@ -419,6 +419,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   // idk my friend andrew told me to
   private static volatile boolean s_shouldDoGlobalPoseEstimation = true;
 
+  /**
+   * Get an instance of DriveSubsystem
+   * @return Subsystem instance
+   */
   public static DriveSubsystem getInstance() {
     if (s_driveSubsystem == null) {
       s_driveSubsystem = new DriveSubsystem();
@@ -456,18 +460,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
-
-    // ai slop todo remove
-    // Blue-alliance-perspective drive request for goTo() autonomous driving
-    // This ensures field-frame velocities computed from odometry (blue-origin)
-    // are interpreted correctly regardless of which alliance we're on.
-    // s_autoGoTo =
-    //   new SwerveRequest.FieldCentric()
-    //     .withDeadband(0)
-    //     .withRotationalDeadband(0)
-    //     .withDriveRequestType(DriveRequestType.Velocity)
-    //     .withSteerRequestType(SteerRequestType.MotionMagicExpo)
-    //     .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
         
     s_autoDrive =
       new SwerveRequest.FieldCentric()
@@ -904,6 +896,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
+   * Check to see if robot is at a destination
    * @param target position robot is trying to reach
    * @param acceptableDistanceError how much error is acceptable in terms of distance to the target
    * @param acceptableRotationError how much error is acceptable in terms of angle relative to desired Pose2d
