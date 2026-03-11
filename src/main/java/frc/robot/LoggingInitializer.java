@@ -140,13 +140,7 @@ public class LoggingInitializer extends StateMachine {
       public SystemState nextState() {
         // basically if it's a real match and teleop is over
         // it's probably the end of the match
-        if (
-          (
-            teleopEnded &&
-            DriverStation.getMatchType() != MatchType.None
-          ) // ||
-          // shouldStopLogging.get()
-        ) {
+        if (shouldStopLogging) {
           return END;
         }
 
@@ -191,7 +185,7 @@ public class LoggingInitializer extends StateMachine {
   private static String logMatchText;
 
   // private static LoggedNetworkBoolean shouldStopLogging = new LoggedNetworkBoolean("/Tuning/LoggingInitializer/shouldStopLogging");
-  private static boolean teleopEnded = false;
+  private static boolean shouldStopLogging = false;
 
   public static LoggingInitializer getInstance() {
     if (s_loggingInitializer == null) {
@@ -220,6 +214,6 @@ public class LoggingInitializer extends StateMachine {
   }
 
   public void stopLogging() {
-    teleopEnded = true;
+    shouldStopLogging = true;
   }
 }
