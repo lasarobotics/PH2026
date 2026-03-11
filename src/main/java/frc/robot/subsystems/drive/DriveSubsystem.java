@@ -155,7 +155,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         }
 
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
         
         return this;
       }
@@ -246,156 +245,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
-
-        return this;
-      }
-    },
-    CLIMB_ALIGN {
-      @Override
-      public void initialize() {
-        s_climbAlignSpeed = Constants.Drive.MAX_SPEED;
-        s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE;
-        s_climbAlignDistanceError = Meters.of(0.2);
-        s_climbAlignRotationError = Radians.of(0.1);
-
-        // turn on climb limelight
-        // turn off back & shooter
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
-        );
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
-        );
-        s_shouldDoGlobalPoseEstimation = false;
-
-        if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-          // red alliance
-          LimelightHelpers.SetFiducialIDFiltersOverride(
-            Constants.Drive.CLIMB_LIMELIGHT_NAME,
-            Constants.Drive.RED_TOWER_AND_HUB_APRIL_TAGS
-          );
-        } else {
-          // blue alliance
-          LimelightHelpers.SetFiducialIDFiltersOverride(
-            Constants.Drive.CLIMB_LIMELIGHT_NAME,
-            Constants.Drive.BLUE_TOWER_AND_HUB_APRIL_TAGS
-          );
-        }
-      }
-
-      @Override
-      public void execute() {
-        LimelightHelpers.PoseEstimate pose_estimate =
-          getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
-        
-        if (pose_estimate != null) {
-          s_drivetrain.resetPose(pose_estimate.pose.toPose2d());
-        }
-
-        s_driveSubsystem.goTo(
-          s_climbPosition,
-          MetersPerSecond.zero(),
-          DriveSubsystem.s_climbAlignSpeed,
-          DriveSubsystem.s_climbRotationSpeed
-        );
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        LimelightHelpers.SetFiducialIDFiltersOverride(
-          Constants.Drive.CLIMB_LIMELIGHT_NAME,
-          Constants.Drive.ALL_APRIL_TAGS
-        );
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (DriverStation.isDisabled()) return DISABLED;
-        if (s_requestedDriveState == DriveStates.OVER_RAMP) {
-          return OVER_RAMP;
-        }
-
-        if (
-          atDestination(
-            s_climbPosition,
-            DriveSubsystem.s_climbAlignDistanceError,
-            DriveSubsystem.s_climbAlignRotationError
-          )
-        ) {
-          s_climbAlignSpeed = Constants.Drive.MAX_SPEED.div(4);
-          s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE.div(2);
-          s_climbAlignDistanceError = Meters.of(0.01);
-          s_climbAlignRotationError = Radians.of(0.01);
-
-          if (
-            atDestination(
-              s_climbPosition,
-              DriveSubsystem.s_climbAlignDistanceError,
-              DriveSubsystem.s_climbAlignRotationError
-            )
-          ) {          
-            return 
-              DriverStation.isAutonomous() ?
-                AUTO :
-                SLOW_DRIVER_ALIGN;
-          }
-        }
-
-        // To maintain complete driver control, potentially delete though
-        if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
-        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-
-        return this;
-      }
-    }, 
-    SLOW_DRIVER_ALIGN {
-      @Override
-      public void initialize() {
-        // only turn on climb limelight
-        // turn off the others
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
-        );
-        LimelightHelpers.SetThrottle(
-          Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
-        );
-        s_shouldDoGlobalPoseEstimation = true;
-
-        s_driveSubsystem.setAllLimelightsToAllTags();
-      }
-
-      @Override
-      public void execute() {
-        LimelightHelpers.PoseEstimate pose_estimate =
-          getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
-        
-        if (pose_estimate != null) {
-          s_drivetrain.resetPose(pose_estimate.pose.toPose2d());
-        }
-
-        s_drivetrain.setControl(
-          s_drive
-            .withVelocityX(
-              Constants.Drive.MAX_SPEED
-                .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                .times(Constants.Drive.FAST_SPEED_SCALAR))
-            .withVelocityY(
-              Constants.Drive.MAX_SPEED
-                .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                .times(Constants.Drive.FAST_SPEED_SCALAR))
-            .withRotationalRate(
-              Constants.Drive.MAX_ANGULAR_RATE
-                .times(-s_rotateRequest.getAsDouble())
-                .times(Constants.Drive.FAST_SPEED_SCALAR)));
-      }
-
-      @Override
-      public DriveStates nextState() {
-        if (DriverStation.isDisabled()) return DISABLED;
-        if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
-        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
 
         return this;
       }
@@ -547,11 +396,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static final Pose2d[] redPoses = new Pose2d[]{Constants.Field.RED_TOWER};
   private static final Pose2d[] bluePoses = new Pose2d[]{Constants.Field.BLUE_TOWER};
 
-  // TODO: add more when you get more WP destinations
-  private static final int WP_CLIMB = 0;
-
   private static final Double DEADBAND_SCALAR = 0.085;
-  private static final Double ROTATIONAL_DEADBAND_SCALAR = 0.1;
   private static final Double AUTO_DEADBAND_SCALAR = 0.02;
   private static final Double AUTO_ROTATIONAL_DEADBAND_SCALAR = 0.02;
 
@@ -561,21 +406,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private boolean m_hasAppliedOperatorPerspective = false;
 
-  private static LinearVelocity s_climbAlignSpeed = Constants.Drive.MAX_SPEED;
-  private static AngularVelocity s_climbRotationSpeed = Constants.Drive.MAX_ANGULAR_RATE;
-  private static Distance s_climbAlignDistanceError = Meters.of(0.2);
-  private static Angle s_climbAlignRotationError = Radians.of(0.1);
-
   private static PIDController s_headingController;
   private static PIDController s_autoAimController;
   private static PIDController s_autoDriveController;
 
   private static DriveStates s_requestedDriveState;
-
-  private static Pose2d[] s_alliancePoses;
-
-  public static Pose2d s_climbPosition;
-  public static Pose2d s_climbAlignPosition;
 
   //camera vars
   protected final Thread m_limelight_thread;
@@ -611,12 +446,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     // init heartbeat to avoid crash on enable
     s_limelightHeartbeat.put(Constants.Drive.SHOOTER_LIMELIGHT_NAME, 0.0);
     s_limelightHeartbeat.put(Constants.Drive.CLIMB_LIMELIGHT_NAME, 0.0);
-
-    if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
-      s_alliancePoses = redPoses;
-    } else {
-      s_alliancePoses = bluePoses;
-    }
 
     Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
 
@@ -661,9 +490,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     s_autoDriveController = new PIDController(1.75, 0.0, 0.0);
     s_autoDriveController.setTolerance(0.05); // (AI Fix) 5cm position tolerance
-
-    // TODO: Initialize the climb position to left
-    s_climbPosition = new Pose2d();
 
     // set throttle to idle here
     LimelightHelpers.SetThrottle(
@@ -1065,10 +891,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.AUTO_AIM;
   }
 
-  public void driveAutoClimb() {
-    s_requestedDriveState = DriveStates.CLIMB_ALIGN;
-  }
-
   public void driverControl() {
     if (DriverStation.isAutonomous()) {
       s_requestedDriveState = DriveStates.AUTO;
@@ -1079,15 +901,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   public void driveOverRamp() {
     s_requestedDriveState = DriveStates.OVER_RAMP;
-  }
-
-  public void leaveClimb() {
-    // TODO: Make the drive subsystem back up from tower when done climbing
-  }
-
-  public boolean isPastTower() {
-    // TODO: Figure out if the drive is free of the tower
-    return false;
   }
 
   /**
@@ -1153,33 +966,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       rotation = CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation;
     }
     s_drivetrain.seedFieldCentric(rotation);
-  }
-
-  /**
-   * Set the target position for drivetrain for climbing
-   * Defaults to left side if provided String does not match any climb spot
-   * @param selectedValue A String of either "Left", "Right", or "Center" indicating where to climb
-   */
-  public static void setClimbPosition(String selectedValue) {
-    Logger.recordOutput("DriveSubsystem/climbPosition", selectedValue);
-    switch (selectedValue) {
-      case "Blue Right":
-        s_climbAlignPosition = Constants.Field.BLUE_TOWER_OUTPOST_ALIGN_POSE;
-        s_climbPosition = Constants.Field.BLUE_TOWER_OUTPOST_SIDE;
-        break;
-      case "Blue Left":
-          s_climbAlignPosition = Constants.Field.BLUE_TOWER_DEPOT_ALIGN_POSE;
-        s_climbPosition = Constants.Field.BLUE_TOWER_DEPOT_SIDE;
-        break;
-      case "Red Right":
-          s_climbAlignPosition = Constants.Field.RED_TOWER_OUTPOST_ALIGN_POSE;
-        s_climbPosition = Constants.Field.RED_TOWER_OUTPOST_SIDE;
-        break;
-      case "Red Left":
-          s_climbAlignPosition = Constants.Field.RED_TOWER_DEPOT_ALIGN_POSE;
-        s_climbPosition = Constants.Field.RED_TOWER_DEPOT_SIDE;
-        break;
-    }
   }
 
   private Translation2d[] getBestRampSequence() {

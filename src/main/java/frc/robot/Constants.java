@@ -410,7 +410,6 @@ public final class Constants {
 
   public static class Drive {
     public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
-    public static final LinearVelocity CLIMB_MAX_SPEED = MetersPerSecond.of(0.1);
     public static final LinearAcceleration MAX_ACCELERATION =
         MetersPerSecondPerSecond.of(3); // TODO measure
     public static final AngularVelocity MAX_ANGULAR_RATE =
@@ -637,53 +636,14 @@ public final class Constants {
     // straight up jiggling it
     public static final Angle JIGGLE_ANGLE = Rotations.of(0.125);
 
-    // Tolerance of check for hopper being deployed
+    // Tolerance of check for arm being deployed
     // percent based on deploy angle
     // 5% probably reasonable for now
-    public static final Angle DEPLOY_TOLERANCE = Degrees.of(20);
+    public static final Angle DEPLOY_TOLERANCE = Degrees.of(10);
   }
 
-  public static class Hopper {
-    public static final int CANRANGE_TOP_ONE_ID = 50;
-    public static final int CANRANGE_TOP_TWO_ID = 51;
-    public static final int CANRANGE_BOTTOM_ID = 52;
-
-    // 18 inches is wall to wall where bottom canrange is
-    // so 17 inches for extra tolerance
-    public static final Distance BOTTOM_BLOCKED_DISTANCE = Inches.of(17);
-    // 32.5 inches from climber tube to hopper wall when fully extended
-    // We want a bunch of margin & this is for like fully full
-    // so 29 is probably alright
-    // TODO double check
-    public static final Distance TOP_BLOCKED_DISTANCE_OPEN = Inches.of(29);
-    // 17 inches from climb tube to approx. hopper closed position
-    // so 14 probably good
-    // TODO double check
-    public static final Distance TOP_BLOCKED_DISTANCE_CLOSED = Inches.of(14);
-
-    // TODO adjust maybe
-    public static final Time DELAY_TIME = Seconds.of(0.5);
-  }
-
-  public static class Climb {
-    public static final int CLIMB_MOTOR_1_ID = 60;
-    public static final int ARM_ENCODER_ID = 62;
-
-    public static final int SERVO_CHANNEL = 0;
-
-    public static final double CLIMB_SPEED_RPS = 3000.0 / 60.0;
-    public static final Angle CLIMB_ANGLE = Rotations.of(0.09);
-    public static final Angle DEPLOY_ANGLE = Rotations.of(0.26);
-    public static final Angle STOW_ANGLE = Rotations.of(0);
-    public static final Angle CLIMB_TOLERANCE = Degrees.of(2);
-
-    // TODO: Find the values of climb servo constants
-    public static final double SERVO_RETRACT_ANGLE = 0.7;
-    public static final double SERVO_STOW_ANGLE = 0.1; // Arbitrary number (it was 0.7 originally) I need something to tell the two apart
-  }
 
   public static class SmartDashboard {
-    public static final String SMARTDASHBOARD_CLIMB_CHOOSER_NAME = "Auto Climb Position";
     public static final String SMARTDASHBOARD_QUADRANT_CHOOSER_NAME = "Auto Start Position";
     public static final String SMARTDASHBOARD_AUTO_TYPE_CHOOSER_NAME = "Auto Selector";
   }

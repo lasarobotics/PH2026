@@ -14,7 +14,6 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -57,9 +56,7 @@ public class Robot extends LoggedRobot {
     m_robotContainer = new RobotContainer();
 
     // initialize subsystems
-    ClimbSubsystem.getInstance();
     DriveSubsystem.getInstance();
-    // HopperSubsystem.getInstance();
     IntakeSubsystem.getInstance();
     ShooterSubsystem.getInstance();
   }
@@ -119,9 +116,6 @@ public class Robot extends LoggedRobot {
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
     // this line or comment it out.
-    // if (AutoHoncho.s_autoTypeChooser.getSelected().equals("Shoot and Climb")) {
-    //   HeadHoncho.getInstance().unclimbState();
-    // }
 
     if (m_autonomousCommand != null) {
       m_autonomousCommand.cancel();

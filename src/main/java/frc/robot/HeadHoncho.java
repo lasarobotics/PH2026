@@ -11,9 +11,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
-import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -21,8 +19,6 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 
 public class HeadHoncho extends StateMachine implements AutoCloseable {
-  
-  private static HeadHonchoStates s_targetState = HeadHonchoStates.NORMAL;
 
   public enum HeadHonchoStates implements SystemState {
     REST {
@@ -31,7 +27,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         IntakeSubsystem.getInstance().stopIntake();
         ShooterSubsystem.getInstance().stopOperation();
         DriveSubsystem.getInstance().driverControl();
-        ClimbSubsystem.getInstance().stow();
       }
 
       @Override
@@ -45,7 +40,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void initialize() {
         ShooterSubsystem.getInstance().startOperation();
-        ClimbSubsystem.getInstance().stow();
       }
 
       @Override
@@ -74,24 +68,12 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         if (s_headHoncho.m_reverseIntakeButton.getAsBoolean()) {
           IntakeSubsystem.getInstance().reverseIntake();
         }
-        if (s_headHoncho.m_overRampButton.getAsBoolean()) {
-          ClimbSubsystem.getInstance().setClimbServo();
-        } else {
-          ClimbSubsystem.getInstance().setClimbServoZero();
-        }
       }
 
       @Override
       public SystemState nextState() {
         // if (s_headHoncho.m_overRampButton.getAsBoolean())
         //   return OVER_RAMP;
-        if (s_targetState.equals(HeadHonchoStates.UNCLIMB)) {
-          return UNCLIMB;
-        }
-
-        if (
-          s_headHoncho.m_climbButtonHasFallen.getAsBoolean()
-        ) return CLIMB;
 
         // if (s_headHoncho.m_restButtonHasFallen.getAsBoolean()) return REST;
 
@@ -111,61 +93,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
         return this;
       }
-    },
-    CLIMB {
-      @Override
-      public void initialize() {
-        // The hopper can retract while full
-        // it just spews balls out
-        IntakeSubsystem.getInstance().stopIntake();
-        ShooterSubsystem.getInstance().stopOperation();
-        //DriveSubsystem.getInstance().driveAutoClimb();
-        ClimbSubsystem.getInstance().deployArm();
-      }
-
-      @Override
-      public void execute() {
-        if (s_headHoncho.m_climbButtonHasFallen.getAsBoolean() && ClimbSubsystem.getInstance().inDeployPosition()) {
-          Logger.recordOutput("HeadHoncho/executeClimbButtonReady", true);
-          ClimbSubsystem.getInstance().climb();
-        } else {
-          Logger.recordOutput("HeadHoncho/executeClimbButtonReady", false);
-        }
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (s_headHoncho.m_cancelButton.getAsBoolean()) return UNCLIMB;
-
-        return this;
-      }
-    },
-    UNCLIMB {
-      Timer servoTimer = new Timer();
-
-      @Override
-      public void initialize() {
-        ClimbSubsystem.getInstance().deployArm();
-
-        servoTimer.reset();
-      }
-
-      @Override
-      public void execute() {
-        if (ClimbSubsystem.getInstance().inDeployPosition()) {
-          ClimbSubsystem.getInstance().retractServo();
-          servoTimer.start();
-        }
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (servoTimer.hasElapsed(1.5)) {
-          return NORMAL;
-        }
-
-        return this;
-      }
     }
   }
 
@@ -177,11 +104,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_reverseIntakeButton;
   private BooleanSupplier m_overRampButton;
   private BooleanSupplier m_intakeButtonHasFallen;
-  private BooleanSupplier m_climbButtonHasFallen;
   private BooleanSupplier m_restButtonHasFallen;
   private BooleanSupplier m_resetOdometry;
-
-  private SendableChooser<String> m_climbChooser;
 
   public static HeadHoncho getInstance() {
     if (s_headHoncho == null) {
@@ -193,13 +117,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private HeadHoncho() {
     super(HeadHonchoStates.NORMAL);
 
-    // Set up SendableChooser to get where to climb in auto
-    m_climbChooser = new SendableChooser<>();
-    m_climbChooser.setDefaultOption("Blue Left", "Blue Left");
-    m_climbChooser.addOption("Blue Right", "Blue Right");
-    m_climbChooser.addOption("Red Left", "Red Left");
-    m_climbChooser.addOption("Red Right", "Red Right");
-
     AutoHoncho.s_autoQuadrantChooser.setDefaultOption("Blue Left", "Blue Left");
     AutoHoncho.s_autoQuadrantChooser.addOption("Blue Right", "Blue Right");
     AutoHoncho.s_autoQuadrantChooser.addOption("Red Left", "Red Left");
@@ -210,10 +127,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     AutoHoncho.s_autoTypeChooser.addOption("Neutral Zone Max", "Neutral Zone Max");
     AutoHoncho.s_autoTypeChooser.addOption("Depot", "Depot");
     AutoHoncho.s_autoTypeChooser.addOption("Nothing", "Nothing");
-    AutoHoncho.s_autoTypeChooser.addOption("Shoot and Climb", "Shoot and Climb");
 
-    // Update DriveSubsystem when the climbChooser changes
-    m_climbChooser.onChange(DriveSubsystem::setClimbPosition);
     AutoHoncho.s_autoQuadrantChooser.onChange(AutoHoncho::setAutoQuadrant);
     AutoHoncho.s_autoTypeChooser.onChange(AutoHoncho::setAutoType);
   }
@@ -221,21 +135,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   public void periodic() {
     Logger.recordOutput(getName() + "/currentState", getState().toString());
     Logger.recordOutput(getName() + "/overRampButton", m_overRampButton.getAsBoolean());
-  }
-
-  /**
-   * Get the sendable chooser for climb auto options
-   * @return A SendableChooser containing climb options
-   */
-  public SendableChooser<String> getClimbChooser() {
-    return m_climbChooser;
-  }
-
-  /**
-   * Set next state for HeadHoncho to be unclimb
-   */
-  public void unclimbState() {
-    s_targetState = HeadHonchoStates.UNCLIMB;
   }
 
   public boolean wantToShoot() {
@@ -322,17 +221,13 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    * do a dumb shoot (constant hood position & speed).
    * @param forceShootButton True if we want to override
    * shooter checks & force run the indexer.
-   * @param cancelButton True if we want to go back from the climb
-   * to the normal state in HeadHoncho.
+   * @param cancelButton Currently unused.
    * @param reverseIntakeButton True if we want to reverse the intake motor
    * @param overRampRequest True if we want to go over the bump
    * @param restButtonHasFallen True if we want to go over the bump
    * @param intakeButtonHasFallen True if we want to toggle the intake.
    * As a result, should be a provider for if the button has
    * just been pressed down. (e.g. () -> button.wasPressed())
-   * @param climbButtonHasFallen True if we want to do next climb action.
-   * Same as intakeButton; should be a provider for if button
-   * has just been pressed.
    * @param restButtonHasFallen True if we want to do switch between rest
    * and normal states in HeadHoncho.
    */
@@ -345,7 +240,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     BooleanSupplier overRampRequest,
     BooleanSupplier resetOdomButton,
     BooleanSupplier intakeButtonHasFallen,
-    BooleanSupplier climbButtonHasFallen,
     BooleanSupplier restButtonHasFallen,
     DoubleSupplier driveRequest,
     DoubleSupplier strafeRequest,
@@ -359,7 +253,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_overRampButton = overRampRequest;
     m_resetOdometry = resetOdomButton;
     m_intakeButtonHasFallen = intakeButtonHasFallen;
-    m_climbButtonHasFallen = climbButtonHasFallen;
     m_restButtonHasFallen = restButtonHasFallen;
 
     DriveSubsystem.getInstance().bindControls(

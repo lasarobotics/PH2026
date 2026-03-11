@@ -11,7 +11,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.AutoPositionConfig.Quadrant;
-import frc.robot.subsystems.climb.ClimbSubsystem;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
@@ -81,166 +80,6 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         return this;
       }
     }
-  }
-
-  public enum ShootAndClimbAuto implements SystemState {
-    START {
-      @Override
-      public void execute() {
-        DriveSubsystem.getInstance().goTo(
-          positionConfig.TowerShootingPose(),
-          MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_ANGULAR_RATE
-        );
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
-
-        if (
-          DriveSubsystem.atDestination(
-            positionConfig.TowerShootingPose(),
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
-            Constants.Auto.HIGH_ROTATION_TOLERANCE
-          )
-        ) return SHOOT;
-        
-        return this;
-      }
-    },
-    SHOOT {
-      Timer timer = new Timer();
-
-      @Override
-      public void initialize() {
-        s_wantToDumbShoot = true;
-        DriveSubsystem.getInstance().driveAutoAim();
-        timer.start();
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        s_wantToDumbShoot = false;
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
-
-        if (timer.hasElapsed(Constants.Auto.EightBallShootingTime)) {
-          IntakeSubsystem.getInstance().stopIntake();
-          //ClimbSubsystem.getInstance().deployArm();
-          ClimbSubsystem.getInstance().stowServo();
-          return GO_TO_CLIMB_ALIGN_POSITION;
-        }
-
-        return this;
-      }
-    },
-    GO_TO_CLIMB_ALIGN_POSITION { 
-      Pose2d autoClimbAlignPosition;
-
-      @Override
-      public void initialize() {
-        autoClimbAlignPosition = DriveSubsystem.s_climbAlignPosition; 
-      }
-
-      @Override
-       public void execute() {
-        DriveSubsystem.getInstance().goTo(
-        // positionConfig.TowerPose(),
-        autoClimbAlignPosition,
-        MetersPerSecond.of(0),
-        Constants.Drive.MAX_SPEED.div(3),
-        Constants.Drive.MAX_ANGULAR_RATE.div(5)
-        );
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (
-          DriveSubsystem.atDestination(
-            // positionConfig.TowerPose(),
-            autoClimbAlignPosition,
-            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
-            Constants.Auto.LOW_ROTATION_TOLERANCE
-           )) return GO_TO_CLIMB;
-          
-          return this;
-      }
-
-    },
-    GO_TO_CLIMB {
-      Pose2d autoClimbPosition;
-
-      @Override
-      public void initialize() {
-        DriveSubsystem.getInstance().driverControl();
-        autoClimbPosition = DriveSubsystem.s_climbPosition;
-      }
-
-      @Override
-      public void execute() {
-        DriveSubsystem.getInstance().goTo(
-          // positionConfig.TowerPose(),
-          autoClimbPosition,
-          MetersPerSecond.of(0),
-          Constants.Drive.CLIMB_MAX_SPEED,
-          Constants.Drive.MAX_ANGULAR_RATE.div(5)
-        );
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
-
-        if (
-          DriveSubsystem.atDestination(
-            // positionConfig.TowerPose(),
-            autoClimbPosition,
-            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
-            Constants.Auto.LOW_ROTATION_TOLERANCE
-          )
-        ) return CLIMB;
-        return this;
-      }
-    },
-    CLIMB {
-      @Override
-      public void initialize() {
-        ShooterSubsystem.getInstance().stopOperation();
-      }
-
-      @Override
-      public void execute() {
-        if (ClimbSubsystem.getInstance().inDeployPosition()) {
-          Logger.recordOutput("HeadHoncho/executeClimbButtonReady", true);
-          ClimbSubsystem.getInstance().climb();
-        } else {
-          Logger.recordOutput("HeadHoncho/executeClimbButtonReady", false);
-          // we are fried here lol
-        }
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
-
-        return this;
-      }
-    },
   }
 
   public enum NZLiteAuto implements SystemState {
@@ -818,9 +657,6 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     switch (type) {
       case "Basic Shoot":
         startingState = BasicShootAuto.START;
-        break;
-      case "Shoot and Climb":
-        startingState = ShootAndClimbAuto.START;
         break;
       case "Neutral Zone Lite":
         startingState = NZLiteAuto.START;

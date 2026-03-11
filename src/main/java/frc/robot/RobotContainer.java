@@ -28,10 +28,6 @@ public class RobotContainer {
     // Configure the trigger bindings
     configureBindings();
     SmartDashboard.putData(
-      Constants.SmartDashboard.SMARTDASHBOARD_CLIMB_CHOOSER_NAME, 
-      HeadHoncho.getInstance().getClimbChooser()
-    );
-    SmartDashboard.putData(
       Constants.SmartDashboard.SMARTDASHBOARD_QUADRANT_CHOOSER_NAME, 
       AutoHoncho.s_autoQuadrantChooser
     );
@@ -42,35 +38,29 @@ public class RobotContainer {
   }
 
   private boolean m_intakePrevious = false;
-  private boolean m_climbPrevious = false;
   private boolean m_restPrevious = false;
   private boolean m_intakeRisen = false;
-  private boolean m_climbRisen = false;
   private boolean m_restRisen = false;
 
   /**
-   * Updates the rising edge detection for certain bindings (intake,
-   * climb, rest). Should only be called once per loop to ensure that
+   * Updates the rising edge detection for certain bindings (intake &
+   * rest). Should only be called once per loop to ensure that
    * everything that wants to know about a rising edge does.
    */
   public void updateRisen() {
     boolean intakeDown = m_driverController.leftBumper().getAsBoolean();
-    boolean climbDown = m_driverController.povUp().getAsBoolean();
     boolean restDown = m_driverController.back().getAsBoolean();
 
     // always set to false - will be made true if there is really
     // a rising edge
     m_intakeRisen = false;
-    m_climbRisen = false;
     m_restRisen = false;
 
     // rising edge
     if (intakeDown && !m_intakePrevious) m_intakeRisen = true;
-    if (climbDown && !m_climbPrevious) m_climbRisen = true;
     if (restDown && !m_restPrevious) m_restRisen = true;
 
     m_intakePrevious = intakeDown;
-    m_climbPrevious = climbDown;
     m_restPrevious = restDown;
   }
 
@@ -102,8 +92,6 @@ public class RobotContainer {
       m_driverController.start(),
       // intake fallen trigger
       () -> m_intakeRisen,
-      // climb fallen trigger
-      () -> m_climbRisen,
       // rest fallen trigger
       () -> m_restRisen,
       // drive subsystem stuff

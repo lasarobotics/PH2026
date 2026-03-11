@@ -158,7 +158,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Check if the hopper is fully extended.
+   * Check if the intake is fully extended.
    * @return True if arm motor is at fully
    * extended setpoint within a certain tolerance.
    */
