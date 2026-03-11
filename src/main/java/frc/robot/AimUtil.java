@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
@@ -126,6 +127,12 @@ public class AimUtil {
     hangTime = results.hangTime();
   
     Logger.recordOutput("AimUtil/ballVelocity", ballVelocity.in(MetersPerSecond));
+    double rotationsPerSecond =
+      ballVelocity.in(MetersPerSecond) /
+      (2 * Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters));
+    Logger.recordOutput("AimUtil/outputRevps",
+      rotationsPerSecond
+    );
     Logger.recordOutput("AimUtil/exitAngle", exitAngle.in(Degrees));
     Logger.recordOutput("AimUtil/robotHeading", robotHeading);
     Logger.recordOutput("AimUtil/hangTime", hangTime);
@@ -209,6 +216,9 @@ public class AimUtil {
       getVelocityYStationary(maxBallYPos)
     );
 
+    Logger.recordOutput("AimUtil/shooterDistToHub",
+      futurePos.getDistance(targetPos)
+    );
     Logger.recordOutput("AimUtil/futurePos",
       new Pose2d(futurePos, new Rotation2d(targetVec.getAngle().getMeasure()))
     );
@@ -218,18 +228,25 @@ public class AimUtil {
     return new ShooterMathResults(
       // the arctangent of the Y velocity and the X velocity is the shooterAngle
       Radians.of(
+        Constants.Shooter.AIMUTIL_HOOD_ANGLE_SCALAR.get() *
         Math.atan2(
           shooterVelocityVec.getY(), shooterVelocityVec.getX()
         )
-      ),
-      
+      ).plus(Degrees.of(Constants.Shooter.AIMUTIL_HOOD_ANGLE_ADDEND.get())),
+
       // Pythagorean sum of the X velocity and the Z velocity is the shooter
       MetersPerSecond.of(
+        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_SCALAR.get() *
         Math.sqrt(
           Math.pow(shooterVelocityVec.getX(), 2) + Math.pow(shooterVelocityVec.getY(), 2)
         )
-      ),
-      
+      ).plus(MetersPerSecond.of(
+        // basically aimutil shooter speed addend should be in rev/s
+        // so we convert to meters per second
+        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_ADDEND.get() *
+        2 * Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters)
+      )),
+
       // The angle of the target vector is your robot heading
       // plus 90 because shooter is on right side of robot
       targetVec.getAngle().getMeasure().plus(Degrees.of(90)),

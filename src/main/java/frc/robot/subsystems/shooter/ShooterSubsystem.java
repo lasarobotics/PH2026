@@ -278,15 +278,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private double wantedShooterSpeed() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
-      return Constants.Shooter.DUMB_SHOOTER_SPEED;
+      // return Constants.Shooter.DUMB_SHOOTER_SPEED;
+      return Constants.Shooter.DUMB_SHOOTER_SPEED.get();
     }
 
     LinearVelocity ballVelocity = AimUtil.getBallVelocity();
-    double radiansPerSecond =
-      2 * ballVelocity.in(MetersPerSecond)
-      / Constants.Shooter.SHOOTER_RADIUS.in(Meters);
     double rotationsPerSecond =
-      radiansPerSecond / (2 * Math.PI);
+      ballVelocity.in(MetersPerSecond) /
+      (2 * Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters));
     return rotationsPerSecond;
   }
 
@@ -300,7 +299,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private Angle wantedHoodPosition() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
-      return Constants.Shooter.DUMB_HOOD_POSITION;
+      // return Constants.Shooter.DUMB_HOOD_POSITION;
+      return Degrees.of(Constants.Shooter.DUMB_HOOD_POSITION.get())
+        .minus(Degrees.of(80));
     }
 
     return AimUtil.getExitAngle().minus(Degrees.of(80.0));
