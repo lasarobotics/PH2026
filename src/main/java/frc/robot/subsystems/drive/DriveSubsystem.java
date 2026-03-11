@@ -581,6 +581,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   protected final Thread m_limelight_thread;
 
   private static Map<String, Double> s_limelightHeartbeat;
+  private static volatile Map<String, Pose2d> s_lastGoodPose;
 
   // volatile because thread safety or something
   // idk my friend andrew told me to
@@ -750,6 +751,63 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     return pose_estimate;
   }
 
+  // TODO replace mt1 method with this or remove this
+  private LimelightHelpers.PoseEstimate getFilteredLimelightPoseMT2(String limelight) {
+    LimelightHelpers.PoseEstimate pose_estimate =
+      LimelightHelpers.getBotPoseEstimate_wpiBlue_MegaTag2(limelight);
+
+    double hb = LimelightHelpers.getHeartbeat(limelight + "MT2");
+    
+    Double savedHb = s_limelightHeartbeat.get(limelight + "MT2");
+    if (
+      savedHb == null ||
+      s_limelightHeartbeat.get(limelight + "MT2") == hb
+    ) {
+      return null;
+    } else {
+      s_limelightHeartbeat.put(
+        limelight + "MT2",
+        hb
+      );
+    }
+
+    if (pose_estimate == null) {
+      return null;
+    }
+
+    if (Math.abs(s_drivetrain.getState().Speeds.omegaRadiansPerSecond) > 2 * Math.PI) {
+      return null;
+    }
+
+    if (pose_estimate.tagCount == 0) {
+      return null;
+    }
+
+    if (Double.isNaN(pose_estimate.pose.getX()) || Double.isNaN(pose_estimate.pose.getY()) || Double.isNaN(pose_estimate.pose.toPose2d().getRotation().getDegrees())) {
+      return null;
+    }
+
+    // filtering for unreasonable poses
+    // https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-dimension-dwgs.pdf
+    // welded perimeter field is slightly larger
+    // 16.540988 meters x
+    // 8.069326 meters y
+    // bump is 16 cm off the ground
+    // and anything above 25cm is probably insane airtime & unreliable
+    if (
+      pose_estimate.pose.getX() < 0         ||
+      pose_estimate.pose.getX() > 16.540988 ||
+      pose_estimate.pose.getY() < 0         ||
+      pose_estimate.pose.getY() > 8.069326  ||
+      pose_estimate.pose.getZ() < 0         ||
+      pose_estimate.pose.getZ() > 0.25
+    ) {
+      return null;
+    }
+
+    return pose_estimate;
+  }
+
   /**
    * Function to set up the LimeLights on the robot 
    */
@@ -760,14 +818,26 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Constants.Drive.CLIMB_LIMELIGHT_NAME
     };
 
+    for (String limelight : limelights) {
+      LimelightHelpers.SetIMUMode(limelight, 3);
+    }
+
     while (true) {
       for (String limelight : limelights) {
         if (!s_shouldDoGlobalPoseEstimation) {
           continue;
         }
 
+        LimelightHelpers.SetRobotOrientation(
+          limelight,
+          s_drivetrain.getState().Pose.getRotation().getDegrees(),
+          0, 0, 0, 0, 0
+        );
+
         LimelightHelpers.PoseEstimate pose_estimate =
           getFilteredLimelightPose(limelight);
+        LimelightHelpers.PoseEstimate pose_estimate_mt2 =
+          getFilteredLimelightPoseMT2(limelight);
 
         if (pose_estimate == null) {
           continue;
@@ -777,7 +847,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           // trust limelights for rotation if disabled
           // also trust them a little less overall
           s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, 1));
+          // https://docs.limelightvision.io/docs/docs-limelight/pipeline-apriltag/apriltag-robot-localization-megatag2#complementary-filter-alpha
+          // 0.01 when disabled (high)
+          LimelightHelpers.SetIMUAssistAlpha(limelight, 0.01);
         } else {
+          // 0.001 when disabled (low)
+          LimelightHelpers.SetIMUAssistAlpha(limelight, 0.001);
           // when running, ignore limelight rotation entirely
           if (pose_estimate.tagCount > 1) {
             // more than one tag
@@ -801,6 +876,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         s_drivetrain.addVisionMeasurement(
           pose_estimate.pose.toPose2d(), Utils.fpgaToCurrentTime(pose_estimate.timestampSeconds)
+        );
+
+        // TODO remove?
+        s_lastGoodPose.put(
+          limelight + "MT1",
+          pose_estimate.pose.toPose2d()
+        );
+        s_lastGoodPose.put(
+          limelight + "MT2",
+          pose_estimate_mt2.pose.toPose2d()
         );
       }
       try {
@@ -958,6 +1043,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     } else {
       Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
     }
+
+    // TODO remove?
+    s_lastGoodPose.keySet().forEach(
+      (String key) -> {
+        Logger.recordOutput(
+          getName() + "/lastGoodLimelightPoses/" + key,
+          s_lastGoodPose.get(key)
+        );
+      }
+    );
 
     Logger.recordOutput(getName() + "/doingGlobalPoseEstimation", s_shouldDoGlobalPoseEstimation);
     Logger.recordOutput(getName() + "/percieved_alliance", DriverStation.getAlliance().toString());
