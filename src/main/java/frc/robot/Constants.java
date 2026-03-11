@@ -371,7 +371,7 @@ public final class Constants {
 
     // shooter speed tolerance is in rotations per second
     public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 2;
-    public static final double SHOOTER_SPEED_ABOVE_TOLERANCE = 4;
+    public static final double SHOOTER_SPEED_ABOVE_TOLERANCE = 2;
     public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(5);
 
     // how long we can be shooting after the end of the shift
