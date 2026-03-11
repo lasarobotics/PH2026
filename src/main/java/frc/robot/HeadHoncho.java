@@ -16,8 +16,6 @@ import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
-import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
-
 public class HeadHoncho extends StateMachine implements AutoCloseable {
 
   public enum HeadHonchoStates implements SystemState {
@@ -107,6 +105,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_restButtonHasFallen;
   private BooleanSupplier m_resetOdometry;
 
+  /**
+   * Get an instance of HeadHoncho
+   * @return HeadHoncho instance
+   */
   public static HeadHoncho getInstance() {
     if (s_headHoncho == null) {
       s_headHoncho = new HeadHoncho();
@@ -132,27 +134,50 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     AutoHoncho.s_autoTypeChooser.onChange(AutoHoncho::setAutoType);
   }
 
+  /**
+   * Periodically called method to log subsystem values
+   */
   public void periodic() {
     Logger.recordOutput(getName() + "/currentState", getState().toString());
     Logger.recordOutput(getName() + "/overRampButton", m_overRampButton.getAsBoolean());
   }
 
+  /**
+   * Determines whether the robot should shoot or not
+   * @return {@code true} if robot wants to shoot, {@code false} if otherwise
+   */
   public boolean wantToShoot() {
     return m_shootButton.getAsBoolean() || AutoHoncho.autoWantToShoot();
   }
 
+  /**
+   * Determines whether the robot should dumbshoot or not
+   * @return {@code true} if robot wants to dumbshoot, {@code false} if otherwise
+   */
   public boolean wantToDumbShoot() {
     return m_dumbShootButton.getAsBoolean() || AutoHoncho.autoWantToDumbShoot();
   }
 
+  /**
+   * Determines whether the robot should force shoot or not
+   * @return {@code true} if robot wants to force shoot, {@code false} if otherwise
+   */
   public boolean wantToForceShoot() {
     return m_forceShootButton.getAsBoolean();
   }
 
+  /**
+   * Determines whether the robot should cancel its action or not
+   * @return {@code true} if robot wants to cancel, {@code false} if otherwise
+   */
   public boolean wantToCancel() {
     return m_cancelButton.getAsBoolean();
   }
 
+  /**
+   * Determines whether the robot should prepare to cross ramp or not
+   * @return {@code true} if robot wants to cross ramp, {@code false} if otherwise
+   */
   public boolean wantToCrossRamp() {
     return m_overRampButton.getAsBoolean() || AutoHoncho.autoWantToCrossRamp();
   }
@@ -209,6 +234,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     );
   }
 
+  /**
+   * Determines whether the robot should reset odometry or not
+   * @return {@code true} if robot should reset odometry, {@code false} if otherwise
+   */
   public boolean wantToResetOdometry() {
     return m_resetOdometry.getAsBoolean();
   }
@@ -224,12 +253,14 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    * @param cancelButton Currently unused.
    * @param reverseIntakeButton True if we want to reverse the intake motor
    * @param overRampRequest True if we want to go over the bump
-   * @param restButtonHasFallen True if we want to go over the bump
    * @param intakeButtonHasFallen True if we want to toggle the intake.
    * As a result, should be a provider for if the button has
    * just been pressed down. (e.g. () -> button.wasPressed())
    * @param restButtonHasFallen True if we want to do switch between rest
    * and normal states in HeadHoncho.
+   * @param driveRequest DoubleSupplier to communicate driver drive input
+   * @param strafeRequest DoubleSupplier to communicate driver strafe input
+   * @param rotateRequest DoubleSupplier to communicate driver rotation input
    */
   public void configureBindings(
     BooleanSupplier shootButton,

@@ -48,6 +48,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private boolean m_isRunning = true;
 
+  /**
+   * Get an instance of ShooterSubsystem
+   * @return Subsystem instance
+   */
   public static ShooterSubsystem getInstance() {
     if (s_shooterSubsystem == null) {
       s_shooterSubsystem = new ShooterSubsystem();
@@ -70,7 +74,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
       .Feedback
-        .withSensorToMechanismRatio(36/48);
+        .withSensorToMechanismRatio(36.0/48.0);
     shooterConfig
       .Slot0
         .withKP(999999.0);
@@ -203,12 +207,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * 
+   * Determine whether robot is at speed where it is able to shoot
    * @return If the master shooter motor is {@link Constants.Shooter#SHOOTER_SPEED_TOLERANCE near}
    * the desired speed according to {@link #wantedShooterSpeed()}
    */
   private boolean atShootSpeed() {
-    // TODO add comments
     return (
       m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond) >=
         wantedShooterSpeed()

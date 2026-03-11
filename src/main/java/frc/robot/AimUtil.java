@@ -33,7 +33,7 @@ public class AimUtil {
   private static double targetHeight;
 
   /**
-   * 
+   * Get the X velocity of stationary ball shot
    * @param distance Linear distance from target
    * @param targetHeight Final y position of ball
    * @param maxBallYPos The Y value for the highest point of the ball's curve
@@ -53,8 +53,9 @@ public class AimUtil {
   }
 
   /**
-   * @return Value of Y velocity of the ball when shot stationary
+   * Get the Y velocity of stationary ball shot
    * @param maxBallYPos The Y value for the highest point of the ball's curve
+   * @return Value of Y velocity of the ball when shot stationary
    */
   private static double getVelocityYStationary(double maxBallYPos) {
     double y_max = maxBallYPos;
@@ -95,9 +96,8 @@ public class AimUtil {
   }
 
   /**
-   * What this method does it calculates the ball speed, robot heading, and shooter angle needed to shoot
-   * even while moving at an arbitary position on the field. It then sets the member variables of this class to those values
-   * (you can then call the related get methods of this file to get stuff you need)
+   * Calculate the ball speed, robot heading, and shooter angle needed to shoot
+   * even while moving at an arbitrary position on the field, and modify member variables to store these calculated values
    */
   public static void updateShooterConstants() {
     SwerveDriveState driveState = DriveSubsystem.getDrivetrain().getState();
@@ -138,6 +138,13 @@ public class AimUtil {
     Logger.recordOutput("AimUtil/hangTime", hangTime);
   }
 
+  /**
+   * Record to store calculated shooter data
+   * @param exitAngle The exit angle of the ball
+   * @param ballVelocity The ball's exit velocity
+   * @param robotHeading Angle of robot hood
+   * @param hangTime Time the ball spends in the air
+   */
   public record ShooterMathResults(
     Angle exitAngle,
     LinearVelocity ballVelocity,
@@ -278,7 +285,7 @@ public class AimUtil {
   }
 
   /**
-   * @return Returns the robot heading needed to shoot at any given point
+   * @return Returns the time the ball will be in the air when leaving shooter
    */
   public static Time getHangTime() {
     return hangTime;
