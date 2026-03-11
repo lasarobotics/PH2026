@@ -138,11 +138,14 @@ public class LoggingInitializer extends StateMachine {
 
       @Override
       public SystemState nextState() {
+        // Logger.recordOutput("LoggingInitializer/condition1", (getInstance().teleopEnded &&
+        //     DriverStation.getMatchType() != MatchType.None));
+        // Logger.recordOutput("LoggingInitializer/condition2", shouldStopLogging.get());
         // basically if it's a real match and teleop is over
         // it's probably the end of the match
         if (
           (
-            teleopEnded &&
+            getInstance().teleopEnded &&
             DriverStation.getMatchType() != MatchType.None
           ) // ||
           // shouldStopLogging.get()
@@ -190,8 +193,7 @@ public class LoggingInitializer extends StateMachine {
   private static LocalDateTime logDate;
   private static String logMatchText;
 
-  // private static LoggedNetworkBoolean shouldStopLogging = new LoggedNetworkBoolean("/Tuning/LoggingInitializer/shouldStopLogging");
-  private static boolean teleopEnded = false;
+  private boolean teleopEnded = false;
 
   public static LoggingInitializer getInstance() {
     if (s_loggingInitializer == null) {
@@ -216,7 +218,6 @@ public class LoggingInitializer extends StateMachine {
   @Override
   public void periodic() {
     Logger.recordOutput(getName() + "/state", getState().toString());
-    // Logger.recordOutput(getName() + "/test", shouldStopLogging.get());
   }
 
   public void stopLogging() {
