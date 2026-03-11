@@ -206,7 +206,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
         if (pose_estimate != null) {
-          s_drivetrain.resetPose(pose_estimate.pose);
+          s_drivetrain.resetPose(pose_estimate.pose.toPose2d());
         }
 
         double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
@@ -289,7 +289,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
         if (pose_estimate != null) {
-          s_drivetrain.resetPose(pose_estimate.pose);
+          s_drivetrain.resetPose(pose_estimate.pose.toPose2d());
         }
 
         s_driveSubsystem.goTo(
@@ -370,7 +370,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           getInstance().getFilteredLimelightPose(Constants.Drive.SHOOTER_LIMELIGHT_NAME);
         
         if (pose_estimate != null) {
-          s_drivetrain.resetPose(pose_estimate.pose);
+          s_drivetrain.resetPose(pose_estimate.pose.toPose2d());
         }
 
         s_drivetrain.setControl(
@@ -716,7 +716,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       return null;
     }
 
-    if (Double.isNaN(pose_estimate.pose.getX()) || Double.isNaN(pose_estimate.pose.getY()) || Double.isNaN(pose_estimate.pose.getRotation().getDegrees())) {
+    if (Double.isNaN(pose_estimate.pose.getX()) || Double.isNaN(pose_estimate.pose.getY()) || Double.isNaN(pose_estimate.pose.toPose2d().getRotation().getDegrees())) {
       return null;
     }
 
@@ -765,7 +765,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         LimelightHelpers.PoseEstimate pose_estimate = pose_estimate_maybe;
 
         s_drivetrain.addVisionMeasurement(
-          pose_estimate.pose, Utils.fpgaToCurrentTime(pose_estimate.timestampSeconds)
+          pose_estimate.pose.toPose2d(), Utils.fpgaToCurrentTime(pose_estimate.timestampSeconds)
         );
 
         s_limelightSeesTag.put(
