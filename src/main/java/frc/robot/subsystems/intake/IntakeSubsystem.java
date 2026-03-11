@@ -133,10 +133,16 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     m_isIntaking = false;
   }
 
+  /**
+   * Enables jiggling of intake
+   */
   public void jiggleOn() {
     m_isJiggling = true;
   }
 
+  /**
+   * Disables jiggling of intake. Deploys intake if intaking, stows it if otherwise.
+   */
   public void jiggleOff() {
     if (!m_isJiggling) {
       return;
@@ -157,7 +163,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Check if the intake is fully extended.
+   * Check if the intake is fully deployed with DEPLOY_TOLERANCE
    * @return True if arm motor is at fully
    * extended setpoint within a certain tolerance.
    */
@@ -168,6 +174,10 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
   
+  /**
+   * Check if intake is at jiggle position or not with DEPLOY_TOLERANCE
+   * @return {@code true} if intake is at jiggle position, {@code false} if otherwise
+   */
   public boolean intakeAtJigglePosition() {
     return m_armMotor.getPosition().getValue().isNear(
       Constants.Intake.JIGGLE_ANGLE,
@@ -175,6 +185,10 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
   
+  /**
+   * Check if intake is stowed or not with DEPLOY_TOLERANCE
+   * @return {@code true} if intake is at stow position, {@code false} if otherwise
+   */
   public boolean intakeStowed() {
     return m_armMotor.getPosition().getValue().isNear(
       Constants.Intake.STOW_ANGLE,
@@ -182,6 +196,10 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
   
+  /**
+   * Check if intake is at deployed position or not with JIGGLE_TOLERANCE
+   * @return {@code true} if intake is at deploy position, {@code false} if otherwise
+   */
   public boolean intakeDeployedJiggleTolerance() {
     return m_armMotor.getPosition().getValue().isNear(
       Constants.Intake.DEPLOY_ANGLE,
@@ -189,6 +207,10 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
   
+  /**
+   * Check if intake is at jiggle position or not with JIGGLE_TOLERANCE
+   * @return {@code true} if intake is at jiggle position, {@code false} if otherwise
+   */
   public boolean intakeAtJigglePositionJiggleTolerance() {
     return m_armMotor.getPosition().getValue().isNear(
       Constants.Intake.JIGGLE_ANGLE,
@@ -196,6 +218,10 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
   
+  /**
+   * Check if intake is stowed or not with JIGGLE_TOLERANCE
+   * @return {@code true} if intake is at stow position, {@code false} if otherwise
+   */
   public boolean intakeStowedJiggleTolerance() {
     return m_armMotor.getPosition().getValue().isNear(
       Constants.Intake.STOW_ANGLE,
@@ -251,6 +277,9 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  /**
+   * Run periodically to control intake motor and intake arm and log useful data
+   */
   @Override
   public void periodic() {
     super.periodic();
