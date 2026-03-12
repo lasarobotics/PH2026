@@ -12,7 +12,7 @@ import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
-import com.ctre.phoenix6.controls.PositionVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
@@ -45,7 +45,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private final VelocityVoltage m_shooterVoltageRequest;
   private final VelocityDutyCycle m_shooterDutyCycleRequest;
-  private final PositionVoltage m_hoodRequest;
+  private final MotionMagicVoltage m_hoodRequest;
   private final DutyCycleOut m_indexerRequest;
 
   private boolean m_isRunning = true;
@@ -71,7 +71,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     m_shooterVoltageRequest = new VelocityVoltage(0);
     m_shooterDutyCycleRequest = new VelocityDutyCycle(0);
-    m_hoodRequest = new PositionVoltage(0);
+    m_hoodRequest = new MotionMagicVoltage(0);
     m_indexerRequest = new DutyCycleOut(0);
 
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
@@ -98,21 +98,30 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
 
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
-    hoodConfig.MotorOutput
-      .withInverted(InvertedValue.CounterClockwise_Positive);
-    hoodConfig.Feedback
-      .withRotorToSensorRatio(42.0 / 8.0)
-      .withSensorToMechanismRatio(127.0 / 13.0)
-      .withRemoteCANcoder(m_hoodCanCoder);
+    hoodConfig
+      .MotorOutput
+        .withInverted(InvertedValue.CounterClockwise_Positive);
+    hoodConfig
+      .Feedback
+        .withRotorToSensorRatio(42.0 / 8.0)
+        .withSensorToMechanismRatio(127.0 / 13.0)
+        .withRemoteCANcoder(m_hoodCanCoder);
 
-    hoodConfig.SoftwareLimitSwitch
-      .withForwardSoftLimitEnable(true)
-      .withReverseSoftLimitEnable(true)
-      .withForwardSoftLimitThreshold(-0.012207) // TODO remove once bolt is gone
-      .withReverseSoftLimitThreshold(-0.09668);
-    hoodConfig.Slot0
-      .withKP(150)
-      .withKS(1.5);
+    hoodConfig
+      .SoftwareLimitSwitch
+        .withForwardSoftLimitEnable(true)
+        .withReverseSoftLimitEnable(true)
+        .withForwardSoftLimitThreshold(-0.012207) // TODO remove once bolt is gone
+        .withReverseSoftLimitThreshold(-0.09668);
+    hoodConfig
+      .Slot0
+        .withKP(300)
+        .withKD(3)
+        .withKS(0.515);
+    hoodConfig
+      .MotionMagic
+        .withMotionMagicCruiseVelocity(100)
+        .withMotionMagicAcceleration(15);
 
     CANcoderConfiguration canCoderConfig = new CANcoderConfiguration();
     canCoderConfig.MagnetSensor

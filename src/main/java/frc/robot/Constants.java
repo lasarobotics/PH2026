@@ -418,9 +418,9 @@ public final class Constants {
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 0);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
-      = new LoggedNetworkNumber("/Tuning/hoodAngleScalar");
+      = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
-      = new LoggedNetworkNumber("/Tuning/hoodAngleAddend");
+      = new LoggedNetworkNumber("/Tuning/hoodAngleAddend", 0);
   }
 
   public static class Drive {

@@ -73,10 +73,10 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         // if (s_headHoncho.m_overRampButton.getAsBoolean())
         //   return OVER_RAMP;
 
-        // if (s_headHoncho.m_restButtonHasFallen.getAsBoolean()) return REST;
+        if (s_headHoncho.m_restButtonHasFallen.getAsBoolean()) return REST;
 
-        // return this;
-        return NORMAL;
+        return this;
+        // return NORMAL;
       }
     },
     OVER_RAMP {
