@@ -574,7 +574,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       pose_estimate.pose.getX() > 16.540988 ||
       pose_estimate.pose.getY() < 0         ||
       pose_estimate.pose.getY() > 8.069326  ||
-      pose_estimate.pose.getZ() < 0         ||
+      pose_estimate.pose.getZ() < -0.05     ||
       pose_estimate.pose.getZ() > 0.25
     ) {
       return null;
@@ -645,7 +645,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       pose_estimate.pose.getX() > 16.540988 ||
       pose_estimate.pose.getY() < 0         ||
       pose_estimate.pose.getY() > 8.069326  ||
-      pose_estimate.pose.getZ() < 0         ||
+      pose_estimate.pose.getZ() < 0.05      ||
       pose_estimate.pose.getZ() > 0.25
     ) {
       return null;
@@ -664,9 +664,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       // Constants.Drive.CLIMB_LIMELIGHT_NAME
     };
 
-    for (String limelight : limelights) {
-      LimelightHelpers.SetIMUMode(limelight, 3);
-    }
+    // for (String limelight : limelights) {
+    //   LimelightHelpers.SetIMUMode(limelight, 3);
+    // }
 
     while (true) {
       for (String limelight : limelights) {
@@ -674,11 +674,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           continue;
         }
 
-        LimelightHelpers.SetRobotOrientation(
-          limelight,
-          s_drivetrain.getState().Pose.getRotation().getDegrees(),
-          0, 0, 0, 0, 0
-        );
+        // LimelightHelpers.SetRobotOrientation(
+        //   limelight,
+        //   s_drivetrain.getState().Pose.getRotation().getDegrees(),
+        //   0, 0, 0, 0, 0
+        // );
 
         LimelightHelpers.PoseEstimate pose_estimate =
           getFilteredLimelightPose(limelight);
@@ -691,8 +691,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         if (getState() == DriveStates.DISABLED) {
           // trust limelights for rotation if disabled
-          // also trust them a little less overall
-          s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(1, 1, 1));
+          s_drivetrain.setVisionMeasurementStdDevs(VecBuilder.fill(0.25, 0.25, 0.25));
           // https://docs.limelightvision.io/docs/docs-limelight/pipeline-apriltag/apriltag-robot-localization-megatag2#complementary-filter-alpha
           // 0.01 when disabled (high)
           LimelightHelpers.SetIMUAssistAlpha(limelight, 0.01);
