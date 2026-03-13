@@ -493,7 +493,7 @@ public final class Constants {
 
     // This is used as a percent tolerance
     // 5% seems reasonable, subject to change
-    public static final Angle ROTATION_TOLERANCE = Degrees.of(2);
+    public static final Angle ROTATION_TOLERANCE = Degrees.of(3);
 
     public static final double ROBOT_LATENCY = 0.15; //TODO: measure
 

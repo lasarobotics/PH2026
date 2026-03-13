@@ -219,7 +219,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           ) > 0.05
         ) {
           // moving
-          s_autoAimController.setP(7.5);
+          s_autoAimController.setP(8);
         } else {
           // stationary
           s_autoAimController.setP(6.5);
