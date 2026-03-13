@@ -229,19 +229,21 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         s_drivetrain.setControl(
           s_autoAimDrive
             .withVelocityX(
-              Math.min(
+              MathUtil.clamp(
                 Constants.Drive.MAX_SPEED
                   .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
                   .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
-                1
+                -1.0,
+                1.0
               )
             )
             .withVelocityY(
-              Math.min(
+              MathUtil.clamp(
                 Constants.Drive.MAX_SPEED
                   .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
                   .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
-                1
+                -1.0,
+                1.0
               )
             )
             .withRotationalRate(

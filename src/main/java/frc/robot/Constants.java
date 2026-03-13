@@ -391,6 +391,17 @@ public final class Constants {
     public static final Distance SHOOTER_OFFSET_Y = Inches.of(-7.710630); // measured in cad
     // z offset from floor (hood at 25deg, center of ball exit height)
     public static final Distance SHOOTER_OFFSET_Z = Inches.of(23.422254); // measured in cad
+    // TODO uncomment for new shooter
+    // x offset from center (assume middle of shooter)
+    // (behind center)
+    // public static final Distance SHOOTER_OFFSET_X = Meters.of(-0.175187); // measured in cad
+    // // y offset from center
+    // // (right of center)
+    // public static final Distance SHOOTER_OFFSET_Y = Meters.of(0.121920); // measured in cad
+    // // z offset from floor (exit angle 60deg)
+    // TODO update this to be correct - currently based off of 25deg, should be 60deg
+    // public static final Distance SHOOTER_OFFSET_Z = Inches.of(23.422254); // measured in cad
+
     public static final Angle SHOOTER_ROTATION = Degrees.of(90);
     public static final Distance SHOOTER_DISTANCE_FROM_CENTER = Meters.of(
       Math.sqrt(
