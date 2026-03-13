@@ -399,8 +399,7 @@ public final class Constants {
     // // (right of center)
     // public static final Distance SHOOTER_OFFSET_Y = Meters.of(0.121920); // measured in cad
     // // z offset from floor (exit angle 60deg)
-    // TODO update this to be correct - currently based off of 25deg, should be 60deg
-    // public static final Distance SHOOTER_OFFSET_Z = Inches.of(23.422254); // measured in cad
+    // public static final Distance SHOOTER_OFFSET_Z = Meters.of(0.609584); // measured in cad
 
     public static final Angle SHOOTER_ROTATION = Degrees.of(90);
     public static final Distance SHOOTER_DISTANCE_FROM_CENTER = Meters.of(
