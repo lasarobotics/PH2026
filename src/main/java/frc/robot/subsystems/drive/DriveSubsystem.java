@@ -227,7 +227,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         double output = s_autoAimController.calculate(currentAngle, angle);
 
         s_drivetrain.setControl(
-          s_drive.withRotationalDeadband(DegreesPerSecond.of(0.125))
+          s_autoAimDrive
             .withVelocityX(
               Math.min(
                 Constants.Drive.MAX_SPEED
@@ -403,6 +403,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static DriveSubsystem s_driveSubsystem;
   private static CommandSwerveDrivetrain s_drivetrain;
   private static SwerveRequest.FieldCentric s_drive;
+  private static SwerveRequest.FieldCentric s_autoAimDrive;
   // Separate FieldCentric request for goTo() — uses BlueAlliance perspective
   // so field-frame velocities are interpreted correctly on both alliances
   private static SwerveRequest.FieldCentric s_autoDrive;
@@ -479,6 +480,14 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       new SwerveRequest.FieldCentric()
         .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
         .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(0.1))
+        .withDriveRequestType(DriveRequestType.Velocity)
+        .withSteerRequestType(SteerRequestType.MotionMagicExpo)
+        .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
+
+    s_autoAimDrive =
+      new SwerveRequest.FieldCentric()
+        .withDeadband(Constants.Drive.MAX_SPEED.times(DriveSubsystem.DEADBAND_SCALAR))
+        .withRotationalDeadband(DegreesPerSecond.of(0.125)) // TODO maybe lower
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
