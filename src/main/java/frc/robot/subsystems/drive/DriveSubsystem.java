@@ -11,8 +11,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.DoubleSupplier;
 
-import org.lasarobotics.fsm.StateMachine;
-import org.lasarobotics.fsm.SystemState;
+import frc.robot.fsm.StateMachine;
+import frc.robot.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.Utils;

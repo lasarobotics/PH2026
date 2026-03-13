@@ -2,8 +2,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
-import org.lasarobotics.fsm.StateMachine;
-import org.lasarobotics.fsm.SystemState;
+import frc.robot.fsm.StateMachine;
+import frc.robot.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
 import edu.wpi.first.math.geometry.Pose2d;
