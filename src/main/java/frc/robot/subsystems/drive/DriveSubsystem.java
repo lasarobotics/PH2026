@@ -1,13 +1,14 @@
 package frc.robot.subsystems.drive;
 
 import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.DegreesPerSecond;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 
-import java.util.Map;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.function.DoubleSupplier;
 
 import org.lasarobotics.fsm.StateMachine;
@@ -31,13 +32,12 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.Timer;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
 import frc.robot.HeadHoncho;
 import frc.robot.LimelightHelpers;
-import frc.robot.LimelightHelpers.LimelightResults;
 import frc.robot.LimelightHelpers.RawFiducial;
 import frc.robot.generated.TunerConstants;
 
@@ -79,6 +79,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       @Override
       public SystemState nextState() {
         if (DriverStation.isDisabled()) return this;
+        
         if (DriverStation.isAutonomous()) return AUTO;
         if (DriverStation.isTeleop()) return DRIVER_CONTROL;
 
@@ -211,18 +212,38 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
         double angle = AimUtil.getRobotHeading().in(Radians);
+        if (
+          Math.sqrt(
+            Math.pow(s_drivetrain.getState().Speeds.vxMetersPerSecond, 2) +
+            Math.pow(s_drivetrain.getState().Speeds.vyMetersPerSecond, 2)
+          ) > 0.05
+        ) {
+          // moving
+          s_autoAimController.setP(7);
+        } else {
+          // stationary
+          s_autoAimController.setP(6.5);
+        }
         double output = s_autoAimController.calculate(currentAngle, angle);
 
         s_drivetrain.setControl(
-          s_drive
+          s_drive.withRotationalDeadband(DegreesPerSecond.of(0.125))
             .withVelocityX(
-              Constants.Drive.MAX_SPEED
-                .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                .times(Constants.Drive.FAST_SPEED_SCALAR))
+              Math.min(
+                Constants.Drive.MAX_SPEED
+                  .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
+                  .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
+                1
+              )
+            )
             .withVelocityY(
-              Constants.Drive.MAX_SPEED
-                .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                .times(Constants.Drive.FAST_SPEED_SCALAR))
+              Math.min(
+                Constants.Drive.MAX_SPEED
+                  .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
+                  .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
+                1
+              )
+            )
             .withRotationalRate(
               output
             ));
@@ -412,7 +433,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   //camera vars
   protected final Thread m_limelight_thread;
 
-  private static Map<String, Double> s_limelightHeartbeat;
+  private static volatile Map<String, Double> s_limelightHeartbeat;
   private static volatile Map<String, Pose2d> s_lastGoodPose;
 
   // volatile because thread safety or something
@@ -473,9 +494,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_headingController = new PIDController(3, 0.0, 0.0);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
-    // TODO: Fix this with real values
-    // also add tolerance
-    s_autoAimController = new PIDController(5, 0.0, 0.0);
+    s_autoAimController = new PIDController(6.5, 0.0, 0.0);
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 
     s_autoDriveController = new PIDController(1.75, 0.0, 0.0);
@@ -860,6 +879,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     Logger.recordOutput(getName() + "/percieved_alliance", DriverStation.getAlliance().toString());
     Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
+    Logger.recordOutput(getName() + "/atWantedRotation", atWantedRotation());
     Logger.recordOutput(getName() + "/subsystemState", getState().toString());
   }
 

@@ -15,8 +15,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Value;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -27,11 +25,9 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Dimensionless;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
-import edu.wpi.first.units.measure.Time;
 import frc.robot.generated.TunerConstants;
 
 /**
@@ -370,8 +366,8 @@ public final class Constants {
     public static final double SHOOTER_HOLD_SPEED = 20;
 
     // shooter speed tolerance is in rotations per second
-    public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 2;
-    public static final double SHOOTER_SPEED_ABOVE_TOLERANCE = 2;
+    public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 1;
+    public static final double SHOOTER_SPEED_ABOVE_TOLERANCE = 6;
     public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(5);
 
     // how long we can be shooting after the end of the shift
@@ -395,6 +391,7 @@ public final class Constants {
     public static final Distance SHOOTER_OFFSET_Y = Inches.of(-7.710630); // measured in cad
     // z offset from floor (hood at 25deg, center of ball exit height)
     public static final Distance SHOOTER_OFFSET_Z = Inches.of(23.422254); // measured in cad
+    public static final Angle SHOOTER_ROTATION = Degrees.of(90);
     public static final Distance SHOOTER_DISTANCE_FROM_CENTER = Meters.of(
       Math.sqrt(
         Math.pow(SHOOTER_OFFSET_X.in(Meters), 2) + Math.pow(SHOOTER_OFFSET_Y.in(Meters), 2)
@@ -402,25 +399,27 @@ public final class Constants {
     );
 
     // these values are for when the robot is pressed againt the tower
-    // public static final Angle DUMB_HOOD_POSITION = Rotations.of(-0.06);
-    public static final LoggedNetworkNumber DUMB_HOOD_POSITION
-      = new LoggedNetworkNumber("/Tuning/dumbHoodPosition", 80 - 21.6);
+    public static final Angle DUMB_HOOD_POSITION = Degrees.of(-18.906);
+    // public static final LoggedNetworkNumber DUMB_HOOD_POSITION
+    //   = new LoggedNetworkNumber("/Tuning/dumbHoodPosition", 80 - 21.6);
     // In rotations per second
     // currently based on empirical measurement
-    // public static final double DUMB_SHOOTER_SPEED = 34.5;
-    // public static final double DUMB_SHOOTER_SPEED = 34.25;
-    // public static final double DUMB_SHOOTER_SPEED = 33.75;
-    public static final LoggedNetworkNumber DUMB_SHOOTER_SPEED
-      = new LoggedNetworkNumber("/Tuning/dumbHoodPosition", 33.75);
+    public static final double DUMB_SHOOTER_SPEED = 43.898;
+    // public static final LoggedNetworkNumber DUMB_SHOOTER_SPEED
+    //   = new LoggedNetworkNumber("/Tuning/dumbShooterSpeed", 33.75);
 
-    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
-    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 0);
-    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
-      = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
-    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
-      = new LoggedNetworkNumber("/Tuning/hoodAngleAddend", 0);
+    // public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
+    //   = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
+    // public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
+    //   = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 1);
+    // public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
+    //   = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
+    // public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
+    //   = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
+    public static double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
+    public static double AIMUTIL_SHOOTER_SPEED_ADDEND = 1;
+    public static double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
+    public static double AIMUTIL_HOOD_ANGLE_ADDEND = -5;
   }
 
   public static class Drive {
@@ -484,7 +483,7 @@ public final class Constants {
 
     // This is used as a percent tolerance
     // 5% seems reasonable, subject to change
-    public static final double ROTATION_TOLERANCE = 0.05;
+    public static final Angle ROTATION_TOLERANCE = Degrees.of(2);
 
     public static final double ROBOT_LATENCY = 0.15; //TODO: measure
 
@@ -583,7 +582,7 @@ public final class Constants {
   public static class Field {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
-    public static final double MAX_BALL_Y_POS = 2.8;
+    public static final double MAX_BALL_Y_POS = 2.5;
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
     public static final Translation2d BLUE_HUB_COORDINATES = new Translation2d(4.619, 4.049);

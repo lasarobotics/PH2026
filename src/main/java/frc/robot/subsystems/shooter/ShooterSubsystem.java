@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -62,9 +63,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   private ShooterSubsystem() {
-    m_shooterMotorLeader = new TalonFX(Constants.Shooter.LEADER_SHOOTER_MOTOR_ID, "canivore");
-    m_shooterMotorFollowerOne = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_ONE_MOTOR_ID, "canivore");
-    m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID, "canivore");
+    CANBus canivoreBus = new CANBus("canivore");
+    m_shooterMotorLeader = new TalonFX(Constants.Shooter.LEADER_SHOOTER_MOTOR_ID, canivoreBus);
+    m_shooterMotorFollowerOne = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_ONE_MOTOR_ID, canivoreBus);
+    m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID, canivoreBus);
     m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
@@ -77,6 +79,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
       .Feedback
+        .withVelocityFilterTimeConstant(0.01) // empirical
         .withSensorToMechanismRatio(36.0/48.0);
     shooterConfig
       .Slot0
@@ -196,6 +199,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * TODO Comment is outdated.
+   * 
    * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
    * to the desired shooting speed according to {@link #wantedShooterSpeed()}.
    * If we're too far above the wanted shooter speed, run with a
@@ -206,20 +211,23 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * target velocity.
    */
   private void runShooter() {
-    if (
-      m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond)
-      > wantedShooterSpeed() + Constants.Shooter.SHOOTER_SPEED_ABOVE_TOLERANCE
-    ) {
-      // too high above - run voltage request
-      m_shooterMotorLeader.setControl(
-        m_shooterVoltageRequest.withVelocity(wantedShooterSpeed())
-      );
-    } else {
-      // below or within tolerance - run bang bang
-      m_shooterMotorLeader.setControl(
-        m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
-      );
-    }
+    // if (
+    //   m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond)
+    //   > wantedShooterSpeed() + Constants.Shooter.SHOOTER_SPEED_ABOVE_TOLERANCE
+    // ) {
+    //   // too high above - run voltage request
+    //   m_shooterMotorLeader.setControl(
+    //     m_shooterVoltageRequest.withVelocity(wantedShooterSpeed())
+    //   );
+    // } else {
+    //   // below or within tolerance - run bang bang
+    //   m_shooterMotorLeader.setControl(
+    //     m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
+    //   );
+    // }
+    m_shooterMotorLeader.setControl(
+      m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
+    );
   }
 
   /**
@@ -297,14 +305,14 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private double wantedShooterSpeed() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
-      // return Constants.Shooter.DUMB_SHOOTER_SPEED;
-      return Constants.Shooter.DUMB_SHOOTER_SPEED.get();
+      return Constants.Shooter.DUMB_SHOOTER_SPEED;
+      // return Constants.Shooter.DUMB_SHOOTER_SPEED.get();
     }
 
     LinearVelocity ballVelocity = AimUtil.getBallVelocity();
     double rotationsPerSecond =
       ballVelocity.in(MetersPerSecond) /
-      (2 * Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters));
+      (Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters));
     return rotationsPerSecond;
   }
 
@@ -318,9 +326,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private Angle wantedHoodPosition() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
-      // return Constants.Shooter.DUMB_HOOD_POSITION;
-      return Degrees.of(Constants.Shooter.DUMB_HOOD_POSITION.get())
-        .minus(Degrees.of(80));
+      return Constants.Shooter.DUMB_HOOD_POSITION;
+      // return Degrees.of(Constants.Shooter.DUMB_HOOD_POSITION.get())
+      //   .minus(Degrees.of(80));
     }
 
     return AimUtil.getExitAngle().minus(Degrees.of(80.0));

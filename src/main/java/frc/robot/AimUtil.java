@@ -48,7 +48,7 @@ public class AimUtil {
     double y_end = targetHeight;
     double g = Constants.Field.GRAVITY_VALUE;
 
-    double x_vel = distance * (Math.sqrt(g))/((Math.sqrt(2 * y_max)) + Math.sqrt(y_max - y_end));
+    double x_vel = distance * (Math.sqrt(g))/(Math.sqrt(2 * y_max) + Math.sqrt(2*(y_max - y_end)));
     return x_vel;
   }
 
@@ -129,7 +129,7 @@ public class AimUtil {
     Logger.recordOutput("AimUtil/ballVelocity", ballVelocity.in(MetersPerSecond));
     double rotationsPerSecond =
       ballVelocity.in(MetersPerSecond) /
-      (2 * Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters));
+      (Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters));
     Logger.recordOutput("AimUtil/outputRevps",
       rotationsPerSecond
     );
@@ -142,7 +142,7 @@ public class AimUtil {
    * Record to store calculated shooter data
    * @param exitAngle The exit angle of the ball
    * @param ballVelocity The ball's exit velocity
-   * @param robotHeading Angle of robot hood
+   * @param robotHeading Angle of robot[\]
    * @param hangTime Time the ball spends in the air
    */
   public record ShooterMathResults(
@@ -229,34 +229,49 @@ public class AimUtil {
     Logger.recordOutput("AimUtil/futurePos",
       new Pose2d(futurePos, new Rotation2d(targetVec.getAngle().getMeasure()))
     );
+    Logger.recordOutput("AimUtil/wantedPos",
+      new Pose2d(
+        currentRobotPose.getX(),
+        currentRobotPose.getY(),
+        new Rotation2d(targetVec.getAngle().getMeasure().plus(Constants.Shooter.SHOOTER_ROTATION))
+      )
+    );
     Logger.recordOutput("AimUtil/targetVec", targetVec);
     Logger.recordOutput("AimUtil/shooterVelocityVec", shooterVelocityVec);
     
     return new ShooterMathResults(
       // the arctangent of the Y velocity and the X velocity is the shooterAngle
       Radians.of(
-        Constants.Shooter.AIMUTIL_HOOD_ANGLE_SCALAR.get() *
+        // Constants.Shooter.AIMUTIL_HOOD_ANGLE_SCALAR.get() *
+        Constants.Shooter.AIMUTIL_HOOD_ANGLE_SCALAR *
         Math.atan2(
           shooterVelocityVec.getY(), shooterVelocityVec.getX()
         )
-      ).plus(Degrees.of(Constants.Shooter.AIMUTIL_HOOD_ANGLE_ADDEND.get())),
+      ).plus(
+        Degrees.of(
+          // Constants.Shooter.AIMUTIL_HOOD_ANGLE_ADDEND.get()
+          Constants.Shooter.AIMUTIL_HOOD_ANGLE_ADDEND
+        )
+      ),
 
       // Pythagorean sum of the X velocity and the Z velocity is the shooter
       MetersPerSecond.of(
-        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_SCALAR.get() *
+        // Constants.Shooter.AIMUTIL_SHOOTER_SPEED_SCALAR.get() *
+        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_SCALAR *
         Math.sqrt(
           Math.pow(shooterVelocityVec.getX(), 2) + Math.pow(shooterVelocityVec.getY(), 2)
         )
       ).plus(MetersPerSecond.of(
         // basically aimutil shooter speed addend should be in rev/s
         // so we convert to meters per second
-        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_ADDEND.get() *
+        // Constants.Shooter.AIMUTIL_SHOOTER_SPEED_ADDEND.get() *
+        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_ADDEND *
         2 * Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters)
       )),
 
       // The angle of the target vector is your robot heading
       // plus 90 because shooter is on right side of robot
-      targetVec.getAngle().getMeasure().plus(Degrees.of(90)),
+      targetVec.getAngle().getMeasure().plus(Constants.Shooter.SHOOTER_ROTATION),
 
       // hang time
       Seconds.of(hangTime)
