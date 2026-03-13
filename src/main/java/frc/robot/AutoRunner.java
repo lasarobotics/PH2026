@@ -1,7 +1,7 @@
 package frc.robot;
 
-import org.lasarobotics.fsm.StateMachine;
-import org.lasarobotics.fsm.SystemState;
+import frc.robot.fsm.StateMachine;
+import frc.robot.fsm.SystemState;
 
 public class AutoRunner extends StateMachine implements AutoCloseable {
   public AutoRunner(
