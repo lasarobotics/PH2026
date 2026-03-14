@@ -402,6 +402,9 @@ public final class Constants {
     // public static final Distance SHOOTER_OFFSET_Z = Meters.of(0.548303); // measured in cad
 
     public static final Angle SHOOTER_ROTATION = Degrees.of(90);
+    // TODO uncomment for new shooter position
+    // public static final Angle SHOOTER_ROTATION = Degrees.of(180);
+
     public static final Distance SHOOTER_DISTANCE_FROM_CENTER = Meters.of(
       Math.sqrt(
         Math.pow(SHOOTER_OFFSET_X.in(Meters), 2) + Math.pow(SHOOTER_OFFSET_Y.in(Meters), 2)
