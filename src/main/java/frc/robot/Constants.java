@@ -429,25 +429,36 @@ public final class Constants {
     //   = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     // public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
     //   = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
-    public static double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
-    public static double AIMUTIL_SHOOTER_SPEED_ADDEND = 1;
-    public static double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
-    public static double AIMUTIL_HOOD_ANGLE_ADDEND = -5;
+    public static final double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
+    public static final double AIMUTIL_SHOOTER_SPEED_ADDEND = 1;
+    public static final double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
+    public static final double AIMUTIL_HOOD_ANGLE_ADDEND = -5;
   }
 
   public static class Drive {
+    // note:
+    // these values (for max acceleration, max angular rate, max angular acceleration)
+    // are guesses. but it's fine
     public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
     public static final LinearAcceleration MAX_ACCELERATION =
-        MetersPerSecondPerSecond.of(3); // TODO measure
+        MetersPerSecondPerSecond.of(3);
     public static final AngularVelocity MAX_ANGULAR_RATE =
-        RotationsPerSecond.of(0.75); // TODO measure
+        RotationsPerSecond.of(0.75);
     public static final AngularVelocity AUTO_NAV_MAX_ANGULAR_RATE =
       RadiansPerSecond.of(2.0); // ~115 deg/s — controllable for auto
     public static final AngularAcceleration MAX_ANGULAR_ACCELERATION =
-        RotationsPerSecondPerSecond.of(1); // TODO  measure
+        RotationsPerSecondPerSecond.of(1);
     // normally 0.3 and 1.0
     public static final double SLOW_SPEED_SCALAR = 0.15;
     public static final double FAST_SPEED_SCALAR = .75;
+
+    public static final Double DEADBAND_SCALAR = 0.085;
+    public static final Double AUTO_DEADBAND_SCALAR = 0.02;
+    public static final Double AUTO_ROTATIONAL_DEADBAND_SCALAR = 0.02;
+
+    // Distance threshold below which we remove the velocity floor
+    // to allow the robot to actually settle at the target
+    public static final Distance GOTO_SETTLE_DISTANCE = Meters.of(.15);
 
     public static final String SHOOTER_LIMELIGHT_NAME = "limelight-shooter";
     public static final String CLIMB_LIMELIGHT_NAME = "limelight-climb";
@@ -494,11 +505,13 @@ public final class Constants {
       29, 30
     };
 
-    // This is used as a percent tolerance
-    // 5% seems reasonable, subject to change
+    // TODO tune
     public static final Angle ROTATION_TOLERANCE = Degrees.of(3);
 
-    public static final double ROBOT_LATENCY = 0.15; //TODO: measure
+    // this is an initial guess lol
+    // never changed
+    // it works
+    public static final double ROBOT_LATENCY = 0.15;
 
     public static final TrapezoidProfile.Constraints TRANSLATE_CONSTRAINTS =
       new TrapezoidProfile.Constraints(
@@ -656,7 +669,7 @@ public final class Constants {
     public static final double JIGGLE_TOLERANCE = 0.2;
 
     // preliminary values
-    public static final Angle STOW_ANGLE = Rotations.of(0.0); // TODO change maybe
+    public static final Angle STOW_ANGLE = Rotations.of(0.0);
     // might want to reduce
     // this should be basically the value of the soft limit of the arm
     public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);

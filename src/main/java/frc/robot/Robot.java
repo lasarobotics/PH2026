@@ -84,7 +84,6 @@ public class Robot extends LoggedRobot {
     AimUtil.updateShooterConstants();
     CommandScheduler.getInstance().run();
 
-    // TODO remove for competition
     Logger.recordOutput("GameHelpers/matchTimeLeft", GameHelpers.matchTimeLeft());
     Logger.recordOutput("GameHelpers/scoringTimeLeft", GameHelpers.scoringTimeLeft());
     ll.RobotEnd(isEnabled());

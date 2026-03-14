@@ -15,7 +15,6 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -44,7 +43,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   // private TalonFX m_agitatorMotor;
   private CANcoder m_hoodCanCoder;
 
-  private final VelocityVoltage m_shooterVoltageRequest;
   private final VelocityDutyCycle m_shooterDutyCycleRequest;
   private final MotionMagicVoltage m_hoodRequest;
   private final DutyCycleOut m_indexerRequest;
@@ -71,7 +69,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
-    m_shooterVoltageRequest = new VelocityVoltage(0);
     m_shooterDutyCycleRequest = new VelocityDutyCycle(0);
     m_hoodRequest = new MotionMagicVoltage(0);
     m_indexerRequest = new DutyCycleOut(0);
@@ -193,38 +190,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   
   /**
    * Stop the {@link #m_shooterMotorLeader shooter motors} (coast to 0).
-   */
+   */   
   private void stopShooter() {
     m_shooterMotorLeader.setVoltage(0);
   }
 
   /**
-   * TODO Comment is outdated.
-   * 
-   * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
-   * to the desired shooting speed according to {@link #wantedShooterSpeed()}.
-   * If we're too far above the wanted shooter speed, run with a
-   * velocity (non-BangBang) controller. This is because BangBang can only
-   * drive up, and we don't want to be waiting for multiple seconds for the
-   * flywheel to spin down on its own. At a tolerance of 2 rotations per second,
-   * it takes somewhere between 0.1 and 0.2 seconds to spin down back to the
-   * target velocity.
+   * Run shooter at the speed wanted by {@link #wantedShooterSpeed()}
    */
   private void runShooter() {
-    // if (
-    //   m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond)
-    //   > wantedShooterSpeed() + Constants.Shooter.SHOOTER_SPEED_ABOVE_TOLERANCE
-    // ) {
-    //   // too high above - run voltage request
-    //   m_shooterMotorLeader.setControl(
-    //     m_shooterVoltageRequest.withVelocity(wantedShooterSpeed())
-    //   );
-    // } else {
-    //   // below or within tolerance - run bang bang
-    //   m_shooterMotorLeader.setControl(
-    //     m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
-    //   );
-    // }
     m_shooterMotorLeader.setControl(
       m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
     );
@@ -277,7 +251,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       // hood position before indexing
       (
         HeadHoncho.getInstance().wantToDumbShoot() ||
-        DriveSubsystem.getInstance().atWantedRotation()
+        DriveSubsystem.getInstance().atShootingRotation()
       )
     );
   }
