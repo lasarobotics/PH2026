@@ -15,6 +15,7 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class HeadHoncho extends StateMachine implements AutoCloseable {
 
@@ -123,6 +124,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private BooleanSupplier m_cancelButton;
   private BooleanSupplier m_reverseIntakeButton;
   private BooleanSupplier m_overRampButton;
+  private BooleanSupplier m_autoIntakeButton;
   private BooleanSupplier m_intakeButtonHasFallen;
   private BooleanSupplier m_restButtonHasFallen;
   private BooleanSupplier m_resetOdometry;
@@ -162,6 +164,13 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   public void periodic() {
     Logger.recordOutput(getName() + "/currentState", getState().toString());
     Logger.recordOutput(getName() + "/overRampButton", m_overRampButton.getAsBoolean());
+    Logger.recordOutput(getName() + "/autoIntakeButton", m_autoIntakeButton.getAsBoolean());
+
+    if (m_autoIntakeButton.getAsBoolean()) {
+      VisionSubsystem.getInstance().autoIntake();
+    } else {
+      VisionSubsystem.getInstance().driverControl();
+    }
   }
 
   /**
@@ -288,12 +297,13 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     BooleanSupplier shootButton,
     BooleanSupplier dumbShootButton,
     BooleanSupplier forceShootButton,
-    BooleanSupplier cancelButton,
-    BooleanSupplier reverseIntakeButton,
-    BooleanSupplier overRampRequest,
-    BooleanSupplier resetOdomButton,
-    BooleanSupplier intakeButtonHasFallen,
-    BooleanSupplier restButtonHasFallen,
+   BooleanSupplier cancelButton,
+   BooleanSupplier reverseIntakeButton,
+   BooleanSupplier overRampRequest,
+    BooleanSupplier autoIntakeButton,
+   BooleanSupplier resetOdomButton,
+   BooleanSupplier intakeButtonHasFallen,
+   BooleanSupplier restButtonHasFallen,
     DoubleSupplier driveRequest,
     DoubleSupplier strafeRequest,
     DoubleSupplier rotateRequest
@@ -304,6 +314,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     m_cancelButton = cancelButton;
     m_reverseIntakeButton = reverseIntakeButton;
     m_overRampButton = overRampRequest;
+    m_autoIntakeButton = autoIntakeButton;
     m_resetOdometry = resetOdomButton;
     m_intakeButtonHasFallen = intakeButtonHasFallen;
     m_restButtonHasFallen = restButtonHasFallen;

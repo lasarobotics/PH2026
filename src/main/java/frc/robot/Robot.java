@@ -18,6 +18,7 @@ import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.vision.VisionSubsystem;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -61,6 +62,7 @@ public class Robot extends LoggedRobot {
     IntakeSubsystem.getInstance();
     ShooterSubsystem.getInstance();
     LEDSubsystem.getInstance();
+    VisionSubsystem.getInstance();
   }
 
   /**
