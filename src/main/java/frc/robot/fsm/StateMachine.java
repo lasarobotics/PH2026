@@ -4,9 +4,6 @@
 
 package frc.robot.fsm;
 
-import org.lasarobotics.hardware.Monitorable;
-import org.lasarobotics.hardware.PurpleManager;
-
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
 import edu.wpi.first.util.sendable.SendableRegistry;
@@ -15,7 +12,7 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 
 /** State machine subsystem */
-public abstract class StateMachine extends Monitorable implements Subsystem, Sendable {
+public abstract class StateMachine implements Subsystem, Sendable {
   private SystemState m_currentState;
 
   /**
@@ -29,7 +26,6 @@ public abstract class StateMachine extends Monitorable implements Subsystem, Sen
     SendableRegistry.addLW(this, name, name);
     CommandScheduler.getInstance().registerSubsystem(this);
     CommandScheduler.getInstance().setDefaultCommand(this, new StateCommand(this).repeatedly());
-    PurpleManager.add(this);
   }
 
   /**

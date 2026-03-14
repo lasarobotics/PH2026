@@ -897,6 +897,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.AUTO_AIM;
   }
 
+  /**
+   * Set the drive subsystem to be under "driver" control. If
+   * in autonomous, this goes to the AUTO drive state. If in
+   * teleop, this goes to the DRIVER_CONTROL drive state.
+   */
   public void driverControl() {
     if (DriverStation.isAutonomous()) {
       s_requestedDriveState = DriveStates.AUTO;

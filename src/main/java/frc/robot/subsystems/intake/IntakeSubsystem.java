@@ -27,6 +27,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
 
   private boolean m_isIntaking;
   private boolean m_isJiggling;
+  private boolean m_isReversing;
   private boolean m_isIntakeRunning;
 
   /** Creates a new IntakeSubsystem */
@@ -39,6 +40,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
 
     m_isIntaking = false;
     m_isJiggling = false;
+    m_isReversing = false;
     m_isIntakeRunning = false;
 
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
@@ -158,8 +160,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    *  Reverse the intaking direction
    */
-  public void reverseIntake() {
-    reverseIntakeMotor();
+  public void reverseIntake(boolean shouldReverse) {
+    m_isReversing = shouldReverse;
   }
 
   /**
@@ -232,7 +234,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    * Start intake of fuel using intake motor
    */
-  private void startIntakeMotor() {
+  private void runIntakeMotor() {
     m_intakeMotor.set(Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
@@ -285,7 +287,11 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     super.periodic();
 
     if (m_isIntaking && intakeDeployed()) {
-      startIntakeMotor();
+      if (m_isReversing) {
+        reverseIntakeMotor();
+      } else {
+        runIntakeMotor();
+      }
     } else {
       stopIntakeMotor();
     }

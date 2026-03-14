@@ -19,6 +19,21 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
 public class HeadHoncho extends StateMachine implements AutoCloseable {
 
   public enum HeadHonchoStates implements SystemState {
+    DISABLED {
+      @Override
+      public void initialize() {
+        DriveSubsystem.getInstance().driverControl();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isDisabled()) {
+          return NORMAL;
+        }
+
+        return this;
+      }
+    },
     REST {
       @Override
       public void initialize() {
@@ -29,6 +44,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
+
         if (s_headHoncho.m_restButtonHasFallen.getAsBoolean()) return NORMAL;
 
         return this;
@@ -42,10 +59,11 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void execute() {
-        boolean shoot = s_headHoncho.m_shootButton.getAsBoolean() ||
-                        AutoHoncho.autoWantToShoot() ||
-                        s_headHoncho.m_dumbShootButton.getAsBoolean() ||
-                        AutoHoncho.autoWantToDumbShoot();
+        boolean shoot =
+          s_headHoncho.m_shootButton.getAsBoolean()     ||
+          AutoHoncho.autoWantToShoot()                  ||
+          s_headHoncho.m_dumbShootButton.getAsBoolean() ||
+          AutoHoncho.autoWantToDumbShoot();
 
         Translation3d shootPos = wantedShootPosition();
         AimUtil.setTarget(
@@ -63,13 +81,15 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
           IntakeSubsystem.getInstance().toggleIntake();
         }
 
-        if (s_headHoncho.m_reverseIntakeButton.getAsBoolean()) {
-          IntakeSubsystem.getInstance().reverseIntake();
-        }
+        IntakeSubsystem.getInstance().reverseIntake(
+          s_headHoncho.m_reverseIntakeButton.getAsBoolean()
+        );
       }
 
       @Override
       public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
+
         // if (s_headHoncho.m_overRampButton.getAsBoolean())
         //   return OVER_RAMP;
 
@@ -87,6 +107,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
+
         if (!s_headHoncho.m_overRampButton.getAsBoolean()) return NORMAL;
 
         return this;
