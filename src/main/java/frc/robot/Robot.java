@@ -50,13 +50,7 @@ public class Robot extends LoggedRobot {
     Logger.recordMetadata("RuntimeType", isSimulation() ? "sim" : "real");
 
     SignalLogger.enableAutoLogging(false);
-    // this is super hacky but it's the best we can do without pulling the state machine code
-    // directly into the project
-    if (LoggingInitializer.getInstance().getCurrentCommand() == null) {
-      CommandScheduler.getInstance().schedule(
-        LoggingInitializer.getInstance().getDefaultCommand().ignoringDisable(true)
-      );
-    }
+    LoggingInitializer.getInstance();
 
     RobotController.setBrownoutVoltage(6.25);
 
