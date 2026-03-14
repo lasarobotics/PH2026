@@ -18,6 +18,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
+import com.ctre.phoenix6.signals.RGBWColor;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -611,6 +613,16 @@ public final class Constants {
     public static final double MAX_BALL_Y_POS = 2.5;
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
+    public static final double HUB_HANG_TIME =
+      (
+        Math.sqrt((MAX_BALL_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters)) * 2) +
+        Math.sqrt(
+          2 * (
+            (MAX_BALL_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters)) -
+            (HUB_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters))
+          )
+        )
+      ) / Math.sqrt(GRAVITY_VALUE);
     public static final Translation2d BLUE_HUB_COORDINATES = new Translation2d(4.619, 4.049);
     public static final Translation2d RED_HUB_COORDINATES = new Translation2d(11.925, 4.049);
 
@@ -682,6 +694,23 @@ public final class Constants {
     public static final Angle DEPLOY_TOLERANCE = Degrees.of(10);
   }
 
+  public static class LED {
+    // TODO update
+    public static final int CANDLE_ID = 69;
+
+    // TODO update
+    public static final int START_INDEX_LEFT = 8;
+    public static final int END_INDEX_LEFT = 9;
+    public static final int START_INDEX_RIGHT = 10;
+    public static final int END_INDEX_RIGHT = 11;
+
+    // #663399
+    public static final RGBWColor DEFAULT_COLOR = new RGBWColor(102, 51, 153);
+    // #663399
+    public static final RGBWColor ACTIVE_COLOR = new RGBWColor(102, 51, 153);
+    // #FF0000
+    public static final RGBWColor INACTIVE_COLOR = new RGBWColor(255, 0, 0);
+  }
 
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_QUADRANT_CHOOSER_NAME = "Auto Start Position";

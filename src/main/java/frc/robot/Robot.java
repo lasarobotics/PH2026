@@ -16,6 +16,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
+import frc.robot.subsystems.leds.LEDSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 /**
@@ -59,6 +60,7 @@ public class Robot extends LoggedRobot {
     DriveSubsystem.getInstance();
     IntakeSubsystem.getInstance();
     ShooterSubsystem.getInstance();
+    LEDSubsystem.getInstance();
   }
 
   /**

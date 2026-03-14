@@ -271,6 +271,32 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
+   * Checks if a ball shot right now will be counted, based
+   * on scoring time left and hang time.
+   * @return True if it is okay to shoot right now
+   */
+  private boolean shootingTimeOkay() {
+    double scoringTimeLeft = GameHelpers.scoringTimeLeft();
+    double hangTime = Constants.Field.HUB_HANG_TIME;
+    // Basically:
+    // If scoring time is greater than 0, it works normally
+    // The special thing here is that: the hub counts balls for
+    // 3 seconds after the shift. So the real scoring time left
+    // goes until 3 seconds after - we do want to wait for hang time,
+    // though.
+    // The other aspect is shooting before the shift starts. Since
+    // the scoring time just goes negative, we can check if it's below
+    // -25 plus the hang time (because the inactive shifts are always
+    // 25 seconds).
+    return (
+      scoringTimeLeft >
+        -3 + hangTime ||
+      scoringTimeLeft <
+        -25 + hangTime
+    );
+  }
+
+  /**
    * Get the current wanted ball velocity from AimUtil
    * and convert to rotations per second. If the
    * dumb shoot button is being held, return the
@@ -337,23 +363,19 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       if (shooting || forceShooting || dumbShooting) {
         runShooter();
         IntakeSubsystem.getInstance().jiggleOn();
-        // IntakeSubsystem.getInstance().deployIntake();
 
         // If the shooter is ready (rpm, position, hood) and
         // the time/pass check succeeds, then ready to shoot
         // If we're not in the alliance zone, we're passing
         // and we can always pass, so succeed
         // If we're in the alliance zone, we're shooting, and
-        // we only want to shoot during active shift
+        // we only want to shoot when the ball will make it in
 
         boolean readyToShoot = (
           shooterReady() &&
           (
             !DriveSubsystem.inAllianceZone() ||
-            (
-              GameHelpers.scoringTimeLeft() - AimUtil.getHangTime().in(Seconds)
-              >= Constants.Shooter.SHOOTER_TIME_MARGIN
-            )
+            shootingTimeOkay()
           )
         );
 
@@ -394,6 +416,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       shooterReady());
     Logger.recordOutput(getName() + "/atHoodPosition",
       atHoodPosition());
+    Logger.recordOutput(getName() + "/shootingTimeOkay",
+      shootingTimeOkay());
     Logger.recordOutput(getName() + "/wantedShooterSpeed",
       wantedShooterSpeed());
     Logger.recordOutput(getName() + "/wantedHoodPosition",
