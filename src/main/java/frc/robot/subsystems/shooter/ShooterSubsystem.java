@@ -15,7 +15,6 @@ import com.ctre.phoenix6.controls.DutyCycleOut;
 import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityDutyCycle;
-import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
@@ -44,7 +43,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   // private TalonFX m_agitatorMotor;
   private CANcoder m_hoodCanCoder;
 
-  private final VelocityVoltage m_shooterVoltageRequest;
   private final VelocityDutyCycle m_shooterDutyCycleRequest;
   private final MotionMagicVoltage m_hoodRequest;
   private final DutyCycleOut m_indexerRequest;
@@ -71,7 +69,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
-    m_shooterVoltageRequest = new VelocityVoltage(0);
     m_shooterDutyCycleRequest = new VelocityDutyCycle(0);
     m_hoodRequest = new MotionMagicVoltage(0);
     m_indexerRequest = new DutyCycleOut(0);
@@ -193,38 +190,15 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   
   /**
    * Stop the {@link #m_shooterMotorLeader shooter motors} (coast to 0).
-   */
+   */   
   private void stopShooter() {
     m_shooterMotorLeader.setVoltage(0);
   }
 
   /**
-   * TODO Comment is outdated.
-   * 
-   * Set the speed of the {@link #m_shooterMotorLeader shooter motors}
-   * to the desired shooting speed according to {@link #wantedShooterSpeed()}.
-   * If we're too far above the wanted shooter speed, run with a
-   * velocity (non-BangBang) controller. This is because BangBang can only
-   * drive up, and we don't want to be waiting for multiple seconds for the
-   * flywheel to spin down on its own. At a tolerance of 2 rotations per second,
-   * it takes somewhere between 0.1 and 0.2 seconds to spin down back to the
-   * target velocity.
+   * Run shooter at the speed wanted by {@link #wantedShooterSpeed()}
    */
   private void runShooter() {
-    // if (
-    //   m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond)
-    //   > wantedShooterSpeed() + Constants.Shooter.SHOOTER_SPEED_ABOVE_TOLERANCE
-    // ) {
-    //   // too high above - run voltage request
-    //   m_shooterMotorLeader.setControl(
-    //     m_shooterVoltageRequest.withVelocity(wantedShooterSpeed())
-    //   );
-    // } else {
-    //   // below or within tolerance - run bang bang
-    //   m_shooterMotorLeader.setControl(
-    //     m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
-    //   );
-    // }
     m_shooterMotorLeader.setControl(
       m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
     );
@@ -277,7 +251,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       // hood position before indexing
       (
         HeadHoncho.getInstance().wantToDumbShoot() ||
-        DriveSubsystem.getInstance().atWantedRotation()
+        DriveSubsystem.getInstance().atShootingRotation()
       )
     );
   }
@@ -293,6 +267,32 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     return m_hoodMotor.getPosition().getValue().isNear(
       wantedHoodPosition(),
       Constants.Shooter.HOOD_POSITION_TOLERANCE
+    );
+  }
+
+  /**
+   * Checks if a ball shot right now will be counted, based
+   * on scoring time left and hang time.
+   * @return True if it is okay to shoot right now
+   */
+  private boolean shootingTimeOkay() {
+    double scoringTimeLeft = GameHelpers.scoringTimeLeft();
+    double hangTime = Constants.Field.HUB_HANG_TIME;
+    // Basically:
+    // If scoring time is greater than 0, it works normally
+    // The special thing here is that: the hub counts balls for
+    // 3 seconds after the shift. So the real scoring time left
+    // goes until 3 seconds after - we do want to wait for hang time,
+    // though.
+    // The other aspect is shooting before the shift starts. Since
+    // the scoring time just goes negative, we can check if it's below
+    // -25 plus the hang time (because the inactive shifts are always
+    // 25 seconds).
+    return (
+      scoringTimeLeft >
+        -3 + hangTime ||
+      scoringTimeLeft <
+        -25 + hangTime
     );
   }
 
@@ -363,23 +363,19 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       if (shooting || forceShooting || dumbShooting) {
         runShooter();
         IntakeSubsystem.getInstance().jiggleOn();
-        // IntakeSubsystem.getInstance().deployIntake();
 
         // If the shooter is ready (rpm, position, hood) and
         // the time/pass check succeeds, then ready to shoot
         // If we're not in the alliance zone, we're passing
         // and we can always pass, so succeed
         // If we're in the alliance zone, we're shooting, and
-        // we only want to shoot during active shift
+        // we only want to shoot when the ball will make it in
 
         boolean readyToShoot = (
           shooterReady() &&
           (
             !DriveSubsystem.inAllianceZone() ||
-            (
-              GameHelpers.scoringTimeLeft() - AimUtil.getHangTime().in(Seconds)
-              >= Constants.Shooter.SHOOTER_TIME_MARGIN
-            )
+            shootingTimeOkay()
           )
         );
 
@@ -420,6 +416,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       shooterReady());
     Logger.recordOutput(getName() + "/atHoodPosition",
       atHoodPosition());
+    Logger.recordOutput(getName() + "/shootingTimeOkay",
+      shootingTimeOkay());
     Logger.recordOutput(getName() + "/wantedShooterSpeed",
       wantedShooterSpeed());
     Logger.recordOutput(getName() + "/wantedHoodPosition",

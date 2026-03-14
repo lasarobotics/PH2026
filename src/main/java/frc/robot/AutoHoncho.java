@@ -2,18 +2,15 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
 
-import frc.robot.fsm.StateMachine;
-import frc.robot.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import frc.robot.AutoPositionConfig.Quadrant;
+import frc.robot.fsm.StateMachine;
+import frc.robot.fsm.SystemState;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
-import frc.robot.subsystems.shooter.ShooterSubsystem;
 
 public class AutoHoncho extends StateMachine implements AutoCloseable {  
   public static AutoPositionConfig positionConfig;

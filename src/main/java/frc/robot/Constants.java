@@ -18,6 +18,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
+import com.ctre.phoenix6.signals.RGBWColor;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -429,25 +431,36 @@ public final class Constants {
     //   = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     // public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
     //   = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
-    public static double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
-    public static double AIMUTIL_SHOOTER_SPEED_ADDEND = 1;
-    public static double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
-    public static double AIMUTIL_HOOD_ANGLE_ADDEND = -5;
+    public static final double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
+    public static final double AIMUTIL_SHOOTER_SPEED_ADDEND = 1;
+    public static final double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
+    public static final double AIMUTIL_HOOD_ANGLE_ADDEND = -5;
   }
 
   public static class Drive {
+    // note:
+    // these values (for max acceleration, max angular rate, max angular acceleration)
+    // are guesses. but it's fine
     public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
     public static final LinearAcceleration MAX_ACCELERATION =
-        MetersPerSecondPerSecond.of(3); // TODO measure
+        MetersPerSecondPerSecond.of(3);
     public static final AngularVelocity MAX_ANGULAR_RATE =
-        RotationsPerSecond.of(0.75); // TODO measure
+        RotationsPerSecond.of(0.75);
     public static final AngularVelocity AUTO_NAV_MAX_ANGULAR_RATE =
       RadiansPerSecond.of(2.0); // ~115 deg/s — controllable for auto
     public static final AngularAcceleration MAX_ANGULAR_ACCELERATION =
-        RotationsPerSecondPerSecond.of(1); // TODO  measure
+        RotationsPerSecondPerSecond.of(1);
     // normally 0.3 and 1.0
     public static final double SLOW_SPEED_SCALAR = 0.15;
     public static final double FAST_SPEED_SCALAR = .75;
+
+    public static final Double DEADBAND_SCALAR = 0.085;
+    public static final Double AUTO_DEADBAND_SCALAR = 0.02;
+    public static final Double AUTO_ROTATIONAL_DEADBAND_SCALAR = 0.02;
+
+    // Distance threshold below which we remove the velocity floor
+    // to allow the robot to actually settle at the target
+    public static final Distance GOTO_SETTLE_DISTANCE = Meters.of(.15);
 
     public static final String SHOOTER_LIMELIGHT_NAME = "limelight-shooter";
     public static final String CLIMB_LIMELIGHT_NAME = "limelight-climb";
@@ -494,11 +507,13 @@ public final class Constants {
       29, 30
     };
 
-    // This is used as a percent tolerance
-    // 5% seems reasonable, subject to change
+    // TODO tune
     public static final Angle ROTATION_TOLERANCE = Degrees.of(3);
 
-    public static final double ROBOT_LATENCY = 0.15; //TODO: measure
+    // this is an initial guess lol
+    // never changed
+    // it works
+    public static final double ROBOT_LATENCY = 0.15;
 
     public static final TrapezoidProfile.Constraints TRANSLATE_CONSTRAINTS =
       new TrapezoidProfile.Constraints(
@@ -598,6 +613,16 @@ public final class Constants {
     public static final double MAX_BALL_Y_POS = 2.5;
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
+    public static final double HUB_HANG_TIME =
+      (
+        Math.sqrt((MAX_BALL_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters)) * 2) +
+        Math.sqrt(
+          2 * (
+            (MAX_BALL_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters)) -
+            (HUB_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters))
+          )
+        )
+      ) / Math.sqrt(GRAVITY_VALUE);
     public static final Translation2d BLUE_HUB_COORDINATES = new Translation2d(4.619, 4.049);
     public static final Translation2d RED_HUB_COORDINATES = new Translation2d(11.925, 4.049);
 
@@ -656,7 +681,7 @@ public final class Constants {
     public static final double JIGGLE_TOLERANCE = 0.2;
 
     // preliminary values
-    public static final Angle STOW_ANGLE = Rotations.of(0.0); // TODO change maybe
+    public static final Angle STOW_ANGLE = Rotations.of(0.0);
     // might want to reduce
     // this should be basically the value of the soft limit of the arm
     public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);
@@ -669,6 +694,23 @@ public final class Constants {
     public static final Angle DEPLOY_TOLERANCE = Degrees.of(10);
   }
 
+  public static class LED {
+    // TODO update
+    public static final int CANDLE_ID = 69;
+
+    // TODO update
+    public static final int START_INDEX_LEFT = 8;
+    public static final int END_INDEX_LEFT = 9;
+    public static final int START_INDEX_RIGHT = 10;
+    public static final int END_INDEX_RIGHT = 11;
+
+    // #663399
+    public static final RGBWColor DEFAULT_COLOR = new RGBWColor(102, 51, 153);
+    // #663399
+    public static final RGBWColor ACTIVE_COLOR = new RGBWColor(102, 51, 153);
+    // #FF0000
+    public static final RGBWColor INACTIVE_COLOR = new RGBWColor(255, 0, 0);
+  }
 
   public static class SmartDashboard {
     public static final String SMARTDASHBOARD_QUADRANT_CHOOSER_NAME = "Auto Start Position";

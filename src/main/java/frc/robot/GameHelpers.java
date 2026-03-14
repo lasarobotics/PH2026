@@ -99,8 +99,14 @@ public class GameHelpers {
     }
   }
 
-  final static double[][] wonAutoActiveIntervals = new double[][] { {140, 130}, {105, 80}, {55, 0} }; // won auto (s2, s4)
-  final static double[][] lostAutoActiveIntervals = new double[][] { {140, 105}, {80, 55}, {30, 0} }; // lost auto (s1, s3)
+  public static final double[][] wonAutoActiveIntervals =
+    new double[][] { {140, 130}, {105, 80}, {55, 0} }; // won auto (s2, s4)
+  public static final double[][] lostAutoActiveIntervals = 
+    new double[][] { {140, 105}, {80, 55}, {30, 0} }; // lost auto (s1, s3)
+  // 55 to 0 if won auto
+  // this is for LEDs - we want a certain number of LEDs on to always
+  // represent the same amount of clock time
+  public static final double MAX_SHIFT_TIME = 55;
 
   /**
    * This method gets the amount of time until the current alliance's
@@ -162,6 +168,7 @@ public class GameHelpers {
 
     // I'm not sure how we would actually get here, especially
     // accounting for the negative logic in the loop
+    System.out.println("WTF?");
     return 50;
   }
 }
