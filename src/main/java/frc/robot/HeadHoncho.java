@@ -15,7 +15,6 @@ import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.shooter.ShooterSubsystem;
-import frc.robot.subsystems.vision.VisionSubsystem;
 
 public class HeadHoncho extends StateMachine implements AutoCloseable {
 
@@ -72,7 +71,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
           shootPos.getZ()
         );
 
-        if (shoot) {
+        if (s_headHoncho.m_autoIntakeButton.getAsBoolean()) {
+          DriveSubsystem.getInstance().driveAutoIntake();
+        } else if (shoot) {
           DriveSubsystem.getInstance().driveAutoAim();
         } else {
           DriveSubsystem.getInstance().driverControl();
@@ -165,12 +166,6 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     Logger.recordOutput(getName() + "/currentState", getState().toString());
     Logger.recordOutput(getName() + "/overRampButton", m_overRampButton.getAsBoolean());
     Logger.recordOutput(getName() + "/autoIntakeButton", m_autoIntakeButton.getAsBoolean());
-
-    if (m_autoIntakeButton.getAsBoolean()) {
-      VisionSubsystem.getInstance().autoIntake();
-    } else {
-      VisionSubsystem.getInstance().driverControl();
-    }
   }
 
   /**

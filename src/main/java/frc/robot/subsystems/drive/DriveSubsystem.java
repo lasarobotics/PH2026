@@ -170,8 +170,38 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           return OVER_RAMP;
         }
 
+        if (s_requestedDriveState == DriveStates.AUTO_INTAKE) return AUTO_INTAKE;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
         
+        return this;
+      }
+    },
+    /**
+     * Auto intake state
+     * For now this does nothing
+     */
+    AUTO_INTAKE {
+      @Override
+      public void initialize() {
+        LimelightHelpers.SetThrottle(
+          Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+        );
+        s_shouldDoGlobalPoseEstimation = true;
+
+        s_driveSubsystem.setAllLimelightsToAllTags();
+      }
+
+      @Override
+      public void execute() {}
+
+      @Override
+      public SystemState nextState() {
+        if (DriverStation.isDisabled()) return DISABLED;
+        if (DriverStation.isAutonomous()) return AUTO;
+
+        if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
+        if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
+
         return this;
       }
     },
@@ -289,6 +319,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         }
 
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
+        if (s_requestedDriveState == DriveStates.AUTO_INTAKE) return AUTO_INTAKE;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
 
         return this;
@@ -984,6 +1015,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    */
   public void driveAutoAim() {
     s_requestedDriveState = DriveStates.AUTO_AIM;
+  }
+
+  /**
+   * Set the drive subsystem state to auto intake.
+   */
+  public void driveAutoIntake() {
+    s_requestedDriveState = DriveStates.AUTO_INTAKE;
   }
 
   // TODO nuke
