@@ -1,7 +1,6 @@
 package frc.robot.subsystems.leds;
 
-import com.ctre.phoenix6.hardware.CANdle;
-import com.ctre.phoenix6.signals.RGBWColor;
+import com.ctre.phoenix.led.CANdle;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -59,7 +58,6 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
     } else {
       // not our shift - gamehelpers returns negative
       // so we know scoringTimeLeft is between 0 and 25
-      // TODO maybe add a check for scoringTime < -25?
       double trueTimeLeft = scoringTimeLeft + 25;
       double percent = trueTimeLeft / GameHelpers.MAX_SHIFT_TIME;
       m_fillHandlerLeft.updateLeds(percent);
@@ -69,6 +67,6 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void close() {
-    m_candle.close();
+    m_candle.destroyObject();
   }
 }

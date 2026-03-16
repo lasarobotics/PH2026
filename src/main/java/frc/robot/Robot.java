@@ -60,7 +60,7 @@ public class Robot extends LoggedRobot {
     DriveSubsystem.getInstance();
     IntakeSubsystem.getInstance();
     ShooterSubsystem.getInstance();
-    LEDSubsystem.getInstance();
+    // LEDSubsystem.getInstance();
   }
 
   /**
