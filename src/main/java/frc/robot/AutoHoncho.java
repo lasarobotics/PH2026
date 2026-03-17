@@ -82,19 +82,18 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
   public enum NZLiteAuto implements SystemState {
     START {
       @Override
-      public void execute() {
-        DriveSubsystem.getInstance().goTo(
-          // positionConfig.AllianceZoneSide(),
-          positionConfig.AcrossBumpNZPosition(),
-          MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_ANGULAR_RATE
-        );
+      public void initialize() {
+        IntakeSubsystem.getInstance().startIntake();
       }
 
       @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpNZPosition(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
       }
 
       @Override
@@ -114,24 +113,14 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     },
     OVERBUMP {
       @Override
-      public void initialize() {
-        IntakeSubsystem.getInstance().startIntake();
-      }
-
-      @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           // positionConfig.AllianceZoneSide(),
           positionConfig.NeutralZoneStartPosition(),
-          MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED.div(2),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
       }
 
       @Override
@@ -151,24 +140,14 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     },
     PLOW {
       @Override
-      public void initialize() {
-        IntakeSubsystem.getInstance().startIntake();
-      }
-
-      @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           // positionConfig.AllianceZoneSide(),
           positionConfig.NeutralZoneEndPosition(),
-          MetersPerSecond.of(0),
+          MetersPerSecond.of(1),
           Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
       }
 
       @Override
@@ -188,24 +167,13 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     },
     PREOVERRAMP {
       @Override
-      public void initialize() {
-        IntakeSubsystem.getInstance().stopIntake();
-      }
-
-      @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          // positionConfig.AllianceZoneSide(),
           positionConfig.AcrossBumpNZPosition(),
-          MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED.div(2),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
       }
 
       @Override
@@ -215,7 +183,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.AcrossBumpNZPosition(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE,
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return OVERRAMP;
@@ -225,24 +193,13 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     },
     OVERRAMP {
       @Override
-      public void initialize() {
-        IntakeSubsystem.getInstance().stopIntake();
-      }
-
-      @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          // positionConfig.AllianceZoneSide(),
           positionConfig.AcrossBumpAZPosition(),
-          MetersPerSecond.of(0),
-          Constants.Drive.MAX_SPEED.div(2),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
       }
 
       @Override
@@ -264,17 +221,11 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          // positionConfig.AllianceZoneSide(),
-          positionConfig.TowerShootingPose(),
-          MetersPerSecond.of(0),
+          positionConfig.AcrossBumpAZPosition(),
+          Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
-      }
-
-      @Override
-      public void end(boolean interrupted) {
-        DriveSubsystem.getInstance().stopMoving();
       }
 
       @Override
@@ -283,7 +234,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
         if (
           DriveSubsystem.atDestination(
-            positionConfig.TowerShootingPose(), 
+            positionConfig.AcrossBumpAZPosition(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -295,13 +246,14 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     SHOOT {
       @Override
       public void initialize() {
+        DriveSubsystem.getInstance().stopMoving();
         DriveSubsystem.getInstance().driveAutoAim();
-        s_wantToDumbShoot = true;
+        s_wantToShoot = true;
       }
 
       @Override
       public void end(boolean interrupted) {
-        s_wantToDumbShoot = false;
+        s_wantToShoot = false;
       }
 
       @Override
@@ -426,8 +378,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         DriveSubsystem.getInstance().goTo(
           // positionConfig.AllianceZoneSide(),
           positionConfig.AcrossBumpAZOppositePosition(),
-          MetersPerSecond.of(0),
           Constants.Drive.MAX_SPEED.div(2),
+          Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }

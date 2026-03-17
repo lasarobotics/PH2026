@@ -48,10 +48,10 @@ public final class Constants {
   public static class Auto {
     public static final double EightBallShootingTime = 5;
 
-    public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.15);
+    public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.3);
     public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.025);
 
-    public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(2.5);
+    public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(10);
     public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(0.5); 
 
     public static final Pose2d BLUE_RIGHT_POSE = new Pose2d(
@@ -59,7 +59,7 @@ public final class Constants {
         2, 1.5
       ),
       new Rotation2d(
-        Degrees.of(45)
+        Degrees.of(-135)
       )
     );
     public static final Pose2d BLUE_LEFT_POSE = new Pose2d(
@@ -67,7 +67,7 @@ public final class Constants {
         2.5, 6.5
       ),
       new Rotation2d(
-        Degrees.of(-45)
+        Degrees.of(135)
       )
     );
     public static final Pose2d BLUE_TOWER_SHOOTING_POSE = new Pose2d(
@@ -110,7 +110,7 @@ public final class Constants {
         14.5, 6.5
       ),
       new Rotation2d(
-        Degrees.of(-135)
+        Degrees.of(45)
       )
     );
     public static final Pose2d RED_LEFT_POSE = new Pose2d(
@@ -118,7 +118,7 @@ public final class Constants {
         14.5, 1.5
       ),
       new Rotation2d(
-        Degrees.of(135)
+        Degrees.of(-45)
       )
     );
     public static final Pose2d RED_TOWER_SHOOTING_POSE = new Pose2d(
@@ -165,7 +165,7 @@ public final class Constants {
         5.719
       ),
       new Rotation2d(
-        Degrees.of(0)
+        Degrees.of(180)
       )
     );
     public static final Pose2d BLUE_LEFT_ABUMP_AZ_POSE = new Pose2d(
@@ -212,7 +212,7 @@ public final class Constants {
         2.596
       ),
       new Rotation2d(
-        Degrees.of(0)
+        Degrees.of(180)
       )
     );
     public static final Pose2d BLUE_RIGHT_ABUMP_AZ_POSE = new Pose2d(
@@ -387,25 +387,14 @@ public final class Constants {
     // intake is front
     // x offset from center (assume middle of shooter)
     // (behind center)
-    public static final Distance SHOOTER_OFFSET_X = Inches.of(-3.062500); // measured in cad
+    public static final Distance SHOOTER_OFFSET_X = Meters.of(-0.126059); // measured in cad
     // y offset from center
-    // (right of center)
-    public static final Distance SHOOTER_OFFSET_Y = Inches.of(-7.710630); // measured in cad
-    // z offset from floor (hood at 25deg, center of ball exit height)
-    public static final Distance SHOOTER_OFFSET_Z = Inches.of(23.422254); // measured in cad
-    // TODO uncomment for new shooter position
-    // // x offset from center (assume middle of shooter)
-    // // (behind center)
-    // public static final Distance SHOOTER_OFFSET_X = Meters.of(-0.126059); // measured in cad
-    // // y offset from center
-    // // (left of center)
-    // public static final Distance SHOOTER_OFFSET_Y = Meters.of(0.121617); // measured in cad
-    // // z offset from floor (exit angle 60deg)
-    // public static final Distance SHOOTER_OFFSET_Z = Meters.of(0.548303); // measured in cad
+    // (left of center)
+    public static final Distance SHOOTER_OFFSET_Y = Meters.of(0.121617); // measured in cad
+    // z offset from floor (exit angle 60deg)
+    public static final Distance SHOOTER_OFFSET_Z = Meters.of(0.548303); // measured in cad
 
-    public static final Angle SHOOTER_ROTATION = Degrees.of(90);
-    // TODO uncomment for new shooter position
-    // public static final Angle SHOOTER_ROTATION = Degrees.of(180);
+    public static final Angle SHOOTER_ROTATION = Degrees.of(180);
 
     public static final Distance SHOOTER_DISTANCE_FROM_CENTER = Meters.of(
       Math.sqrt(
@@ -423,25 +412,26 @@ public final class Constants {
     // public static final LoggedNetworkNumber DUMB_SHOOTER_SPEED
     //   = new LoggedNetworkNumber("/Tuning/dumbShooterSpeed", 33.75);
 
-    // public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
-    //   = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
-    // public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-    //   = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 1);
-    // public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
-    //   = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
-    // public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
-    //   = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
-    public static final double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
-    public static final double AIMUTIL_SHOOTER_SPEED_ADDEND = 1;
-    public static final double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
-    public static final double AIMUTIL_HOOD_ANGLE_ADDEND = -5;
+    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
+    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.75);
+    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
+      = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
+    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
+      = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
+    // public static final double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
+    // public static final double AIMUTIL_SHOOTER_SPEED_ADDEND = -0.75;
+    // public static final double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
+    // public static final double AIMUTIL_HOOD_ANGLE_ADDEND = -5;
   }
 
   public static class Drive {
     // note:
     // these values (for max acceleration, max angular rate, max angular acceleration)
     // are guesses. but it's fine
-    public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
+    // public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
+    public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts.div(2);
     public static final LinearAcceleration MAX_ACCELERATION =
         MetersPerSecondPerSecond.of(3);
     public static final AngularVelocity MAX_ANGULAR_RATE =

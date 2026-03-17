@@ -65,7 +65,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorLeader = new TalonFX(Constants.Shooter.LEADER_SHOOTER_MOTOR_ID, canivoreBus);
     m_shooterMotorFollowerOne = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_ONE_MOTOR_ID, canivoreBus);
     m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID, canivoreBus);
-    m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
+    m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID, canivoreBus);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
@@ -96,6 +96,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     );
 
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
+    indexerConfig
+      .MotorOutput
+        .withInverted(InvertedValue.Clockwise_Positive);
 
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
     hoodConfig
@@ -112,7 +115,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         .withForwardSoftLimitEnable(true)
         .withReverseSoftLimitEnable(true)
         .withForwardSoftLimitThreshold(-0.012207) // TODO remove once bolt is gone
-        .withReverseSoftLimitThreshold(-0.09668);
+        .withReverseSoftLimitThreshold(-0.096);
     hoodConfig
       .Slot0
         .withKP(300)

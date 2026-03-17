@@ -5,6 +5,7 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
+import static edu.wpi.first.units.Units.Rotation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -521,7 +522,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
     
-    s_headingController = new PIDController(3, 0.0, 0.0);
+    s_headingController = new PIDController(4, 0.0, 0.0);
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
     s_autoAimController = new PIDController(6.5, 0.0, 0.0);
@@ -842,7 +843,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     AngularVelocity maxRotationRate
   ) {
     Logger.recordOutput("DriveSubsystem/Odometry/target", target);
-    Logger.recordOutput("DriveSubsystem/Odometry/lastGotoTimestamp", Timer.getFPGATimestamp());
+    Logger.recordOutput("DriveSubsystem/Odometry/lastGotoTimestamp", Utils.fpgaToCurrentTime(Timer.getFPGATimestamp()));
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
     Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
@@ -869,11 +870,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     // GOTO_SETTLE_DISTANCE to the target
     double velocityFloor = distance > Constants.Drive.GOTO_SETTLE_DISTANCE.in(Meters) ? 0.2 : 0.0;
 
-    double outputVelocity = MathUtil.clamp(
-      rawDriveOutput + velocityFloor + exitVelocity.in(MetersPerSecond),
-      0.0,
-      maxVelocity.in(MetersPerSecond)
-    );
+    double outputVelocity = 
+      Math.max(
+        rawDriveOutput,
+        exitVelocity.in(MetersPerSecond)
+      ) + velocityFloor;
 
     double maxRotRad = maxRotationRate.in(RadiansPerSecond);
     double rotationRate = MathUtil.clamp(
@@ -944,7 +945,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_lastGoodPose.keySet().forEach(
       (String key) -> {
         Logger.recordOutput(
-          getName() + "/lastGoodLimelightPoses/" + key,
+          getName() + "/lastGoodLimelightPose/" + key,
           s_lastGoodPose.get(key)
         );
       }
@@ -952,8 +953,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_lastGoodPoseTime.keySet().forEach(
       (String key) -> {
         Logger.recordOutput(
-          getName() + "/lastGoodLimelightPoses/" + key,
-          s_lastGoodPose.get(key)
+          getName() + "/lastGoodLimelightPoseTime/" + key,
+          s_lastGoodPoseTime.get(key)
         );
       }
     );
@@ -962,7 +963,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     Logger.recordOutput(getName() + "/percieved_alliance", DriverStation.getAlliance().toString());
     Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
     Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
-    Logger.recordOutput(getName() + "/atWantedRotation", atShootingRotation());
+    Logger.recordOutput(getName() + "/atShootingRotation", atShootingRotation());
     Logger.recordOutput(getName() + "/subsystemState", getState().toString());
   }
 
@@ -1042,10 +1043,11 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @return True if within tolerance of target.
    */
   public boolean atShootingRotation() {
-    return AimUtil.getRobotHeading().isNear(
-      s_drivetrain.getState().Pose.getRotation().getMeasure(),
-      Constants.Drive.ROTATION_TOLERANCE
-    );
+    double delta = Rotation2d.fromDegrees(AimUtil.getRobotHeading().in(Degrees)).minus(
+      s_drivetrain.getState().Pose.getRotation()
+    ).getMeasure().abs(Degrees);
+    return delta <=
+      Constants.Drive.ROTATION_TOLERANCE.in(Degrees);
   }
 
   /**
