@@ -605,18 +605,15 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     }
 
     // filtering for unreasonable poses
-    // https://firstfrc.blob.core.windows.net/frc2026/FieldAssets/2026-field-dimension-dwgs.pdf
-    // welded perimeter field is slightly larger
-    // 16.540988 meters x
-    // 8.069326 meters y
+    // robot isn't going to be outside the field
     // bump is 16 cm off the ground
     // and anything above 25cm is probably insane airtime & unreliable
     if (
-      pose_estimate.pose.getX() < 0         ||
-      pose_estimate.pose.getX() > 16.540988 ||
-      pose_estimate.pose.getY() < 0         ||
-      pose_estimate.pose.getY() > 8.069326  ||
-      pose_estimate.pose.getZ() < -0.05     ||
+      pose_estimate.pose.getX() < 0                                   ||
+      pose_estimate.pose.getX() > Constants.Field.FIELD_X.in(Meters)  ||
+      pose_estimate.pose.getY() < 0                                   ||
+      pose_estimate.pose.getY() > Constants.Field.FIELD_Y.in(Meters)  ||
+      pose_estimate.pose.getZ() < -0.05                               ||
       pose_estimate.pose.getZ() > 0.25
     ) {
       return null;

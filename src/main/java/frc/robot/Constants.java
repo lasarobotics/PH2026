@@ -15,6 +15,7 @@ import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
+import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
@@ -30,6 +31,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Time;
 import frc.robot.generated.TunerConstants;
 
 /**
@@ -46,305 +48,127 @@ public final class Constants {
   }
 
   public static class Auto {
-    public static final double EightBallShootingTime = 5;
+    public static final Time EightBallShootingTime = Seconds.of(5);
 
     public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.3);
-    public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.025);
+    public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.05);
 
     public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(10);
-    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(0.5); 
+    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2.5); 
+
+    public static Pose2d mirrorY(Pose2d poseToMirror) {
+      return new Pose2d(
+        new Translation2d(
+          poseToMirror.getMeasureX(),
+          Field.FIELD_Y.minus(poseToMirror.getMeasureY())
+        ),
+        poseToMirror.getRotation().times(-1)
+      );
+    }
+
+    public static Pose2d flipHeading(Pose2d poseToFlip) {
+      return new Pose2d(
+        poseToFlip.getTranslation(),
+        poseToFlip.getRotation().plus(Rotation2d.k180deg)
+      );
+    }
+
+    //                                     //
+    // standard poses inside alliance zone //
+    //                                     //
+
+    // move 1.5 meters over depot
+    public static final Distance DEPOT_EXIT_OFFSET = Meters.of(1.5);
 
     public static final Pose2d BLUE_RIGHT_POSE = new Pose2d(
       new Translation2d(
-        2.5, 1.5
+        Meters.of(2.5),
+        Meters.of(1.542)
       ),
       new Rotation2d(
         Degrees.of(-135)
       )
     );
-    public static final Pose2d BLUE_LEFT_POSE = new Pose2d(
-      new Translation2d(
-        2.5, 6.5
-      ),
-      new Rotation2d(
-        Degrees.of(135)
-      )
-    );
-    public static final Pose2d BLUE_TOWER_SHOOTING_POSE = new Pose2d(
-      new Translation2d(
-        1.7,
-        4.05
-      ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
-    );  
+    public static final Pose2d BLUE_LEFT_POSE = mirrorY(BLUE_RIGHT_POSE);
     public static final Pose2d BLUE_CENTER_POSE = new Pose2d(
       new Translation2d(
-        2, 4
+        BLUE_RIGHT_POSE.getMeasureX(),
+        Field.FIELD_Y.div(2)
       ),
-      new Rotation2d(
-        Degrees.of(0)
-      )
+      Rotation2d.k180deg
     );
     public static final Pose2d BLUE_DEPOT_ENTER_POSE = new Pose2d(
       new Translation2d(
-        0.5,
-        7
+        Meters.of(0.5),
+        Meters.of(7)
       ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
+      Rotation2d.kCW_90deg
     );
     public static final Pose2d BLUE_DEPOT_EXIT_POSE = new Pose2d(
       new Translation2d(
-        0.5,
-        5.5
+        BLUE_DEPOT_ENTER_POSE.getMeasureX(),
+        BLUE_DEPOT_ENTER_POSE.getMeasureY().minus(DEPOT_EXIT_OFFSET)
       ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
-    );
-    public static final Pose2d RED_RIGHT_POSE = new Pose2d(
-      new Translation2d(
-        14.5, 6.5
-      ),
-      new Rotation2d(
-        Degrees.of(45)
-      )
-    );
-    public static final Pose2d RED_LEFT_POSE = new Pose2d(
-      new Translation2d(
-        14.5, 1.5
-      ),
-      new Rotation2d(
-        Degrees.of(-45)
-      )
-    );
-    public static final Pose2d RED_TOWER_SHOOTING_POSE = new Pose2d(
-      new Translation2d(
-        14.8,
-        4.2
-      ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
-    );
-    public static final Pose2d RED_CENTER_POSE = new Pose2d(
-      new Translation2d(
-        14, 4
-      ),
-      new Rotation2d(
-        Degrees.of(180)
-      )
-    );
-    public static final Pose2d RED_DEPOT_ENTER_POSE = new Pose2d(
-      new Translation2d(
-        16,
-        1
-      ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
-    );
-    public static final Pose2d RED_DEPOT_EXIT_POSE = new Pose2d(
-      new Translation2d(
-        16,
-        2.5
-      ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
+      BLUE_DEPOT_ENTER_POSE.getRotation()
     );
 
+    //                                     //
+    // bump traversal & neutral zone poses //
+    //                                     //
 
+    public static final Distance NEUTRAL_ZONE_BLUE_X = Meters.of(7.7);
 
-    public static final Pose2d BLUE_LEFT_ABUMP_NZ_POSE = new Pose2d(
-      new Translation2d(
-        5.982,
-        5.719
-      ),
-      new Rotation2d(
-        Degrees.of(180)
-      )
-    );
-    public static final Pose2d BLUE_LEFT_ABUMP_AZ_POSE = new Pose2d(
-      new Translation2d(
-        3.283,
-        5.691
-      ),
-      new Rotation2d(
-        Degrees.of(-45) // anti beaching, used to be 0 (Q48 Belton)
-      )
-    );
-    public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = new Pose2d(
-      new Translation2d(
-        7.7,
-        6.878
-      ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
-    );
-    public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = new Pose2d(
-      new Translation2d(
-        7.7,
-        4.663 // changed after hitting trench Q48 Belton (used to be 4.478)
-      ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
-    );
-    public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = new Pose2d(
-      new Translation2d(
-        7.7,
-        1.865
-      ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
-    );
+    //              //
+    //  blue right  //
+    //              //
 
-
-    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_POSE = new Pose2d(
-      new Translation2d(
-        5.982,
-        2.596
-      ),
-      new Rotation2d(
-        Degrees.of(180)
-      )
-    );
     public static final Pose2d BLUE_RIGHT_ABUMP_AZ_POSE = new Pose2d(
       new Translation2d(
-        3.283,
-        2.45
+        Meters.of(3.283),
+        Meters.of(2.349)
       ),
       new Rotation2d(
-        Degrees.of(-45) // anti beaching, used to be 0 (Q48 Belton)
+        Degrees.of(-135)
       )
+    );
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_POSE = new Pose2d(
+      new Translation2d(
+        Meters.of(5.983),
+        BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()
+      ),
+      Rotation2d.k180deg
     );
     public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
       new Translation2d(
-        7.7,
-        6.21
+        NEUTRAL_ZONE_BLUE_X,
+        Meters.of(6.178)
       ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
+      Rotation2d.kCCW_90deg
     );
     public static final Pose2d BLUE_RIGHT_HUB_NZ_POSE = new Pose2d(
       new Translation2d(
-        7.7,
-        3.5
+        NEUTRAL_ZONE_BLUE_X,
+        Meters.of(3.5)
       ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
+      Rotation2d.kCCW_90deg
     );
     public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
       new Translation2d(
-        7.7,
-        1.865
+        NEUTRAL_ZONE_BLUE_X,
+        Field.FIELD_Y.minus(BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY())
       ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
+      Rotation2d.kCCW_90deg
     );
+  
+    //             //
+    //  blue left  //
+    //             //
 
-
-    public static final Pose2d RED_LEFT_ABUMP_NZ_POSE = new Pose2d(
-      new Translation2d(
-        10.64,
-        2.596
-      ),
-      new Rotation2d(
-        Degrees.of(0)
-      )
-    );
-    public static final Pose2d RED_LEFT_ABUMP_AZ_POSE = new Pose2d(
-      new Translation2d(
-        13.2,
-        2.18
-      ),
-      new Rotation2d(
-        Degrees.of(-45) // anti beaching, used to be 0 (Q48 Belton)
-      )
-    );
-    public static final Pose2d RED_LEFT_DEPOT_NZ_POSE = new Pose2d(
-      new Translation2d(
-        8.912,
-        1.15
-      ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
-    );
-    public static final Pose2d RED_LEFT_HUB_NZ_POSE = new Pose2d(
-      new Translation2d(
-        8.912,
-        3.7
-      ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
-    );
-    public static final Pose2d RED_LEFT_OUTPOST_NZ_POSE = new Pose2d(
-      new Translation2d(
-        8.912,
-        5.86
-      ),
-      new Rotation2d(
-        Degrees.of(90)
-      )
-    );
-
-
-    public static final Pose2d RED_RIGHT_ABUMP_NZ_POSE = new Pose2d(
-      new Translation2d(
-        10.5,
-        5.719
-      ),
-      new Rotation2d(
-        Degrees.of(0)
-      )
-    );
-    public static final Pose2d RED_RIGHT_ABUMP_AZ_POSE = new Pose2d(
-      new Translation2d(
-        13.134,
-        5.691
-      ),
-      new Rotation2d(
-        Degrees.of(-45) // anti beaching, used to be 0 (Q48 Belton)
-      )
-    );
-    public static final Pose2d RED_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
-      new Translation2d(
-        8.818,
-        6.878
-      ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
-    );
-    public static final Pose2d RED_RIGHT_HUB_NZ_POSE = new Pose2d(
-      new Translation2d(
-        8.818,
-        4.478
-      ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
-    );
-    public static final Pose2d RED_RIGHT_DEPOT_NZ_POSE = new Pose2d(
-      new Translation2d(
-        8.818,
-        2.33
-      ),
-      new Rotation2d(
-        Degrees.of(-90)
-      )
-    );
+    public static final Pose2d BLUE_LEFT_ABUMP_AZ_POSE = mirrorY(BLUE_RIGHT_ABUMP_AZ_POSE);
+    public static final Pose2d BLUE_LEFT_ABUMP_NZ_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_NZ_POSE);
   }
 
   public static class Shooter {
@@ -613,6 +437,10 @@ public final class Constants {
           )
         )
       ) / Math.sqrt(GRAVITY_VALUE);
+    // we're only playing on andymark field so we can just use these
+    public static final Distance FIELD_X = Inches.of(650.12);
+    public static final Distance FIELD_Y = Inches.of(316.64);
+    public static final Translation2d FIELD_CENTER = new Translation2d(FIELD_X.div(2), FIELD_Y.div(2));
     public static final Translation2d BLUE_HUB_COORDINATES = new Translation2d(4.619, 4.049);
     public static final Translation2d RED_HUB_COORDINATES = new Translation2d(11.925, 4.049);
 

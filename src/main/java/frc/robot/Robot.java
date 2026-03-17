@@ -12,7 +12,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -25,7 +25,6 @@ import frc.robot.subsystems.shooter.ShooterSubsystem;
  * this project, you must also update the Main.java file in the project.
  */
 public class Robot extends LoggedRobot {
-  private Command m_autonomousCommand;
   private final LoopLogger ll = new LoopLogger();
 
   private RobotContainer m_robotContainer;
@@ -86,6 +85,8 @@ public class Robot extends LoggedRobot {
     AimUtil.updateShooterConstants();
     CommandScheduler.getInstance().run();
 
+    SmartDashboard.putData(CommandScheduler.getInstance());
+
     Logger.recordOutput("GameHelpers/matchTimeLeft", GameHelpers.matchTimeLeft());
     Logger.recordOutput("GameHelpers/scoringTimeLeft", GameHelpers.scoringTimeLeft());
     ll.RobotEnd(isEnabled());
@@ -93,7 +94,11 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    if (autoHoncho != null) {
+      autoHoncho.stopStateMachine();
+    }
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -118,16 +123,12 @@ public class Robot extends LoggedRobot {
     // continue until interrupted by another command, remove
     // this line or comment it out.
 
-    if (m_autonomousCommand != null) {
-      m_autonomousCommand.cancel();
-    }
     if (autoHoncho != null) {
-      // this doesn't do anything btw probably
-      CommandScheduler.getInstance().cancel(autoHoncho.getCurrentCommand());
-      autoHoncho.close();
+      autoHoncho.stopStateMachine();
     }
 
     GameHelpers.zeroTimer();
+    DriveSubsystem.getInstance().driverControl();
     IntakeSubsystem.getInstance().stopIntake();
   }
 
