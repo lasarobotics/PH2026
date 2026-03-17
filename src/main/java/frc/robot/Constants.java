@@ -56,7 +56,7 @@ public final class Constants {
 
     public static final Pose2d BLUE_RIGHT_POSE = new Pose2d(
       new Translation2d(
-        2, 1.5
+        2.5, 1.5
       ),
       new Rotation2d(
         Degrees.of(-135)
@@ -98,8 +98,8 @@ public final class Constants {
     );
     public static final Pose2d BLUE_DEPOT_EXIT_POSE = new Pose2d(
       new Translation2d(
-        5.5,
-        7
+        0.5,
+        5.5
       ),
       new Rotation2d(
         Degrees.of(-90)
