@@ -184,12 +184,8 @@ public final class Constants {
     // should be negative
     public static final double INDEXER_MOTOR_SPEED = -1.0;
 
-    // set shooter motor to constant speed when not actively shooting
-    // ideally, this will be somewhere in the
-    // middle of how fast we generally shoot
-    // 20 rotations per second is probably right because we
-    // want to avoid being too far over
-    public static final double SHOOTER_HOLD_SPEED = 20;
+    // spin up speed for flywheel
+    public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
 
     // shooter speed tolerance is in rotations per second
     public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 1;

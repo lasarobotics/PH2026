@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.AimUtil;
+import frc.robot.AutoHoncho;
 import frc.robot.Constants;
 import frc.robot.GameHelpers;
 import frc.robot.HeadHoncho;
@@ -196,6 +197,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */   
   private void stopShooter() {
     m_shooterMotorLeader.setVoltage(0);
+  }
+
+  /**
+   * Sets the flywheel to run at speed defined by
+   * {@link frc.robot.Constants.Shooter#SHOOTER_HOLD_SPEED SHOOTER_HOLD_SPEED}.
+   * This is intended for spinning up the flywheel.
+   */
+  private void holdShooter() {
+    m_shooterMotorLeader.setControl(
+      m_shooterDutyCycleRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
+    );
   }
 
   /**
@@ -397,9 +409,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
           stopIndexer();
         }
       } else {
-        // holdShooter();
         IntakeSubsystem.getInstance().jiggleOff();
-        stopShooter();
+        if (AutoHoncho.autoWantToSpinUpShooter()) {
+          holdShooter();
+        } else {
+          stopShooter();
+        }
         stopIndexer();
       }
     } else {

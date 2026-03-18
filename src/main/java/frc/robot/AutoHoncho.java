@@ -20,6 +20,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void initialize() {
         s_wantToCrossBump = false;
         s_wantToDumbShoot = false;
+        s_wantToSpinUpShooter = false;
         s_wantToShoot = false;
       }
 
@@ -159,7 +160,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.NeutralZoneEnd(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return PREOVERRAMP;
@@ -168,6 +169,11 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
     },
     PREOVERRAMP {
+      @Override
+      public void initialize() {
+        s_wantToSpinUpShooter = true;
+      }
+
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
@@ -224,6 +230,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void initialize() {
         DriveSubsystem.getInstance().stopMoving();
         DriveSubsystem.getInstance().driveAutoAim();
+        s_wantToSpinUpShooter = false;
         s_wantToShoot = true;
       }
 
@@ -336,7 +343,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.NeutralZoneEndFull(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return OVERRAMP;
@@ -345,6 +352,11 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
     },
     PREOVERRAMP {
+      @Override
+      public void initialize() {
+        s_wantToSpinUpShooter = true;
+      }
+
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
@@ -401,6 +413,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void initialize() {
         DriveSubsystem.getInstance().stopMoving();
         DriveSubsystem.getInstance().driveAutoAim();
+        s_wantToSpinUpShooter = false;
         s_wantToShoot = true;
       }
 
@@ -482,7 +495,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.DepotExitPose(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return GO_TO_SHOOT;
@@ -491,6 +504,11 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
     },
     GO_TO_SHOOT {
+      @Override
+      public void initialize() {
+        s_wantToSpinUpShooter = true;
+      }
+
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
@@ -526,6 +544,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void initialize() {
         DriveSubsystem.getInstance().stopMoving();
         DriveSubsystem.getInstance().driveAutoAim();
+        s_wantToSpinUpShooter = false;
         s_wantToShoot = true;
       }
 
@@ -545,6 +564,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
   private static boolean s_wantToShoot = false;
   private static boolean s_wantToDumbShoot = false;
+  private static boolean s_wantToSpinUpShooter = false;
   private static boolean s_wantToCrossBump = false;
 
   public static SendableChooser<String> s_autoQuadrantChooser = new SendableChooser<>();
@@ -613,12 +633,25 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     }
   }
 
+  @Override
+  public void stopStateMachine() {
+    super.stopStateMachine();
+    s_wantToCrossBump = false;
+    s_wantToDumbShoot = false;
+    s_wantToSpinUpShooter = false;
+    s_wantToShoot = false;
+  }
+
   public static boolean autoWantToShoot() {
     return s_wantToShoot;
   }
 
   public static boolean autoWantToDumbShoot() {
     return s_wantToDumbShoot;
+  }
+
+  public static boolean autoWantToSpinUpShooter() {
+    return s_wantToSpinUpShooter;
   }
 
   public static boolean autoWantToCrossRamp() {
