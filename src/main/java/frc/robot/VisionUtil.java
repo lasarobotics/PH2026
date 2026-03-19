@@ -7,7 +7,6 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
-import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.geometry.Translation3d;
 
 public class VisionUtil {
@@ -16,8 +15,7 @@ public class VisionUtil {
   private static final String LOG_PATH = "VisionUtil";
   private static final int INVALID_FIDUCIAL_ID = -1;
   private static final double CLEARED_DOUBLE_VALUE = 0.0;
-  private static final Transform3d CLEARED_POSE = new Transform3d();
-  private static final Translation3d CLEARED_POS = new Translation3d();
+  private static final Translation3d CLEARED_POSE = new Translation3d();
 
   private static final PhotonCamera s_camera = new PhotonCamera(CAMERA_NAME);
   private static PhotonPipelineResult s_latestResult = s_camera.getLatestResult();
@@ -48,8 +46,8 @@ public class VisionUtil {
     if (hasObjects) {
       // logs best object according to Photon Vision, basicaly biggest bounding box
       PhotonTrackedTarget bestObject = s_latestResult.getBestTarget();
-      Logger.recordOutput(LOG_PATH + "/BestObject/id", bestObject.getFiducialId());
-      Logger.recordOutput(LOG_PATH + "/BestObject/pose", bestObject.getBestCameraToTarget());
+      Logger.recordOutput(LOG_PATH + "/BestObject/id", bestObject.getDetectedObjectClassID());
+      Logger.recordOutput(LOG_PATH + "/BestObject/pose", bestObject.getBestCameraToTarget().getTranslation());
     } else {
       // clears best object logs when nothing is visible
       Logger.recordOutput(LOG_PATH + "/BestObject/id", INVALID_FIDUCIAL_ID);
@@ -60,15 +58,15 @@ public class VisionUtil {
     for (int i = 0; i < objects.size(); i++) {
       PhotonTrackedTarget object = objects.get(i);
       String objectPath = LOG_PATH + "/" + (i + 1) + "_Object";
-      Logger.recordOutput(objectPath + "/id", object.getFiducialId());
-      Logger.recordOutput(objectPath + "/pose", object.getBestCameraToTarget().getTranslation());
+      Logger.recordOutput(objectPath + "/id", object.getDetectedObjectClassID());
+      Logger.recordOutput(objectPath + "/pose", object.getAlternateCameraToTarget().getTranslation());
     }
 
     // clears old objects if those objects were lost since last loop
     for (int i = objects.size(); i < s_lastObjectCount; i++) {
       String objectPath = LOG_PATH + "/" + (i + 1) + "_Object";
       Logger.recordOutput(objectPath + "/id", INVALID_FIDUCIAL_ID);
-      Logger.recordOutput(objectPath + "/pose", CLEARED_POS);
+      Logger.recordOutput(objectPath + "/pose", CLEARED_POSE);
     }
 
     s_lastObjectCount = objects.size();
