@@ -183,8 +183,8 @@ public final class Constants {
     public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_NZ_POSE);
     public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_NZ_POSE);
-    public static final Pose2d BLUE_LEFT_DOUBLETAP_MIDDLE = flipHeading(BLUE_RIGHT_DOUBLETAP_MIDDLE);
-    public static final Pose2d BLUE_LEFT_DOUBLETAP_END = flipHeading(BLUE_RIGHT_DOUBLETAP_END);
+    public static final Pose2d BLUE_LEFT_DOUBLETAP_MIDDLE = mirrorY(BLUE_RIGHT_DOUBLETAP_MIDDLE);
+    public static final Pose2d BLUE_LEFT_DOUBLETAP_END = mirrorY(BLUE_RIGHT_DOUBLETAP_END);
   }
 
   public static class Shooter {
