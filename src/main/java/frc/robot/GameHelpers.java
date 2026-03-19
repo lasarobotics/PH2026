@@ -25,15 +25,6 @@ public class GameHelpers {
     timer.start();
   }
 
-  public static void updateTimeOffset() {
-    // getMatchTime doesn't work because sim, mostly
-    if (DriverStation.isAutonomous()) {
-      timeOffset = 20;
-    } else {
-      timeOffset = 140;
-    }
-  }
-
   /**
    * Returns the match time left in the current period
    * (only works for teleop)
