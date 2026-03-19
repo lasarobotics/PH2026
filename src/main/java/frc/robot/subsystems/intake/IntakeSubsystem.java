@@ -6,11 +6,13 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANdiConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -19,7 +21,8 @@ import frc.robot.Constants;
 public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
 
   private static IntakeSubsystem s_intakeInstance;
-  private final TalonFX m_intakeMotor;
+  private final TalonFX m_intakeMotorLeader;
+  private final TalonFX m_intakeMotorFollower;
   private final TalonFX m_armMotor;
   private final MotionMagicVoltage m_armPositionSetter;
   private CANdi m_intakeEncoder;
@@ -31,7 +34,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
 
   /** Creates a new IntakeSubsystem */
   private IntakeSubsystem() {
-    this.m_intakeMotor = new TalonFX(Constants.Intake.INTAKE_MOTOR_ID);
+    this.m_intakeMotorLeader = new TalonFX(Constants.Intake.INTAKE_MOTOR_LEADER_ID);
+    this.m_intakeMotorFollower = new TalonFX(Constants.Intake.INTAKE_MOTOR_FOLLOWER_ID);
     this.m_armMotor = new TalonFX(Constants.Intake.ARM_MOTOR_ID);
     this.m_intakeEncoder = new CANdi(Constants.Intake.ARM_ENCODER_ID);
 
@@ -60,8 +64,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     armConfig
       .Feedback
         .withRemoteCANdiPWM1(m_intakeEncoder)
-        .withRotorToSensorRatio((40.0 / 28.0) * 9.0)  // gearbox is 9:1, sprockets are 40:28
-        .withSensorToMechanismRatio(2); // sprockets are 2:1
+        // gearbox is 9:1, sprockets are 40:28, sprockets are 2:1 again
+        .withRotorToSensorRatio((40.0 / 28.0) * 9.0 * 2);
     armConfig
       .SoftwareLimitSwitch
         .withForwardSoftLimitEnable(true)
@@ -87,12 +91,15 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     //     .withMagnetOffset(-0.5322265625) // measured value
     //     .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
     // TODO
-    // Apply configs for TalonFX motorse
-    m_intakeMotor.getConfigurator().apply(intakeConfig);
+    // Apply configs for TalonFX motors
+    m_intakeMotorLeader.getConfigurator().apply(intakeConfig);
+    m_intakeMotorFollower.getConfigurator().apply(intakeConfig);
     m_armMotor.getConfigurator().apply(armConfig);
     m_intakeEncoder.getConfigurator().apply(intakeEncoderConfig);
     
-    //stowIntake();
+    m_intakeMotorFollower.setControl(
+      new Follower(m_intakeMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
+    );
   }
 
   /**
@@ -202,7 +209,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * Start intake of fuel using intake motor
    */
   private void runIntakeMotor() {
-    m_intakeMotor.set(Constants.Intake.INTAKE_SPEED);
+    m_intakeMotorLeader.set(Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
 
@@ -210,7 +217,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * Sets intake motor running in reverse
    */
   private void reverseIntakeMotor() {
-    m_intakeMotor.set(-Constants.Intake.INTAKE_SPEED);
+    m_intakeMotorLeader.set(-Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
 
@@ -218,7 +225,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    * Stop intake of fuel using intake motor
    */
   private void stopIntakeMotor() {
-    m_intakeMotor.stopMotor();
+    m_intakeMotorLeader.stopMotor();
     m_isIntakeRunning = false;
   }
 
@@ -281,13 +288,14 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/isIntaking", m_isIntaking);
     Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getPWM1Position().getValue());
   }
-  
+
   /**
    * Closes all the motors, makes intake instance null
    */
   @Override
   public void close() {
-    m_intakeMotor.close();
+    m_intakeMotorLeader.close();
+    m_intakeMotorFollower.close();
     m_armMotor.close();
     m_intakeEncoder.close();
     s_intakeInstance = null;

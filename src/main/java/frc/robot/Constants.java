@@ -194,11 +194,14 @@ public final class Constants {
     public static final int INDEXER_MOTOR_ID = 33;
     public static final int HOOD_MOTOR_ID = 34;
     public static final int HOOD_CANCODER_ID = 35;
-    public static final int AGITATOR_MOTOR_ID = 36;
+    public static final int VERT_ROLLER_MOTOR_ID = 36;
 
     // duty cycle
     // should be negative
     public static final double INDEXER_MOTOR_SPEED = -1.0;
+    // TODO figure out
+    // duty cycle
+    public static final double VERT_ROLLER_MOTOR_SPEED = -1.0;
 
     // spin up speed for flywheel
     public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
@@ -502,9 +505,10 @@ public final class Constants {
   }
 
   public static class Intake {
-    public static final int INTAKE_MOTOR_ID = 40;
+    public static final int INTAKE_MOTOR_LEADER_ID = 40;
     public static final int ARM_MOTOR_ID = 41;
     public static final int ARM_ENCODER_ID = 42;
+    public static final int INTAKE_MOTOR_FOLLOWER_ID = 43; // TODO TODO TODO
 
     public static final double INTAKE_SPEED = 1.0;
 

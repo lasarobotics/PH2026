@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -41,12 +40,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TalonFX m_shooterMotorFollowerTwo;
   private TalonFX m_indexerMotor;
   private TalonFX m_hoodMotor;
-  // private TalonFX m_agitatorMotor;
   private CANcoder m_hoodCanCoder;
+  private TalonFX m_vertRollerMotor;
 
   private final VelocityDutyCycle m_shooterDutyCycleRequest;
   private final MotionMagicVoltage m_hoodRequest;
   private final DutyCycleOut m_indexerRequest;
+  private final DutyCycleOut m_vertRollerRequest;
 
   private boolean m_isRunning = true;
 
@@ -69,10 +69,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID, canivoreBus);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
+    m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
 
     m_shooterDutyCycleRequest = new VelocityDutyCycle(0);
     m_hoodRequest = new MotionMagicVoltage(0);
     m_indexerRequest = new DutyCycleOut(0);
+    m_vertRollerRequest = new DutyCycleOut(0);
 
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
@@ -100,6 +102,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     indexerConfig
       .MotorOutput
         .withInverted(InvertedValue.Clockwise_Positive);
+
+    // TODO
+    TalonFXConfiguration vertRollerConfig = new TalonFXConfiguration();
 
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
     hoodConfig
@@ -137,6 +142,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorFollowerOne.getConfigurator().apply(shooterConfig);
     m_shooterMotorFollowerTwo.getConfigurator().apply(shooterConfig);
     m_indexerMotor.getConfigurator().apply(indexerConfig);
+    m_vertRollerMotor.getConfigurator().apply(vertRollerConfig);
     m_hoodMotor.getConfigurator().apply(hoodConfig);
     m_hoodCanCoder.getConfigurator().apply(canCoderConfig);
 
@@ -173,23 +179,29 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Stop the {@link #m_indexerMotor indexer motor}.
+   * Stop the {@link #m_indexerMotor indexer motor} and the
+   * {@link #m_vertRollerMotor vertical roller}.
    */
   private void stopIndexer() {
     m_indexerMotor.setVoltage(0);
-    // IntakeSubsystem.getInstance().jiggleOff();
+    m_vertRollerMotor.setVoltage(0);
   }
 
   /**
    * Set the speed of the {@link #m_indexerMotor indexer motor}
    * to the (constant)
    * {@link Constants.Shooter#INDEXER_MOTOR_SPEED indexer run speed}.
+   * Also sets the speed of the {@link #m_vertRollerMotor vertical roller}
+   * to the (constant)
+   * {@link Constants.Shooter#VERT_ROLLER_MOTOR_SPEED vert roller run speed}.
    */
   private void runIndexer() {
     m_indexerMotor.setControl(
       m_indexerRequest.withOutput(Constants.Shooter.INDEXER_MOTOR_SPEED)
     );
-    // IntakeSubsystem.getInstance().jiggleOn();
+    m_vertRollerMotor.setControl(
+      m_vertRollerRequest.withOutput(Constants.Shooter.VERT_ROLLER_MOTOR_SPEED)
+    );
   }
   
   /**
@@ -426,6 +438,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(getName() + "/indexerSpeed",
       m_indexerMotor.get());
+    Logger.recordOutput(getName() + "/verticalRollerSpeed",
+      m_vertRollerMotor.get());
     Logger.recordOutput(getName() + "/hoodPosition",
       m_hoodMotor.getPosition().getValue().in(Degrees));
     Logger.recordOutput(getName() + "/atShootSpeed",
