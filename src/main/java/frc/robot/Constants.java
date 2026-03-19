@@ -159,6 +159,20 @@ public final class Constants {
       ),
       Rotation2d.kCCW_90deg
     );
+    public static final Pose2d BLUE_RIGHT_DOUBLETAP_MIDDLE = new Pose2d(
+      new Translation2d(
+        Meters.of(6.844),
+        Meters.of(4.862)
+      ),
+      Rotation2d.k180deg
+    );
+    public static final Pose2d BLUE_RIGHT_DOUBLETAP_END = new Pose2d(
+      new Translation2d(
+        BLUE_RIGHT_ABUMP_NZ_POSE.getMeasureX(),
+        BLUE_RIGHT_HUB_NZ_POSE.getMeasureY()
+      ),
+      Rotation2d.kCW_90deg
+    );
   
     //             //
     //  blue left  //
@@ -169,6 +183,8 @@ public final class Constants {
     public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_NZ_POSE);
     public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_DOUBLETAP_MIDDLE = flipHeading(BLUE_RIGHT_DOUBLETAP_MIDDLE);
+    public static final Pose2d BLUE_LEFT_DOUBLETAP_END = flipHeading(BLUE_RIGHT_DOUBLETAP_END);
   }
 
   public static class Shooter {
@@ -228,7 +244,7 @@ public final class Constants {
     //   = new LoggedNetworkNumber("/Tuning/dumbHoodPosition", 80 - 21.6);
     // In rotations per second
     // currently based on empirical measurement
-    public static final double DUMB_SHOOTER_SPEED = 43.898;
+    public static final double DUMB_SHOOTER_SPEED = 42.148;
     // public static final LoggedNetworkNumber DUMB_SHOOTER_SPEED
     //   = new LoggedNetworkNumber("/Tuning/dumbShooterSpeed", 33.75);
 

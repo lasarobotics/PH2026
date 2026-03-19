@@ -11,10 +11,21 @@ import edu.wpi.first.wpilibj.Timer;
 public class GameHelpers {
 
   private static Timer timer = new Timer();
+  // auto
+  private static double timeOffset = 20;
 
   public static void zeroTimer() {
     timer.reset();
     timer.start();
+  }
+
+  public static void updateTimeOffset() {
+    // getMatchTime doesn't work because sim, mostly
+    if (DriverStation.isAutonomous()) {
+      timeOffset = 20;
+    } else {
+      timeOffset = 140;
+    }
   }
 
   /**
@@ -23,7 +34,7 @@ public class GameHelpers {
    * @return The time left in the match (in seconds)
    */
   public static double matchTimeLeft() {
-    return 140 - timer.get();
+    return timeOffset - timer.get();
   }
 
   /**
@@ -112,11 +123,11 @@ public class GameHelpers {
   public static double scoringTimeLeft() {
     double time = matchTimeLeft();
 
-    if (DriverStation.isAutonomous()) {
-      return 50;
-    }
     if (time <= 0) {
       return 0;
+    }
+    if (DriverStation.isAutonomous()) {
+      return time;
     }
 
     int wonNumber = wonAuto();

@@ -140,8 +140,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.NeutralZoneEnd(),
-          MetersPerSecond.of(1),
           Constants.Drive.MAX_SPEED.div(2),
+          MetersPerSecond.of(1),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -248,6 +248,387 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     }
   }
 
+  public enum NZLiteDoubleTapAuto implements SystemState {
+    START {
+      @Override
+      public void execute() {
+        if (positionConfig == null) {
+          return;
+        }
+
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpNZ(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (
+          !DriverStation.isAutonomous() ||
+          positionConfig == null
+        ) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpNZ(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return TO_PLOW_START;
+        
+        return this;
+      }
+    },
+    TO_PLOW_START {
+      @Override
+      public void initialize() {
+        IntakeSubsystem.getInstance().startIntake();
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.NeutralZoneStart(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.NeutralZoneStart(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return PLOW;
+
+        return this;
+      }
+    },
+    PLOW {
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.NeutralZoneEnd(),
+          Constants.Drive.MAX_SPEED.div(2),
+          MetersPerSecond.of(1),
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        // we want it out but not running lol
+        IntakeSubsystem.getInstance().stopIntake();
+        IntakeSubsystem.getInstance().deployIntake();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.NeutralZoneEnd(), 
+            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return PREOVERRAMP;
+
+        return this;
+      }
+    },
+    PREOVERRAMP {
+      @Override
+      public void initialize() {
+        s_wantToSpinUpShooter = true;
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpNZ(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpNZ(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE,
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return OVERRAMP;
+
+        return this;
+      }
+    },
+    OVERRAMP {
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpAZ(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpAZ(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return SHOOT;
+
+        return this;
+      }
+    },
+    SHOOT {
+      @Override
+      public void initialize() {
+        DriveSubsystem.getInstance().stopMoving();
+        DriveSubsystem.getInstance().driveAutoAim();
+        s_wantToSpinUpShooter = false;
+        s_wantToShoot = true;
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        s_wantToShoot = false;
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        // if 10 seconds left in auto, go back to NZ for double tap
+        // SHOULD give us about 5 seconds of shooting
+        if (GameHelpers.matchTimeLeft() <= 10) {
+          return TO_NZ_AGAIN;
+        }
+
+        return this;
+      }
+    },
+    TO_NZ_AGAIN {
+      @Override
+      public void initialize() {
+        IntakeSubsystem.getInstance().startIntake();
+        DriveSubsystem.getInstance().driverControl();
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpNZ(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpNZ(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return DOUBLETAP_STAGE_ONE;
+        
+        return this;
+      }
+    },
+    DOUBLETAP_STAGE_ONE {
+      @Override
+      public void execute() {
+        // using NZend is weird but it gets us to about where we
+        // want to be (center of NZ)
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.NeutralZoneEnd(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.NeutralZoneEnd(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return DOUBLETAP_STAGE_TWO;
+        
+        return this;
+      }
+    },
+    DOUBLETAP_STAGE_TWO {
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.NeutralZoneDoubleTapMiddle(),
+          Constants.Drive.MAX_SPEED.div(2),
+          MetersPerSecond.of(1),
+          Constants.Drive.MAX_ANGULAR_RATE.div(2)
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.NeutralZoneDoubleTapMiddle(), 
+            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return DOUBLETAP_STAGE_THREE;
+        
+        return this;
+      }
+    },
+    DOUBLETAP_STAGE_THREE {
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.NeutralZoneDoubleTapEnd(),
+          Constants.Drive.MAX_SPEED.div(2),
+          MetersPerSecond.of(1),
+          Constants.Drive.MAX_ANGULAR_RATE.div(2)
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.NeutralZoneDoubleTapEnd(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return PREOVERRAMP_AGAIN;
+
+        return this;
+      }
+    },
+    PREOVERRAMP_AGAIN {
+      @Override
+      public void initialize() {
+        s_wantToSpinUpShooter = true;
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpNZ(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpNZ(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return OVERRAMP_AGAIN;
+
+        return this;
+      }
+    },
+    OVERRAMP_AGAIN {
+      @Override
+      public void initialize() {
+        // we want it out but not running lol
+        IntakeSubsystem.getInstance().stopIntake();
+        IntakeSubsystem.getInstance().deployIntake();
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpAZ(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpAZ(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return SHOOT_AGAIN;
+
+        return this;
+      }
+    },
+    SHOOT_AGAIN {
+      @Override
+      public void initialize() {
+        DriveSubsystem.getInstance().stopMoving();
+        DriveSubsystem.getInstance().driveAutoAim();
+        s_wantToSpinUpShooter = false;
+        s_wantToShoot = true;
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        s_wantToShoot = false;
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        return this;
+      }
+    }
+  }
+
   public enum NZMaxAuto implements SystemState {
     START {
       @Override
@@ -323,8 +704,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.NeutralZoneEndFull(),
-          MetersPerSecond.of(1),
           Constants.Drive.MAX_SPEED.div(2),
+          MetersPerSecond.of(1),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -475,8 +856,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
          DriveSubsystem.getInstance().goTo(
           positionConfig.DepotExitPose(),
+          Constants.Drive.MAX_SPEED.div(2),
           MetersPerSecond.of(1),
-          Constants.Drive.MAX_SPEED.div(3),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -601,6 +982,9 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         break;
       case "Neutral Zone Lite":
         startingState = NZLiteAuto.START;
+        break;
+      case "Neutral Zone Lite Double Tap":
+        startingState = NZLiteDoubleTapAuto.START;
         break;
       case "Neutral Zone Max":
         startingState = NZMaxAuto.START;

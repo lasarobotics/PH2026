@@ -148,6 +148,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
 
     AutoHoncho.s_autoTypeChooser.setDefaultOption("Basic Shoot", "Basic Shoot");
     AutoHoncho.s_autoTypeChooser.addOption("Neutral Zone Lite", "Neutral Zone Lite");
+    AutoHoncho.s_autoTypeChooser.addOption("Neutral Zone Lite Double Tap", "Neutral Zone Lite Double Tap");
     AutoHoncho.s_autoTypeChooser.addOption("Neutral Zone Max", "Neutral Zone Max");
     AutoHoncho.s_autoTypeChooser.addOption("Depot", "Depot");
     AutoHoncho.s_autoTypeChooser.addOption("Nothing", "Nothing");

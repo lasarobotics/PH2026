@@ -106,6 +106,8 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    GameHelpers.zeroTimer();
+    GameHelpers.updateTimeOffset();
     autoHoncho = new AutoHoncho();
   }
 
@@ -127,6 +129,7 @@ public class Robot extends LoggedRobot {
       autoHoncho.stopStateMachine();
     }
 
+    GameHelpers.updateTimeOffset();
     GameHelpers.zeroTimer();
     DriveSubsystem.getInstance().driverControl();
     IntakeSubsystem.getInstance().stopIntake();
