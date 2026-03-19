@@ -12,7 +12,7 @@ import edu.wpi.first.math.geometry.Translation3d;
 
 public class VisionUtil {
   // TODO: Change to real camera name in photon vision UI
-  private static final String CAMERA_NAME = "Arducam_OV9782_USB_CAMERA";
+  private static final String CAMERA_NAME = "418";
   private static final String LOG_PATH = "VisionUtil";
   private static final int INVALID_FIDUCIAL_ID = -1;
   private static final double CLEARED_DOUBLE_VALUE = 0.0;
