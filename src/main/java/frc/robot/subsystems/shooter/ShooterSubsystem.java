@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.AimUtil;
+import frc.robot.AutoHoncho;
 import frc.robot.Constants;
 import frc.robot.GameHelpers;
 import frc.robot.HeadHoncho;
@@ -65,7 +66,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorLeader = new TalonFX(Constants.Shooter.LEADER_SHOOTER_MOTOR_ID, canivoreBus);
     m_shooterMotorFollowerOne = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_ONE_MOTOR_ID, canivoreBus);
     m_shooterMotorFollowerTwo = new TalonFX(Constants.Shooter.FOLLOWER_SHOOTER_TWO_MOTOR_ID, canivoreBus);
-    m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
+    m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID, canivoreBus);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
 
@@ -96,6 +97,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     );
 
     TalonFXConfiguration indexerConfig = new TalonFXConfiguration();
+    indexerConfig
+      .MotorOutput
+        .withInverted(InvertedValue.Clockwise_Positive);
 
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
     hoodConfig
@@ -112,7 +116,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         .withForwardSoftLimitEnable(true)
         .withReverseSoftLimitEnable(true)
         .withForwardSoftLimitThreshold(-0.012207) // TODO remove once bolt is gone
-        .withReverseSoftLimitThreshold(-0.09668);
+        .withReverseSoftLimitThreshold(-0.096);
     hoodConfig
       .Slot0
         .withKP(300)
@@ -193,6 +197,17 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */   
   private void stopShooter() {
     m_shooterMotorLeader.setVoltage(0);
+  }
+
+  /**
+   * Sets the flywheel to run at speed defined by
+   * {@link frc.robot.Constants.Shooter#SHOOTER_HOLD_SPEED SHOOTER_HOLD_SPEED}.
+   * This is intended for spinning up the flywheel.
+   */
+  private void holdShooter() {
+    m_shooterMotorLeader.setControl(
+      m_shooterDutyCycleRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
+    );
   }
 
   /**
@@ -394,9 +409,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
           stopIndexer();
         }
       } else {
-        // holdShooter();
         IntakeSubsystem.getInstance().jiggleOff();
-        stopShooter();
+        if (AutoHoncho.autoWantToSpinUpShooter()) {
+          holdShooter();
+        } else {
+          stopShooter();
+        }
         stopIndexer();
       }
     } else {

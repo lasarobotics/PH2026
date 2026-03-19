@@ -1,8 +1,6 @@
 package frc.robot.subsystems.leds;
 
-import com.ctre.phoenix6.StatusCode;
-import com.ctre.phoenix6.controls.SolidColor;
-import com.ctre.phoenix6.hardware.CANdle;
+import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix6.signals.RGBWColor;
 
 import edu.wpi.first.math.MathUtil;
@@ -31,35 +29,57 @@ public class LEDFillHandler {
     m_color = newColor;
   }
 
-  public StatusCode updateLeds(double percent) {
+  public void updateLeds(double percent) {
     percent = MathUtil.clamp(percent, 0, 1);
     int ledCount = m_endIndex - m_startIndex;
     int lightUpCount = (int)(ledCount * percent);
-    return updateLeds(lightUpCount);
+    updateLeds(lightUpCount);
   }
 
-  private StatusCode updateLeds(int lightUpCount) {
+  private void updateLeds(int lightUpCount) {
     int ledCount = m_endIndex - m_startIndex;
     int darkCount = ledCount - lightUpCount;
     if (increasing) {
       // low to high
-      return m_candle.setControl(
-        new SolidColor(
-          m_startIndex + darkCount,
-          m_endIndex
-        ).withColor(
-          m_color
-        )
+      // so 50% is top half
+      // set the light up count with reference to end index
+      // set the rest to dark
+      m_candle.setLEDs(
+        m_color.Red,
+        m_color.Green,
+        m_color.Blue,
+        m_color.White,
+        m_endIndex - lightUpCount,
+        lightUpCount
+      );
+      m_candle.setLEDs(
+        0,
+        0,
+        0,
+        0,
+        m_startIndex,
+        darkCount
       );
     } else {
       // high to low
-      return m_candle.setControl(
-        new SolidColor(
-          m_startIndex,
-          m_endIndex - darkCount
-        ).withColor(
-          m_color
-        )
+      // 50% is bottom half
+      // so set the first light up count to on
+      // and set the rest to black
+      m_candle.setLEDs(
+        m_color.Red,
+        m_color.Green,
+        m_color.Blue,
+        m_color.White,
+        m_startIndex,
+        lightUpCount
+      );
+      m_candle.setLEDs(
+        0,
+        0,
+        0,
+        0,
+        m_endIndex - darkCount,
+        darkCount
       );
     }
   }

@@ -4,15 +4,14 @@ import static edu.wpi.first.units.Units.Radians;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
+import com.ctre.phoenix6.configs.CANdiConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.ctre.phoenix6.signals.SensorDirectionValue;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
@@ -23,7 +22,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private final TalonFX m_intakeMotor;
   private final TalonFX m_armMotor;
   private final MotionMagicVoltage m_armPositionSetter;
-  private CANcoder m_intakeEncoder;
+  private CANdi m_intakeEncoder;
 
   private boolean m_isIntaking;
   private boolean m_isJiggling;
@@ -34,7 +33,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private IntakeSubsystem() {
     this.m_intakeMotor = new TalonFX(Constants.Intake.INTAKE_MOTOR_ID);
     this.m_armMotor = new TalonFX(Constants.Intake.ARM_MOTOR_ID);
-    this.m_intakeEncoder = new CANcoder(Constants.Intake.ARM_ENCODER_ID);
+    this.m_intakeEncoder = new CANdi(Constants.Intake.ARM_ENCODER_ID);
 
     m_armPositionSetter = new MotionMagicVoltage(Radians.zero());
 
@@ -46,7 +45,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
     TalonFXConfiguration armConfig = new TalonFXConfiguration();
 
-    CANcoderConfiguration intakeEncoderConfig = new CANcoderConfiguration();
+    CANdiConfiguration intakeEncoderConfig = new CANdiConfiguration();
 
     armConfig
       .MotorOutput
@@ -60,7 +59,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         .withGravityArmPositionOffset(.25);
     armConfig
       .Feedback
-        .withRemoteCANcoder(m_intakeEncoder)
+        .withRemoteCANdiPWM1(m_intakeEncoder)
         .withRotorToSensorRatio((40.0 / 28.0) * 9.0)  // gearbox is 9:1, sprockets are 40:28
         .withSensorToMechanismRatio(2); // sprockets are 2:1
     armConfig
@@ -82,11 +81,12 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       .MotorOutput
         .withNeutralMode(NeutralModeValue.Coast);
 
-    intakeEncoderConfig
-      .MagnetSensor
-        .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-        .withMagnetOffset(-0.5322265625) // measured value
-        .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
+    // intakeEncoderConfig
+    //   .MagnetSensor
+    //     .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
+    //     .withMagnetOffset(-0.5322265625) // measured value
+    //     .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
+    // TODO
     // Apply configs for TalonFX motorse
     m_intakeMotor.getConfigurator().apply(intakeConfig);
     m_armMotor.getConfigurator().apply(armConfig);
@@ -197,39 +197,6 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       Constants.Intake.DEPLOY_TOLERANCE
     );
   }
-  
-  /**
-   * Check if intake is at deployed position or not with JIGGLE_TOLERANCE
-   * @return {@code true} if intake is at deploy position, {@code false} if otherwise
-   */
-  public boolean intakeDeployedJiggleTolerance() {
-    return m_armMotor.getPosition().getValue().isNear(
-      Constants.Intake.DEPLOY_ANGLE,
-      Constants.Intake.JIGGLE_TOLERANCE
-    );
-  }
-  
-  /**
-   * Check if intake is at jiggle position or not with JIGGLE_TOLERANCE
-   * @return {@code true} if intake is at jiggle position, {@code false} if otherwise
-   */
-  public boolean intakeAtJigglePositionJiggleTolerance() {
-    return m_armMotor.getPosition().getValue().isNear(
-      Constants.Intake.JIGGLE_ANGLE,
-      Constants.Intake.JIGGLE_TOLERANCE
-    );
-  }
-  
-  /**
-   * Check if intake is stowed or not with JIGGLE_TOLERANCE
-   * @return {@code true} if intake is at stow position, {@code false} if otherwise
-   */
-  public boolean intakeStowedJiggleTolerance() {
-    return m_armMotor.getPosition().getValue().isNear(
-      Constants.Intake.STOW_ANGLE,
-      Constants.Intake.JIGGLE_TOLERANCE
-    );
-  }
 
   /**
    * Start intake of fuel using intake motor
@@ -312,7 +279,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/intakeMotor", m_isIntakeRunning);
     Logger.recordOutput(getName() + "/isJiggling", m_isJiggling);
     Logger.recordOutput(getName() + "/isIntaking", m_isIntaking);
-    Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getAbsolutePosition().getValue());
+    Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getPWM1Position().getValue());
   }
   
   /**

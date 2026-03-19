@@ -242,30 +242,30 @@ public class AimUtil {
     return new ShooterMathResults(
       // the arctangent of the Y velocity and the X velocity is the shooterAngle
       Radians.of(
-        // Constants.Shooter.AIMUTIL_HOOD_ANGLE_SCALAR.get() *
-        Constants.Shooter.AIMUTIL_HOOD_ANGLE_SCALAR *
+        Constants.Shooter.AIMUTIL_HOOD_ANGLE_SCALAR.get() *
+        // Constants.Shooter.AIMUTIL_HOOD_ANGLE_SCALAR *
         Math.atan2(
           shooterVelocityVec.getY(), shooterVelocityVec.getX()
         )
       ).plus(
         Degrees.of(
-          // Constants.Shooter.AIMUTIL_HOOD_ANGLE_ADDEND.get()
-          Constants.Shooter.AIMUTIL_HOOD_ANGLE_ADDEND
+          Constants.Shooter.AIMUTIL_HOOD_ANGLE_ADDEND.get()
+          // Constants.Shooter.AIMUTIL_HOOD_ANGLE_ADDEND
         )
       ),
 
       // Pythagorean sum of the X velocity and the Z velocity is the shooter
       MetersPerSecond.of(
-        // Constants.Shooter.AIMUTIL_SHOOTER_SPEED_SCALAR.get() *
-        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_SCALAR *
+        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_SCALAR.get() *
+        // Constants.Shooter.AIMUTIL_SHOOTER_SPEED_SCALAR *
         Math.sqrt(
           Math.pow(shooterVelocityVec.getX(), 2) + Math.pow(shooterVelocityVec.getY(), 2)
         )
       ).plus(MetersPerSecond.of(
         // basically aimutil shooter speed addend should be in rev/s
         // so we convert to meters per second
-        // Constants.Shooter.AIMUTIL_SHOOTER_SPEED_ADDEND.get() *
-        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_ADDEND *
+        Constants.Shooter.AIMUTIL_SHOOTER_SPEED_ADDEND.get() *
+        // Constants.Shooter.AIMUTIL_SHOOTER_SPEED_ADDEND *
         2 * Math.PI * Constants.Shooter.SHOOTER_RADIUS.in(Meters)
       )),
 

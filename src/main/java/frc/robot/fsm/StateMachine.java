@@ -67,6 +67,18 @@ public abstract class StateMachine implements Subsystem, Sendable {
   }
 
   /**
+   * When this method is called on a state machine, it unregisters itself from the
+   * command scheduler and stops its current command. This, in effect, stops the
+   * execution of the state machine. This is FINAL and IRREVERSIBLE.
+   */
+  public void stopStateMachine() {
+    CommandScheduler.getInstance().unregisterSubsystem(this);
+    if (getCurrentCommand() != null) {
+      getCurrentCommand().cancel();
+    }
+  }
+
+  /**
    * Associates a {@link Sendable} with this state machine. Also update the child's name.
    * @param name name to give child
    * @param child sendable
