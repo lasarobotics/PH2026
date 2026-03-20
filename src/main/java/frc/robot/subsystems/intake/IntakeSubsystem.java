@@ -70,13 +70,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       .SoftwareLimitSwitch
         .withForwardSoftLimitEnable(true)
         .withReverseSoftLimitEnable(true)
-        // Note:
-        // .29 is the physical limit with no bumper
-        // I think .28 should be good?
-        // update: dropped to .26 considering that .255 is the setpoint
-        // for the intake being down
-        .withForwardSoftLimitThreshold(0.27) // measured value
-        .withReverseSoftLimitThreshold(0.0); // zero position
+        .withForwardSoftLimitThreshold(0.263) // measured value
+        .withReverseSoftLimitThreshold(-0.075); // zero position
     armConfig
       .MotionMagic
         .withMotionMagicCruiseVelocity(10) // measured value
@@ -85,13 +80,10 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       .MotorOutput
         .withNeutralMode(NeutralModeValue.Coast);
 
-    // intakeEncoderConfig
-    //   .MagnetSensor
-    //     .withSensorDirection(SensorDirectionValue.Clockwise_Positive)
-    //     .withMagnetOffset(-0.5322265625) // measured value
-    //     .withAbsoluteSensorDiscontinuityPoint(0.75); // makes the range -0.25 to 0.75
-    // TODO
-    // Apply configs for TalonFX motors
+    intakeEncoderConfig
+      .PWM1
+        .withAbsoluteSensorOffset(0.174805)
+        .withAbsoluteSensorDiscontinuityPoint(0.5);
     m_intakeMotorLeader.getConfigurator().apply(intakeConfig);
     m_intakeMotorFollower.getConfigurator().apply(intakeConfig);
     m_armMotor.getConfigurator().apply(armConfig);

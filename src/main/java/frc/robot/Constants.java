@@ -199,9 +199,8 @@ public final class Constants {
     // duty cycle
     // should be negative
     public static final double INDEXER_MOTOR_SPEED = -1.0;
-    // TODO figure out
     // duty cycle
-    public static final double VERT_ROLLER_MOTOR_SPEED = -1.0;
+    public static final double VERT_ROLLER_MOTOR_SPEED = 1.0;
 
     // spin up speed for flywheel
     public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
@@ -292,7 +291,7 @@ public final class Constants {
     public static final Distance GOTO_SETTLE_DISTANCE = Meters.of(.15);
 
     public static final String SHOOTER_LIMELIGHT_NAME = "limelight-shooter";
-    public static final String CLIMB_LIMELIGHT_NAME = "limelight-climb";
+    public static final String RIGHT_LIMELIGHT_NAME = "limelight-right";
     public static final double SINGLE_TAG_AMBIGUITY_CUTOFF = 0.5;
     public static final double SINGLE_TAG_DISTANCE_CUTOFF = 5;
     // 5 meters should be about 2 meters of stddev (feels about right)
@@ -301,7 +300,7 @@ public final class Constants {
     public static final double TAG_UNCERTAINTY_SCALING_FACTOR = 0.3;
 
     public static final int THROTTLE_OFF = 200;
-    public static final int THROTTLE_IDLE = 0;
+    public static final int THROTTLE_IDLE = 500; // TODO TODO change backcxxxxxxxxxxxxx
     public static final int THROTTLE_RUNNING = 0;
 
     public static final int[] ALL_APRIL_TAGS = new int[]{};
@@ -508,17 +507,14 @@ public final class Constants {
     public static final int INTAKE_MOTOR_LEADER_ID = 40;
     public static final int ARM_MOTOR_ID = 41;
     public static final int ARM_ENCODER_ID = 42;
-    public static final int INTAKE_MOTOR_FOLLOWER_ID = 43; // TODO TODO TODO
+    public static final int INTAKE_MOTOR_FOLLOWER_ID = 43;
 
     public static final double INTAKE_SPEED = 1.0;
 
     public static final double JIGGLE_TOLERANCE = 0.2;
 
-    // preliminary values
-    public static final Angle STOW_ANGLE = Rotations.of(0.0);
-    // might want to reduce
-    // this should be basically the value of the soft limit of the arm
-    public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);
+    public static final Angle STOW_ANGLE = Rotations.of(-.07);
+    public static final Angle DEPLOY_ANGLE = Rotations.of(0.25);
     // straight up jiggling it
     public static final Angle JIGGLE_ANGLE = Rotations.of(0.125);
 

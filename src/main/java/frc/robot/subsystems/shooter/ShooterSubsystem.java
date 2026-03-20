@@ -69,7 +69,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID, canivoreBus);
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
-    m_indexerMotor = new TalonFX(Constants.Shooter.INDEXER_MOTOR_ID);
+    m_vertRollerMotor = new TalonFX(Constants.Shooter.VERT_ROLLER_MOTOR_ID);
 
     m_shooterDutyCycleRequest = new VelocityDutyCycle(0);
     m_hoodRequest = new MotionMagicVoltage(0);
@@ -437,9 +437,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/shooterSpeed",
       m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(getName() + "/indexerSpeed",
-      m_indexerMotor.get());
+      m_indexerMotor.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(getName() + "/verticalRollerSpeed",
-      m_vertRollerMotor.get());
+      m_vertRollerMotor.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(getName() + "/hoodPosition",
       m_hoodMotor.getPosition().getValue().in(Degrees));
     Logger.recordOutput(getName() + "/atShootSpeed",

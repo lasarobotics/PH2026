@@ -5,7 +5,6 @@ import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.Rotation;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -66,9 +65,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         LimelightHelpers.SetThrottle(
           Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
-        // LimelightHelpers.SetThrottle(
-        //   Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
-        // );
+        LimelightHelpers.SetThrottle(
+          Constants.Drive.RIGHT_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+        );
 
         getInstance().setAllLimelightsToAllTags();
       }
@@ -105,9 +104,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         LimelightHelpers.SetThrottle(
           Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
         );
-        // LimelightHelpers.SetThrottle(
-        //   Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
-        // );
+        LimelightHelpers.SetThrottle(
+          Constants.Drive.RIGHT_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
+        );
         s_shouldDoGlobalPoseEstimation = true;
         
         s_driveSubsystem.setAllLimelightsToAllTags();
@@ -119,7 +118,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         if (!DriverStation.isAutonomous()) return DRIVER_CONTROL;
 
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
-        // if (s_requestedDriveState == DriveStates.CLIMB_ALIGN && inAllianceZone()) return CLIMB_ALIGN;
 
         return this;
       }
@@ -136,9 +134,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         LimelightHelpers.SetThrottle(
           Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
         );
-        // LimelightHelpers.SetThrottle(
-        //   Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
-        // );
+        LimelightHelpers.SetThrottle(
+          Constants.Drive.RIGHT_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+        );
         s_shouldDoGlobalPoseEstimation = true;
         
         s_driveSubsystem.setAllLimelightsToAllTags();
@@ -194,18 +192,18 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         if (!inAllianceZone()) {
           // passing
-          // LimelightHelpers.SetThrottle(
-          //   Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
-          // );
+          LimelightHelpers.SetThrottle(
+            Constants.Drive.RIGHT_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+          );
           s_shouldDoGlobalPoseEstimation = true;
 
           s_driveSubsystem.setAllLimelightsToAllTags();
         } else {
           // in alliance zone, need accurate position
           // ergo local
-          // LimelightHelpers.SetThrottle(
-          //   Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
-          // );
+          LimelightHelpers.SetThrottle(
+            Constants.Drive.RIGHT_LIMELIGHT_NAME, Constants.Drive.THROTTLE_OFF
+          );
           s_shouldDoGlobalPoseEstimation = false;
 
           if (DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Red)) {
@@ -276,10 +274,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
       @Override
       public void end(boolean interrupted) {
-        // LimelightHelpers.SetFiducialIDFiltersOverride(
-        //   Constants.Drive.CLIMB_LIMELIGHT_NAME,
-        //   Constants.Drive.ALL_APRIL_TAGS
-        // );
+        getInstance().setAllLimelightsToAllTags();
       }
 
       @Override
@@ -342,9 +337,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         LimelightHelpers.SetThrottle(
           Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
         );
-        // LimelightHelpers.SetThrottle(
-        //   Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
-        // );
+        LimelightHelpers.SetThrottle(
+          Constants.Drive.RIGHT_LIMELIGHT_NAME, Constants.Drive.THROTTLE_RUNNING
+        );
         s_shouldDoGlobalPoseEstimation = true;
 
         s_driveSubsystem.setAllLimelightsToAllTags();
@@ -491,7 +486,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     // init heartbeat to avoid crash on enable
     s_limelightHeartbeat.put(Constants.Drive.SHOOTER_LIMELIGHT_NAME, 0.0);
-    // s_limelightHeartbeat.put(Constants.Drive.CLIMB_LIMELIGHT_NAME, 0.0);
+    s_limelightHeartbeat.put(Constants.Drive.RIGHT_LIMELIGHT_NAME, 0.0);
 
     Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
 
@@ -539,9 +534,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     LimelightHelpers.SetThrottle(
       Constants.Drive.SHOOTER_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
     );
-    // LimelightHelpers.SetThrottle(
-    //   Constants.Drive.CLIMB_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
-    // );
+    LimelightHelpers.SetThrottle(
+      Constants.Drive.RIGHT_LIMELIGHT_NAME, Constants.Drive.THROTTLE_IDLE
+    );
 
     //init limelight thread
     m_limelight_thread = new Thread(this::limelight_thread_func);
@@ -707,7 +702,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
     String[] limelights = {
       Constants.Drive.SHOOTER_LIMELIGHT_NAME,
-      // Constants.Drive.CLIMB_LIMELIGHT_NAME
+      Constants.Drive.RIGHT_LIMELIGHT_NAME
     };
 
     // for (String limelight : limelights) {
@@ -802,10 +797,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       Constants.Drive.SHOOTER_LIMELIGHT_NAME,
       Constants.Drive.ALL_APRIL_TAGS
     );
-    // LimelightHelpers.SetFiducialIDFiltersOverride(
-    //   Constants.Drive.CLIMB_LIMELIGHT_NAME,
-    //   Constants.Drive.ALL_APRIL_TAGS
-    // );
+    LimelightHelpers.SetFiducialIDFiltersOverride(
+      Constants.Drive.RIGHT_LIMELIGHT_NAME,
+      Constants.Drive.ALL_APRIL_TAGS
+    );
   }
 
   /**

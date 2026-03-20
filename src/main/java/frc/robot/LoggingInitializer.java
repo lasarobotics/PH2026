@@ -10,7 +10,6 @@ import java.util.Random;
 import frc.robot.fsm.StateMachine;
 import frc.robot.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkBoolean;
 import org.littletonrobotics.junction.networktables.NT4Publisher;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
@@ -155,7 +154,7 @@ public class LoggingInitializer extends StateMachine {
           // 140 sec teleop + 3 sec delay + 20 sec auto = 163
           // so might as well get all of it
           LimelightHelpers.triggerRewindCapture(Constants.Drive.SHOOTER_LIMELIGHT_NAME, 165);
-          LimelightHelpers.triggerRewindCapture(Constants.Drive.CLIMB_LIMELIGHT_NAME, 165);
+          LimelightHelpers.triggerRewindCapture(Constants.Drive.RIGHT_LIMELIGHT_NAME, 165);
         }
       }
 
