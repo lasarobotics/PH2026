@@ -250,7 +250,11 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   public void periodic() {
     super.periodic();
 
-    if (m_isIntaking && intakeDeployed()) {
+    boolean intakeOverheated =
+      m_intakeMotorLeader.getDeviceTemp().getValue().gte(Constants.Intake.OVERHEATING_TEMP) ||
+      m_intakeMotorFollower.getDeviceTemp().getValue().gte(Constants.Intake.OVERHEATING_TEMP);
+
+    if (m_isIntaking && intakeDeployed() && !intakeOverheated) {
       if (m_isReversing) {
         reverseIntakeMotor();
       } else {
@@ -277,6 +281,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/isJiggling", m_isJiggling);
     Logger.recordOutput(getName() + "/isIntaking", m_isIntaking);
     Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getPWM1Position().getValue());
+    Logger.recordOutput(getName() + "/intakeLeaderMotorTemperature", m_intakeMotorLeader.getDeviceTemp().getValueAsDouble());
+    Logger.recordOutput(getName() + "/intakeOverheated", intakeOverheated);
   }
 
   /**

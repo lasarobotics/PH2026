@@ -160,7 +160,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.NeutralZoneEnd(), 
-            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return PREOVERRAMP;
@@ -326,9 +326,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void end(boolean interrupted) {
-        // we want it out but not running lol
         IntakeSubsystem.getInstance().stopIntake();
-        IntakeSubsystem.getInstance().deployIntake();
       }
 
       @Override
@@ -338,7 +336,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.NeutralZoneEnd(), 
-            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return PREOVERRAMP;
@@ -508,7 +506,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.NeutralZoneDoubleTapMiddle(), 
-            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return DOUBLETAP_STAGE_THREE;
@@ -576,9 +574,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     OVERRAMP_AGAIN {
       @Override
       public void initialize() {
-        // we want it out but not running lol
         IntakeSubsystem.getInstance().stopIntake();
-        IntakeSubsystem.getInstance().deployIntake();
       }
 
       @Override
@@ -712,9 +708,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void end(boolean interrupted) {
-        // we want it out but not running lol
         IntakeSubsystem.getInstance().stopIntake();
-        IntakeSubsystem.getInstance().deployIntake();
       }
 
       @Override
@@ -724,7 +718,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.NeutralZoneEndFull(), 
-            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return OVERRAMP;
@@ -864,9 +858,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
       @Override
       public void end(boolean interrupted) {
-        // we want it out but not running lol
         IntakeSubsystem.getInstance().stopIntake();
-        IntakeSubsystem.getInstance().deployIntake();
       }
 
       @Override

@@ -4,6 +4,7 @@
 
 package frc.robot;
 
+import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -31,6 +32,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Time;
 import frc.robot.generated.TunerConstants;
 
@@ -508,6 +510,8 @@ public final class Constants {
     public static final int ARM_MOTOR_ID = 41;
     public static final int ARM_ENCODER_ID = 42;
     public static final int INTAKE_MOTOR_FOLLOWER_ID = 43;
+
+    public static final Temperature OVERHEATING_TEMP = Celsius.of(60);
 
     public static final double INTAKE_SPEED = 1.0;
 

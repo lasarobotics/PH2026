@@ -504,31 +504,27 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoAimDrive =
       new SwerveRequest.FieldCentric()
         .withDeadband(Constants.Drive.MAX_SPEED.times(Constants.Drive.DEADBAND_SCALAR))
-        .withRotationalDeadband(0)
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.OperatorPerspective);
         
     s_autoDrive =
       new SwerveRequest.FieldCentric()
-        .withDeadband(Constants.Drive.MAX_SPEED.times(Constants.Drive.AUTO_DEADBAND_SCALAR))
-        .withRotationalDeadband(Constants.Drive.MAX_ANGULAR_RATE.times(Constants.Drive.AUTO_ROTATIONAL_DEADBAND_SCALAR))
         .withDriveRequestType(DriveRequestType.Velocity)
         .withSteerRequestType(SteerRequestType.MotionMagicExpo)
         .withForwardPerspective(ForwardPerspectiveValue.BlueAlliance);
     
-    s_headingController = new PIDController(4, 0.0, 0.0);
+    s_headingController = new PIDController(7, 0.0, 0.0);
+    s_headingController.setTolerance(Degrees.of(1).in(Radians));
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
     s_autoAimController = new PIDController(6.5, 0.0, 0.0);
     // TODO adjust how much it divides by
-    s_autoAimController.setTolerance(
-      Constants.Drive.ROTATION_TOLERANCE.div(5).in(Radians)
-    );
+    s_autoAimController.setTolerance(Degrees.of(1).in(Radians));
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 
-    s_autoDriveController = new PIDController(1.75, 0.0, 0.0);
-    s_autoDriveController.setTolerance(0.025); // 2.5 cm tolerance in auto
+    s_autoDriveController = new PIDController(1.65, 0.0, 0.0);
+    s_autoDriveController.setTolerance(0.04); // 4 cm tolerance
 
     // set throttle to idle here
     LimelightHelpers.SetThrottle(
@@ -863,10 +859,14 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     double velocityFloor = distance > Constants.Drive.GOTO_SETTLE_DISTANCE.in(Meters) ? 0.2 : 0.0;
 
     double outputVelocity = 
-      Math.max(
+      MathUtil.clamp(
+        Math.max(
         rawDriveOutput,
         exitVelocity.in(MetersPerSecond)
-      ) + velocityFloor;
+      ) + velocityFloor,
+      0,
+      maxVelocity.in(MetersPerSecond)
+    );
 
     double maxRotRad = maxRotationRate.in(RadiansPerSecond);
     double rotationRate = MathUtil.clamp(

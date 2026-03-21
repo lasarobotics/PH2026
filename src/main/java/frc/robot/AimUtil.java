@@ -204,12 +204,13 @@ public class AimUtil {
           currentRobotSpeeds.vxMetersPerSecond,
           currentRobotSpeeds.vyMetersPerSecond
         )
-        .plus(
-          new Translation2d(
-            currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.cos(currentRobotHeading),
-            currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.sin(currentRobotHeading)
-          )
-        )
+        // causes feedback
+        // .plus(
+        //   new Translation2d(
+        //     currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.cos(currentRobotHeading),
+        //     currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.sin(currentRobotHeading)
+        //   )
+        // )
         .times(latency + hangTime)
       );
     
