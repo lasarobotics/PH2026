@@ -129,6 +129,9 @@ public class LoggingInitializer extends StateMachine {
 
         Logger.start();
 
+        Logger.recordMetadata("ProjectName", "PH2026");
+        Logger.recordMetadata("RuntimeType", Robot.isSimulation() ? "sim" : "real");
+
         // ctre
         SignalLogger.setPath(folder.toString());
         SignalLogger.start();

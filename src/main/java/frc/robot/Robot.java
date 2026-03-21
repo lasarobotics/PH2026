@@ -12,7 +12,6 @@ import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -43,12 +42,10 @@ public class Robot extends LoggedRobot {
     if (isSimulation()) {
       NetworkTableInstance.getDefault().startServer();
     }
-    // advnatage kit logging
-    Logger.recordMetadata("ProjectName", "PH2026");
-    Logger.recordMetadata("RuntimeType", isSimulation() ? "sim" : "real");
 
-    SignalLogger.enableAutoLogging(false);
+    // advnatage kit logging
     LoggingInitializer.getInstance();
+    SignalLogger.enableAutoLogging(false);
 
     RobotController.setBrownoutVoltage(6.25);
 
