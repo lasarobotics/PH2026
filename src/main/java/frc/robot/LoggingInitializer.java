@@ -118,7 +118,6 @@ public class LoggingInitializer extends StateMachine {
           Files.createDirectories(folder);
         } catch (IOException e) {
           // probably won't happen
-          // TODO figure out what to do here (if anything)
           e.printStackTrace();
         }
         

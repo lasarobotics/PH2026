@@ -200,7 +200,7 @@ public final class Constants {
     // should be negative
     public static final double INDEXER_MOTOR_SPEED = -1.0;
     // duty cycle
-    public static final double VERT_ROLLER_MOTOR_SPEED = 1.0;
+    public static final double VERT_ROLLER_MOTOR_SPEED = 0.5;
 
     // spin up speed for flywheel
     public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
@@ -243,12 +243,12 @@ public final class Constants {
     // these values are for when the robot is pressed againt the tower
     public static final Angle DUMB_HOOD_POSITION = Degrees.of(-18.906);
     // public static final LoggedNetworkNumber DUMB_HOOD_POSITION
-    //   = new LoggedNetworkNumber("/Tuning/dumbHoodPosition", 80 - 21.6);
+    //   = new LoggedNetworkNumber("/Tuning/dumbHoodPosition", -18.906);
     // In rotations per second
     // currently based on empirical measurement
     public static final double DUMB_SHOOTER_SPEED = 42.148;
     // public static final LoggedNetworkNumber DUMB_SHOOTER_SPEED
-    //   = new LoggedNetworkNumber("/Tuning/dumbShooterSpeed", 33.75);
+    //   = new LoggedNetworkNumber("/Tuning/dumbShooterSpeed", 42.148);
 
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
@@ -269,7 +269,7 @@ public final class Constants {
     // these values (for max acceleration, max angular rate, max angular acceleration)
     // are guesses. but it's fine
     // public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
-    public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts.div(2);
+    public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
     public static final LinearAcceleration MAX_ACCELERATION =
         MetersPerSecondPerSecond.of(3);
     public static final AngularVelocity MAX_ANGULAR_RATE =
@@ -300,7 +300,7 @@ public final class Constants {
     public static final double TAG_UNCERTAINTY_SCALING_FACTOR = 0.3;
 
     public static final int THROTTLE_OFF = 200;
-    public static final int THROTTLE_IDLE = 500; // TODO TODO change backcxxxxxxxxxxxxx
+    public static final int THROTTLE_IDLE = 10;
     public static final int THROTTLE_RUNNING = 0;
 
     public static final int[] ALL_APRIL_TAGS = new int[]{};
@@ -514,9 +514,9 @@ public final class Constants {
     public static final double JIGGLE_TOLERANCE = 0.2;
 
     public static final Angle STOW_ANGLE = Rotations.of(-.07);
-    public static final Angle DEPLOY_ANGLE = Rotations.of(0.25);
+    public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);
     // straight up jiggling it
-    public static final Angle JIGGLE_ANGLE = Rotations.of(0.125);
+    public static final Angle JIGGLE_ANGLE = Rotations.of(0.1);
 
     // Tolerance of check for arm being deployed
     // percent based on deploy angle

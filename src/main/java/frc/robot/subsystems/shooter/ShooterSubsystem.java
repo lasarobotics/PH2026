@@ -105,6 +105,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
     // TODO
     TalonFXConfiguration vertRollerConfig = new TalonFXConfiguration();
+    vertRollerConfig
+      .MotorOutput
+        .withInverted(InvertedValue.CounterClockwise_Positive);
 
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
     hoodConfig
@@ -199,6 +202,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_indexerMotor.setControl(
       m_indexerRequest.withOutput(Constants.Shooter.INDEXER_MOTOR_SPEED)
     );
+  }
+
+  // TODO document
+  private void runVertRoller() {
     m_vertRollerMotor.setControl(
       m_vertRollerRequest.withOutput(Constants.Shooter.VERT_ROLLER_MOTOR_SPEED)
     );
@@ -417,6 +424,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
             forceShooting
         ) {
           runIndexer();
+          runVertRoller();
         } else {
           stopIndexer();
         }
@@ -444,8 +452,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       m_hoodMotor.getPosition().getValue().in(Degrees));
     Logger.recordOutput(getName() + "/atShootSpeed",
       atShootSpeed());
-    Logger.recordOutput(getName() + "/shooterReady",
-      shooterReady());
     Logger.recordOutput(getName() + "/atHoodPosition",
       atHoodPosition());
     Logger.recordOutput(getName() + "/shootingTimeOkay",

@@ -70,7 +70,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       .SoftwareLimitSwitch
         .withForwardSoftLimitEnable(true)
         .withReverseSoftLimitEnable(true)
-        .withForwardSoftLimitThreshold(0.263) // measured value
+        .withForwardSoftLimitThreshold(0.2685) // measured value
         .withReverseSoftLimitThreshold(-0.075); // zero position
     armConfig
       .MotionMagic
@@ -121,16 +121,14 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void startIntake() {
     deployIntake();
-    // startIntakeMotor();
     m_isIntaking = true;
   }
 
   /**
-   *  Stow the intake arm and stop the intake motor
+   *  Stow the intake arm and stop the intake motor[]\
+   * 
    */
   public void stopIntake() {
-    stowIntake();
-    stopIntakeMotor();
     m_isIntaking = false;
   }
 
@@ -233,7 +231,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   /**
    *  Move the intake arm to the stowed position
    */
-  private void stowIntake() {
+  public void stowIntake() {
     m_armMotor.setControl(
       m_armPositionSetter.withPosition(Constants.Intake.STOW_ANGLE)
     );

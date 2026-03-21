@@ -58,6 +58,8 @@ public class Robot extends LoggedRobot {
     DriveSubsystem.getInstance();
     IntakeSubsystem.getInstance();
     ShooterSubsystem.getInstance();
+    
+    IntakeSubsystem.getInstance().deployIntake();
   }
 
   /**
@@ -82,9 +84,6 @@ public class Robot extends LoggedRobot {
     m_robotContainer.updateRisen();
     AimUtil.updateShooterConstants();
     CommandScheduler.getInstance().run();
-
-    // debugging purposes - allows seeing scheduled commands
-    SmartDashboard.putData(CommandScheduler.getInstance());
 
     Logger.recordOutput("GameHelpers/matchTimeLeft", GameHelpers.matchTimeLeft());
     Logger.recordOutput("GameHelpers/scoringTimeLeft", GameHelpers.scoringTimeLeft());
