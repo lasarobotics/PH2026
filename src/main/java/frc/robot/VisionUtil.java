@@ -14,11 +14,12 @@ public class VisionUtil {
   private static final String CAMERA_NAME = "418";
   private static final String LOG_PATH = "VisionUtil";
   private static final int INVALID_FIDUCIAL_ID = -1;
-  private static final double CLEARED_DOUBLE_VALUE = 0.0;
   private static final Translation3d CLEARED_POSE = new Translation3d();
+  private static final double IntakeWidth = 24.5; //INCHES
+  private static final double FuelDiamater = 5.91; //INCHES
 
   private static final PhotonCamera s_camera = new PhotonCamera(CAMERA_NAME);
-  private static PhotonPipelineResult s_latestResult = s_camera.getLatestResult();
+  private static PhotonPipelineResult s_latestResult = new PhotonPipelineResult();
   private static int s_lastObjectCount = 0;
 
   private VisionUtil() {}
@@ -32,7 +33,10 @@ public class VisionUtil {
   }
 
   public static void updateVisionData() {
-    s_latestResult = s_camera.getLatestResult();
+    List<PhotonPipelineResult> unreadResults = s_camera.getAllUnreadResults();
+    if (!unreadResults.isEmpty()) {
+      s_latestResult = unreadResults.get(unreadResults.size() - 1);
+    }
 
     boolean hasObjects = hasObjects();
     List<PhotonTrackedTarget> objects = s_latestResult.getTargets();
@@ -59,7 +63,7 @@ public class VisionUtil {
       PhotonTrackedTarget object = objects.get(i);
       String objectPath = LOG_PATH + "/" + (i + 1) + "_Object";
       Logger.recordOutput(objectPath + "/id", object.getDetectedObjectClassID());
-      Logger.recordOutput(objectPath + "/pose", object.getAlternateCameraToTarget().getTranslation());
+      Logger.recordOutput(objectPath + "/pose", object.getBestCameraToTarget().getTranslation());
     }
 
     // clears old objects if those objects were lost since last loop
