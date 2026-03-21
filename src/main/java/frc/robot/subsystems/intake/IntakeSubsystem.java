@@ -1,5 +1,6 @@
 package frc.robot.subsystems.intake;
 
+import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.Radians;
 
 import org.littletonrobotics.junction.Logger;
@@ -88,10 +89,6 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     m_intakeMotorFollower.getConfigurator().apply(intakeConfig);
     m_armMotor.getConfigurator().apply(armConfig);
     m_intakeEncoder.getConfigurator().apply(intakeEncoderConfig);
-    
-    m_intakeMotorFollower.setControl(
-      new Follower(m_intakeMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
-    );
   }
 
   /**
@@ -200,6 +197,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void runIntakeMotor() {
     m_intakeMotorLeader.set(Constants.Intake.INTAKE_SPEED);
+    m_intakeMotorFollower.set(Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
 
@@ -208,6 +206,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void reverseIntakeMotor() {
     m_intakeMotorLeader.set(-Constants.Intake.INTAKE_SPEED);
+    m_intakeMotorFollower.set(-Constants.Intake.INTAKE_SPEED);
     m_isIntakeRunning = true;
   }
 
@@ -216,6 +215,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void stopIntakeMotor() {
     m_intakeMotorLeader.stopMotor();
+    m_intakeMotorFollower.stopMotor();
     m_isIntakeRunning = false;
   }
 
@@ -281,7 +281,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     Logger.recordOutput(getName() + "/isJiggling", m_isJiggling);
     Logger.recordOutput(getName() + "/isIntaking", m_isIntaking);
     Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getPWM1Position().getValue());
-    Logger.recordOutput(getName() + "/intakeLeaderMotorTemperature", m_intakeMotorLeader.getDeviceTemp().getValueAsDouble());
+    Logger.recordOutput(getName() + "/intakeLeaderMotorTemperature", m_intakeMotorLeader.getDeviceTemp().getValue().in(Celsius));
+    Logger.recordOutput(getName() + "/intakeFollowerMotorTemperature", m_intakeMotorFollower.getDeviceTemp().getValue().in(Celsius));
     Logger.recordOutput(getName() + "/intakeOverheated", intakeOverheated);
   }
 
