@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -16,6 +17,7 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 
@@ -33,6 +35,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private boolean m_isReversing;
   private boolean m_isIntakeRunning;
 
+  private Timer m_jiggleTimer;
+
   /** Creates a new IntakeSubsystem */
   private IntakeSubsystem() {
     this.m_intakeMotorLeader = new TalonFX(Constants.Intake.INTAKE_MOTOR_LEADER_ID);
@@ -46,6 +50,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     m_isJiggling = false;
     m_isReversing = false;
     m_isIntakeRunning = false;
+
+    m_jiggleTimer = new Timer();
 
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
     TalonFXConfiguration armConfig = new TalonFXConfiguration();
@@ -267,9 +273,12 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     if (m_isJiggling) {
       if (intakeDeployed()) {
         intakeToJigglePosition();
-      } else if (intakeAtJigglePosition()) {
-        deployIntake();
-      } else {
+        m_jiggleTimer.reset();
+        m_jiggleTimer.start();
+      } else if (
+        intakeAtJigglePosition() ||
+        m_jiggleTimer.hasElapsed(Seconds.of(0.5))
+      ) {
         deployIntake();
       }
     }
