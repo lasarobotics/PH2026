@@ -6,6 +6,7 @@ package frc.robot;
 
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
+import org.littletonrobotics.junction.networktables.NT4Publisher;
 
 import com.ctre.phoenix6.SignalLogger;
 
@@ -13,9 +14,7 @@ import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.robot.subsystems.drive.DriveSubsystem;
-import frc.robot.subsystems.intake.IntakeSubsystem;
-import frc.robot.subsystems.shooter.ShooterSubsystem;
+import frc.robot.subsystems.leds.LEDSubsystem;
 
 /**
  * The methods in this class are called automatically corresponding to each mode, as described in
@@ -28,8 +27,6 @@ public class Robot extends LoggedRobot {
   private boolean hasRunTeleop = false;
 
   private RobotContainer m_robotContainer;
-
-  public AutoHoncho autoHoncho;
 
   /**
    * This function is run when the robot is first started up and should be used for any
@@ -44,19 +41,19 @@ public class Robot extends LoggedRobot {
     }
 
     // advnatage kit logging
-    LoggingInitializer.getInstance();
-    SignalLogger.enableAutoLogging(false);
+    Logger.addDataReceiver(new NT4Publisher());
+
+    Logger.start();
+
+    Logger.recordMetadata("ProjectName", "PH2026");
+    Logger.recordMetadata("RuntimeType", Robot.isSimulation() ? "sim" : "real");
 
     RobotController.setBrownoutVoltage(6.25);
 
     m_robotContainer = new RobotContainer();
 
     // initialize subsystems
-    DriveSubsystem.getInstance();
-    IntakeSubsystem.getInstance();
-    ShooterSubsystem.getInstance();
-    
-    IntakeSubsystem.getInstance().deployIntake();
+    LEDSubsystem.getInstance();
   }
 
   /**
@@ -71,15 +68,12 @@ public class Robot extends LoggedRobot {
     ll.RobotStart();
     // Simple always on signal to verify logging is working in AdvantageScope.
     Logger.recordOutput("Robot/Heartbeat", Timer.getFPGATimestamp());
-    Logger.recordOutput("Robot/CurrentPose", DriveSubsystem.getDrivetrain().getState().Pose);
 
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
 
-    m_robotContainer.updateRisen();
-    AimUtil.updateShooterConstants();
     CommandScheduler.getInstance().run();
 
     Logger.recordOutput("GameHelpers/matchTimeLeft", GameHelpers.matchTimeLeft());
@@ -89,15 +83,7 @@ public class Robot extends LoggedRobot {
 
   /** This function is called once each time the robot enters Disabled mode. */
   @Override
-  public void disabledInit() {
-    if (hasRunTeleop) {
-      LoggingInitializer.getInstance().stopLogging();
-    }
-  
-    if (autoHoncho != null) {
-      autoHoncho.stopStateMachine();
-    }
-  }
+  public void disabledInit() {}
 
   @Override
   public void disabledPeriodic() {}
@@ -107,7 +93,6 @@ public class Robot extends LoggedRobot {
   public void autonomousInit() {
     GameHelpers.zeroTimer();
     GameHelpers.initializeStartNumber();
-    autoHoncho = new AutoHoncho();
   }
 
   /** This function is called periodically during autonomous. */
@@ -124,15 +109,9 @@ public class Robot extends LoggedRobot {
     // continue until interrupted by another command, remove
     // this line or comment it out.
 
-    if (autoHoncho != null) {
-      autoHoncho.stopStateMachine();
-    }
-
     hasRunTeleop = true;
     GameHelpers.initializeStartNumber();
     GameHelpers.zeroTimer();
-    DriveSubsystem.getInstance().driverControl();
-    IntakeSubsystem.getInstance().stopIntake();
   }
 
   /** This function is called periodically during operator control. */

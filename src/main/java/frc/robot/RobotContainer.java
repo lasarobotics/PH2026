@@ -26,41 +26,6 @@ public class RobotContainer {
   public RobotContainer() {
     // Configure the trigger bindings
     configureBindings();
-    SmartDashboard.putData(
-      Constants.SmartDashboard.SMARTDASHBOARD_QUADRANT_CHOOSER_NAME, 
-      AutoHoncho.s_autoQuadrantChooser
-    );
-    SmartDashboard.putData(
-      Constants.SmartDashboard.SMARTDASHBOARD_AUTO_TYPE_CHOOSER_NAME, 
-      AutoHoncho.s_autoTypeChooser
-    );
-  }
-
-  private boolean m_intakePrevious = false;
-  private boolean m_restPrevious = false;
-  private boolean m_intakeRisen = false;
-  private boolean m_restRisen = false;
-
-  /**
-   * Updates the rising edge detection for certain bindings (intake &
-   * rest). Should only be called once per loop to ensure that
-   * everything that wants to know about a rising edge does.
-   */
-  public void updateRisen() {
-    boolean intakeDown = m_driverController.leftBumper().getAsBoolean();
-    boolean restDown = m_driverController.back().getAsBoolean();
-
-    // always set to false - will be made true if there is really
-    // a rising edge
-    m_intakeRisen = false;
-    m_restRisen = false;
-
-    // rising edge
-    if (intakeDown && !m_intakePrevious) m_intakeRisen = true;
-    if (restDown && !m_restPrevious) m_restRisen = true;
-
-    m_intakePrevious = intakeDown;
-    m_restPrevious = restDown;
   }
 
   /**
@@ -74,32 +39,5 @@ public class RobotContainer {
    */
   private void configureBindings() {
 
-    HeadHoncho.getInstance().configureBindings(
-      // shoot button
-      m_driverController.rightTrigger(),
-      // dumbshoot button
-      m_driverController.b(),
-      // forceshoot button
-      m_driverController.y(),
-      // cancel button
-      m_driverController.x(),
-      // reverse intake button
-      m_driverController.a(),
-      // over ramp button
-      m_driverController.leftTrigger(),
-      // reset odom button
-      m_driverController.start(),
-      // intake fallen trigger
-      () -> m_intakeRisen,
-      // rest fallen trigger
-      () -> m_restRisen,
-      // drive subsystem stuff
-      // drive
-      () -> m_driverController.getLeftX(),
-      // strafe
-      () -> m_driverController.getLeftY(),
-      // rotate
-      () -> m_driverController.getRightX()
-    );
   }
 }

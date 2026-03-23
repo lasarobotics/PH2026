@@ -34,7 +34,6 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Time;
-import frc.robot.generated.TunerConstants;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -271,7 +270,6 @@ public final class Constants {
     // these values (for max acceleration, max angular rate, max angular acceleration)
     // are guesses. but it's fine
     // public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
-    public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
     public static final LinearAcceleration MAX_ACCELERATION =
         MetersPerSecondPerSecond.of(3);
     public static final AngularVelocity MAX_ANGULAR_RATE =
@@ -344,12 +342,6 @@ public final class Constants {
     // never changed
     // it works
     public static final double ROBOT_LATENCY = 0.15;
-
-    public static final TrapezoidProfile.Constraints TRANSLATE_CONSTRAINTS =
-      new TrapezoidProfile.Constraints(
-        MAX_SPEED.in(MetersPerSecond),
-        MAX_ACCELERATION.in(MetersPerSecondPerSecond)
-      );
 
     public static final TrapezoidProfile.Constraints TURN_CONSTRAINTS =
       new TrapezoidProfile.Constraints(
