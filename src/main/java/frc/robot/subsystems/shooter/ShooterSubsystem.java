@@ -1,5 +1,6 @@
 package frc.robot.subsystems.shooter;
 
+import static edu.wpi.first.units.Units.Amps;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
@@ -446,6 +447,8 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(getName() + "/indexerSpeed",
       m_indexerMotor.getVelocity().getValue().in(RotationsPerSecond));
+    Logger.recordOutput(getName() + "/indexerTorqueCurrent",
+      m_indexerMotor.getTorqueCurrent().getValue().in(Amps));
     Logger.recordOutput(getName() + "/verticalRollerSpeed",
       m_vertRollerMotor.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput(getName() + "/hoodPosition",

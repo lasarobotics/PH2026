@@ -82,7 +82,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     armConfig
       .MotionMagic
         .withMotionMagicCruiseVelocity(10) // measured value
-        .withMotionMagicAcceleration(8); // measured value
+        .withMotionMagicAcceleration(10); // measured value
     armConfig
       .MotorOutput
         .withNeutralMode(NeutralModeValue.Coast);
@@ -277,7 +277,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         m_jiggleTimer.start();
       } else if (
         intakeAtJigglePosition() ||
-        m_jiggleTimer.hasElapsed(Seconds.of(0.5))
+        m_jiggleTimer.hasElapsed(Seconds.of(0.4))
       ) {
         deployIntake();
       }
