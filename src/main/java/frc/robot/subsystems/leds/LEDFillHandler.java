@@ -33,17 +33,13 @@ public class LEDFillHandler {
     percent = MathUtil.clamp(percent, 0, 1);
     int ledCount = m_endIndex - m_startIndex;
     int lightUpCount = (int)(ledCount * percent);
-    updateLeds(lightUpCount);
-  }
-
-  private void updateLeds(int lightUpCount) {
-    int ledCount = m_endIndex - m_startIndex;
     int darkCount = ledCount - lightUpCount;
     if (increasing) {
       // low to high
       // so 50% is top half
       // set the light up count with reference to end index
       // set the rest to dark
+      // The indices are inclusive
       m_candle.setLEDs(
         m_color.Red,
         m_color.Green,

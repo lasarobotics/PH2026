@@ -530,20 +530,22 @@ public final class Constants {
 
   public static class LED {
     // TODO update
-    public static final int CANDLE_ID = 69;
+    public static final int CANDLE_ID = 60;
 
     // TODO update
-    public static final int START_INDEX_LEFT = 8;
-    public static final int END_INDEX_LEFT = 9;
-    public static final int START_INDEX_RIGHT = 10;
-    public static final int END_INDEX_RIGHT = 11;
+    public static final int START_INDEX = 8;
+    public static final int END_INDEX = 45;
 
     // #663399
     public static final RGBWColor DEFAULT_COLOR = new RGBWColor(102, 51, 153);
-    // #663399
-    public static final RGBWColor ACTIVE_COLOR = new RGBWColor(102, 51, 153);
+    // #00FF00
+    public static final RGBWColor ACTIVE_COLOR = new RGBWColor(0, 255, 0);
+    // #AD03DE
+    public static final RGBWColor INACTIVE_COLOR = new RGBWColor(173, 3, 222);
     // #FF0000
-    public static final RGBWColor INACTIVE_COLOR = new RGBWColor(255, 0, 0);
+    public static final RGBWColor RED_COLOR = new RGBWColor(255, 0, 0);
+    // #0000FF
+    public static final RGBWColor BLUE_COLOR = new RGBWColor(0, 0, 255);
   }
 
   public static class SmartDashboard {

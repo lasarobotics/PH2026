@@ -129,8 +129,8 @@ public class Robot extends LoggedRobot {
     }
 
     hasRunTeleop = true;
-    GameHelpers.initializeStartNumber();
     GameHelpers.zeroTimer();
+    GameHelpers.initializeStartNumber();
     DriveSubsystem.getInstance().driverControl();
     IntakeSubsystem.getInstance().stopIntake();
   }
