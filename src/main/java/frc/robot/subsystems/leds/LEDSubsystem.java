@@ -2,7 +2,6 @@ package frc.robot.subsystems.leds;
 
 import org.littletonrobotics.junction.Logger;
 
-import com.ctre.phoenix.led.Animation;
 import com.ctre.phoenix.led.CANdle;
 import com.ctre.phoenix.led.RainbowAnimation;
 
@@ -23,7 +22,7 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
   private boolean m_wasAutoEnabled = false;
 
   private LEDSubsystem() {
-    m_candle = new CANdle(Constants.LED.CANDLE_ID);
+    m_candle = new CANdle(Constants.LED.CANDLE_ID, "canivore");
     m_shiftFillHandler = new LEDFillHandler(
       m_candle,
       Constants.LED.START_INDEX,

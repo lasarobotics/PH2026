@@ -260,8 +260,13 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       m_intakeMotorLeader.getDeviceTemp().getValue().gte(Constants.Intake.OVERHEATING_TEMP) ||
       m_intakeMotorFollower.getDeviceTemp().getValue().gte(Constants.Intake.OVERHEATING_TEMP);
 
-    if (m_isIntaking && intakeDeployed() && !intakeOverheated) {
-      if (m_isReversing) {
+    if (
+      (
+        (m_isIntaking && intakeDeployed()) ||
+        m_isJiggling
+      ) &&
+      !intakeOverheated) {
+      if (m_isReversing && !m_isJiggling) {
         reverseIntakeMotor();
       } else {
         runIntakeMotor();

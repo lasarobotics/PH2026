@@ -520,7 +520,7 @@ public final class Constants {
     public static final Angle STOW_ANGLE = Rotations.of(-.07);
     public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);
     // straight up jiggling it
-    public static final Angle JIGGLE_ANGLE = Rotations.of(0.15);
+    public static final Angle JIGGLE_ANGLE = Rotations.of(0.03);
 
     // Tolerance of check for arm being deployed
     // percent based on deploy angle
