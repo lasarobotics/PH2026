@@ -170,7 +170,7 @@ public class LoggingInitializer extends StateMachine {
   private static LoggingInitializer s_loggingInitializer;
 
   private static final double timestampUpdateDelay =
-    5.0; // Wait several seconds after DS attached to ensure
+    2.5; // Wait several seconds after DS attached to ensure
          // timestamp/timezone is updated
   private static final Path defaultPathRio = Path.of("/U/logs");
   private static final Path defaultPathSim = Path.of("logs");

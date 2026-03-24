@@ -22,6 +22,8 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.SensorDirectionValue;
 
+import edu.wpi.first.math.filter.Debouncer;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
@@ -49,6 +51,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private final DutyCycleOut m_indexerRequest;
   private final DutyCycleOut m_vertRollerRequest;
 
+  private Debouncer m_shootSpeedDebouncer = new Debouncer(0.25, DebounceType.kFalling);
   private boolean m_isRunning = true;
 
   /**
@@ -195,9 +198,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Set the speed of the {@link #m_indexerMotor indexer motor}
    * to the (constant)
    * {@link Constants.Shooter#INDEXER_MOTOR_SPEED indexer run speed}.
-   * Also sets the speed of the {@link #m_vertRollerMotor vertical roller}
-   * to the (constant)
-   * {@link Constants.Shooter#VERT_ROLLER_MOTOR_SPEED vert roller run speed}.
    */
   private void runIndexer() {
     m_indexerMotor.setControl(
@@ -205,7 +205,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
-  // TODO document
+  /**
+   * Sets the speed of the {@link #m_vertRollerMotor vertical roller}
+   * to the (constant)
+   * {@link Constants.Shooter#VERT_ROLLER_MOTOR_SPEED vert roller run speed}.
+   */
   private void runVertRoller() {
     m_vertRollerMotor.setControl(
       m_vertRollerRequest.withOutput(Constants.Shooter.VERT_ROLLER_MOTOR_SPEED)
@@ -245,7 +249,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * the desired speed according to {@link #wantedShooterSpeed()}
    */
   private boolean atShootSpeed() {
-    return (
+    return m_shootSpeedDebouncer.calculate(
       m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond) >=
         wantedShooterSpeed()
     );

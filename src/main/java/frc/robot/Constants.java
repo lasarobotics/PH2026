@@ -5,6 +5,7 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Celsius;
+import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
@@ -55,6 +56,7 @@ public final class Constants {
     public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.3);
     public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.05);
 
+    public static final Angle VERY_HIGH_ROTATION_TOLERANCE = Degrees.of(20);
     public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(10);
     public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2.5); 
 
@@ -71,7 +73,7 @@ public final class Constants {
     public static Pose2d flipHeading(Pose2d poseToFlip) {
       return new Pose2d(
         poseToFlip.getTranslation(),
-        poseToFlip.getRotation().plus(Rotation2d.k180deg)
+        poseToFlip.getRotation().times(-1)
       );
     }
 
@@ -118,7 +120,7 @@ public final class Constants {
     // bump traversal & neutral zone poses //
     //                                     //
 
-    public static final Distance NEUTRAL_ZONE_BLUE_X = Meters.of(7.7);
+    public static final Distance NEUTRAL_ZONE_BLUE_X = Meters.of(7.9);
 
     //              //
     //  blue right  //
@@ -126,7 +128,7 @@ public final class Constants {
 
     public static final Pose2d BLUE_RIGHT_ABUMP_AZ_POSE = new Pose2d(
       new Translation2d(
-        Meters.of(3.283),
+        Meters.of(3.1),
         Meters.of(2.349)
       ),
       new Rotation2d(
@@ -138,14 +140,14 @@ public final class Constants {
         Meters.of(5.983),
         BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()
       ),
-      Rotation2d.k180deg
+      Rotation2d.kZero
     );
     public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
       new Translation2d(
         NEUTRAL_ZONE_BLUE_X,
-        Meters.of(6.178)
+        Meters.of(6.16)
       ),
-      Rotation2d.kCCW_90deg
+      Rotation2d.kZero
     );
     public static final Pose2d BLUE_RIGHT_HUB_NZ_POSE = new Pose2d(
       new Translation2d(
@@ -159,7 +161,7 @@ public final class Constants {
         NEUTRAL_ZONE_BLUE_X,
         Field.FIELD_Y.minus(BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY())
       ),
-      Rotation2d.kCCW_90deg
+      Rotation2d.kZero
     );
     public static final Pose2d BLUE_RIGHT_DOUBLETAP_MIDDLE = new Pose2d(
       new Translation2d(
@@ -202,7 +204,7 @@ public final class Constants {
     // should be negative
     public static final double INDEXER_MOTOR_SPEED = -1.0;
     // duty cycle
-    public static final double VERT_ROLLER_MOTOR_SPEED = 0.5;
+    public static final double VERT_ROLLER_MOTOR_SPEED = 0.75;
 
     // spin up speed for flywheel
     public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
@@ -520,12 +522,13 @@ public final class Constants {
     public static final Angle STOW_ANGLE = Rotations.of(-.07);
     public static final Angle DEPLOY_ANGLE = Rotations.of(0.267);
     // straight up jiggling it
-    public static final Angle JIGGLE_ANGLE = Rotations.of(0.03);
+    public static final Angle JIGGLE_ANGLE = Rotations.of(0.15);
+    public static final Angle HIGH_JIGGLE_ANGLE = Rotations.of(0.1);
 
     // Tolerance of check for arm being deployed
     // percent based on deploy angle
     // 5% probably reasonable for now
-    public static final Angle DEPLOY_TOLERANCE = Degrees.of(10);
+    public static final Angle DEPLOY_TOLERANCE = Degrees.of(5);
   }
 
   public static class LED {

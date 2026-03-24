@@ -8,13 +8,11 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.configs.CANdiConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
-import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.Timer;
@@ -35,7 +33,9 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private boolean m_isReversing;
   private boolean m_isIntakeRunning;
 
-  private Timer m_jiggleTimer;
+  private Timer m_upJiggleTimer;
+  private Timer m_downJiggleTimer;
+  private boolean m_shouldHighJiggle;
 
   /** Creates a new IntakeSubsystem */
   private IntakeSubsystem() {
@@ -51,7 +51,9 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     m_isReversing = false;
     m_isIntakeRunning = false;
 
-    m_jiggleTimer = new Timer();
+    m_upJiggleTimer = new Timer();
+    m_downJiggleTimer = new Timer();
+    m_shouldHighJiggle = false;
 
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
     TalonFXConfiguration armConfig = new TalonFXConfiguration();
@@ -81,8 +83,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
         .withReverseSoftLimitThreshold(-0.075); // zero position
     armConfig
       .MotionMagic
-        .withMotionMagicCruiseVelocity(10) // measured value
-        .withMotionMagicAcceleration(10); // measured value
+        .withMotionMagicCruiseVelocity(15) // measured value
+        .withMotionMagicAcceleration(15); // measured value
     armConfig
       .MotorOutput
         .withNeutralMode(NeutralModeValue.Coast);
@@ -150,11 +152,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       return;
     }
     m_isJiggling = false;
-    if (m_isIntaking) {
-      deployIntake();
-    } else {
-      stowIntake();
-    }
+    deployIntake();
   }
 
   /**
@@ -183,6 +181,17 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   public boolean intakeAtJigglePosition() {
     return m_armMotor.getPosition().getValue().isNear(
       Constants.Intake.JIGGLE_ANGLE,
+      Constants.Intake.DEPLOY_TOLERANCE
+    );
+  }
+
+  /**
+   * Check if intake is at high jiggle position or not with DEPLOY_TOLERANCE
+   * @return {@code true} if intake is at high jiggle position, {@code false} if otherwise
+   */
+  public boolean intakeAtHighJigglePosition() {
+    return m_armMotor.getPosition().getValue().isNear(
+      Constants.Intake.HIGH_JIGGLE_ANGLE,
       Constants.Intake.DEPLOY_TOLERANCE
     );
   }
@@ -249,6 +258,12 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     );
   }
 
+  private void intakeToHighJigglePosition() {
+    m_armMotor.setControl(
+      m_armPositionSetter.withPosition(Constants.Intake.HIGH_JIGGLE_ANGLE)
+    );
+  }
+
   /**
    * Run periodically to control intake motor and intake arm and log useful data
    */
@@ -276,22 +291,34 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     }
 
     if (m_isJiggling) {
-      if (intakeDeployed()) {
-        intakeToJigglePosition();
-        m_jiggleTimer.reset();
-        m_jiggleTimer.start();
+      if (
+        intakeDeployed() ||
+        m_downJiggleTimer.hasElapsed(Seconds.of(0.2))
+      ) {
+        if (m_shouldHighJiggle) {
+          intakeToHighJigglePosition();
+        } else {
+          intakeToJigglePosition();
+        }
+        m_shouldHighJiggle = !m_shouldHighJiggle;
+        m_upJiggleTimer.reset();
+        m_upJiggleTimer.start();
       } else if (
-        intakeAtJigglePosition() ||
-        m_jiggleTimer.hasElapsed(Seconds.of(0.4))
+        (intakeAtJigglePosition() && !m_shouldHighJiggle) ||
+        (intakeAtHighJigglePosition() && m_shouldHighJiggle) ||
+        m_upJiggleTimer.hasElapsed(Seconds.of(0.4))
       ) {
         deployIntake();
+        m_downJiggleTimer.reset();
+        m_downJiggleTimer.start();
       }
     }
 
     Logger.recordOutput(getName() + "/intakeDeployed", intakeDeployed());
     Logger.recordOutput(getName() + "/intakeAtJiggle", intakeAtJigglePosition());
+    Logger.recordOutput(getName() + "/intakeAtHighJiggle", intakeAtHighJigglePosition());
     Logger.recordOutput(getName() + "/intakeAtStow", intakeStowed());
-    Logger.recordOutput(getName() + "/intakeMotor", m_isIntakeRunning);
+    Logger.recordOutput(getName() + "/isIntakeRunning", m_isIntakeRunning);
     Logger.recordOutput(getName() + "/isJiggling", m_isJiggling);
     Logger.recordOutput(getName() + "/isIntaking", m_isIntaking);
     Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getPWM1Position().getValue());
