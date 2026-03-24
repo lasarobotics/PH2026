@@ -542,6 +542,8 @@ public final class Constants {
     public static final RGBWColor ACTIVE_COLOR = new RGBWColor(0, 255, 0);
     // #AD03DE
     public static final RGBWColor INACTIVE_COLOR = new RGBWColor(173, 3, 222);
+    // #FFFD01
+    public static final RGBWColor WARNING_COLOR = new RGBWColor(255, 253, 1);
     // #FF0000
     public static final RGBWColor RED_COLOR = new RGBWColor(255, 0, 0);
     // #0000FF

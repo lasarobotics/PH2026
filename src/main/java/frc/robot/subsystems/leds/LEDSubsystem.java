@@ -11,6 +11,9 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
 import frc.robot.GameHelpers;
 
+// phoenix 5 is deprecated
+// whatev
+@SuppressWarnings("removal")
 public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
   
   private static LEDSubsystem s_ledSubsystem;
@@ -63,18 +66,14 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
         Constants.LED.BLUE_COLOR :
         Constants.LED.RED_COLOR
     );
-
-    if (GameHelpers.isHubActive()) {
-      m_shiftFillHandler.setColor(Constants.LED.ACTIVE_COLOR);
-    } else {
-      m_shiftFillHandler.setColor(Constants.LED.INACTIVE_COLOR);
-    }
     
     if (DriverStation.isDisabled()) {
+      // disabled
       Logger.recordOutput(getName() + "/status", "Disabled");
       m_candle.clearAnimation(0);
       m_disabledFillHandler.updateLeds(1);
     } else if (DriverStation.isAutonomousEnabled()) {
+      // enabled in auto
       Logger.recordOutput(getName() + "/status", "Auto Enabled");
       if (!m_wasAutoEnabled) {
         m_candle.animate(
@@ -82,17 +81,25 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
         );
       }
     } else if (DriverStation.isTeleopEnabled()) {
+      // enabled in teleop
       m_candle.clearAnimation(0);
       Logger.recordOutput(getName() + "/status", "Teleop Enabled");
       double scoringTimeLeft = GameHelpers.scoringTimeLeft();
-      if (scoringTimeLeft >= 0) {
+      if (scoringTimeLeft == GameHelpers.DEFAULT_SCORING_TIME_LEFT) {
+        // No gamedata/something has gone wrong with getting the scoring time left
+        // show warning color
+        m_shiftFillHandler.setColor(Constants.LED.WARNING_COLOR);
+        m_shiftFillHandler.updateLeds(1);
+      } else if (scoringTimeLeft >= 0) {
         // our shift
         // scoringTimeLeft is between 0 and 55
+        m_shiftFillHandler.setColor(Constants.LED.ACTIVE_COLOR);
         double percent = scoringTimeLeft / GameHelpers.MAX_SHIFT_TIME;
         m_shiftFillHandler.updateLeds(percent);
       } else {
         // not our shift - gamehelpers returns negative
         // so we know scoringTimeLeft is between 0 and 25
+        m_shiftFillHandler.setColor(Constants.LED.INACTIVE_COLOR);
         double trueTimeLeft = scoringTimeLeft + 25;
         double percent = trueTimeLeft / GameHelpers.MAX_SHIFT_TIME;
         m_shiftFillHandler.updateLeds(percent);

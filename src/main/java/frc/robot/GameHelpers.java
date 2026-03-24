@@ -107,6 +107,11 @@ public class GameHelpers {
   // this is for LEDs - we want a certain number of LEDs on to always
   // represent the same amount of clock time
   public static final double MAX_SHIFT_TIME = 55;
+  // this allows for a neat trick with the LEDs:
+  // we can display a custom color if we don't have the gamedata and it's in teleop
+  // by checking if the scoring time left is this value
+  // because it's 55 at most in a real match
+  public static final double DEFAULT_SCORING_TIME_LEFT = 60;
 
   /**
    * This method gets the amount of time until the current alliance's
@@ -129,7 +134,7 @@ public class GameHelpers {
 
     int wonNumber = wonAuto();
     if (wonNumber == -1) {
-      return 50;
+      return DEFAULT_SCORING_TIME_LEFT;
     }
     boolean wonAuto = (wonNumber == 1);
 
@@ -169,6 +174,6 @@ public class GameHelpers {
     // I'm not sure how we would actually get here, especially
     // accounting for the negative logic in the loop
     System.out.println("WTF?");
-    return 50;
+    return DEFAULT_SCORING_TIME_LEFT;
   }
 }
