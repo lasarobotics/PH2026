@@ -2,7 +2,6 @@ package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -16,10 +15,92 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants;
+import frc.robot.fsm.StateMachine;
+import frc.robot.fsm.SystemState;
 
-public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
+public class IntakeSubsystem extends StateMachine implements AutoCloseable {
+
+  public enum IntakeStates implements SystemState {
+    INTAKE_DEPLOYED {
+      @Override
+      public void initialize() {
+        getInstance().deployIntake();
+        getInstance().m_jiggleTimer.reset();
+        getInstance().m_jiggleTimer.start();
+        getInstance().m_shouldHighJiggle = !getInstance().m_shouldHighJiggle;
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (
+          getInstance().m_isJiggling &&
+          (
+            getInstance().intakeDeployed() ||
+            getInstance().m_jiggleTimer.hasElapsed(0.4)
+          )
+        ) {
+          return getInstance().m_shouldHighJiggle ?
+            INTAKE_JIGGLE_HIGH :
+            INTAKE_JIGGLE;
+        }
+
+        return this;
+      }
+    },
+    INTAKE_JIGGLE {
+      @Override
+      public void initialize() {
+        getInstance().intakeToJigglePosition();
+        getInstance().m_jiggleTimer.reset();
+        getInstance().m_jiggleTimer.start();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (
+          !getInstance().m_isJiggling ||
+          (
+            (
+              !getInstance().m_shouldHighJiggle &&
+              getInstance().intakeAtJigglePosition()
+            ) ||
+            getInstance().m_jiggleTimer.hasElapsed(0.4)
+          )
+        ) {
+          return INTAKE_DEPLOYED;
+        }
+
+        return this;
+      }
+    },
+    INTAKE_JIGGLE_HIGH {
+      @Override
+      public void initialize() {
+        getInstance().intakeToHighJigglePosition();
+        getInstance().m_jiggleTimer.reset();
+        getInstance().m_jiggleTimer.start();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (
+          !getInstance().m_isJiggling ||
+          (
+            (
+              getInstance().m_shouldHighJiggle &&
+              getInstance().intakeAtHighJigglePosition()
+            ) ||
+            getInstance().m_jiggleTimer.hasElapsed(0.4)
+          )
+        ) {
+          return INTAKE_DEPLOYED;
+        }
+
+        return this;
+      }
+    }
+  }
 
   private static IntakeSubsystem s_intakeInstance;
   private final TalonFX m_intakeMotorLeader;
@@ -33,12 +114,13 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
   private boolean m_isReversing;
   private boolean m_isIntakeRunning;
 
-  private Timer m_upJiggleTimer;
-  private Timer m_downJiggleTimer;
+  private Timer m_jiggleTimer;
   private boolean m_shouldHighJiggle;
 
   /** Creates a new IntakeSubsystem */
   private IntakeSubsystem() {
+    super(IntakeStates.INTAKE_DEPLOYED);
+
     this.m_intakeMotorLeader = new TalonFX(Constants.Intake.INTAKE_MOTOR_LEADER_ID);
     this.m_intakeMotorFollower = new TalonFX(Constants.Intake.INTAKE_MOTOR_FOLLOWER_ID);
     this.m_armMotor = new TalonFX(Constants.Intake.ARM_MOTOR_ID);
@@ -51,8 +133,7 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
     m_isReversing = false;
     m_isIntakeRunning = false;
 
-    m_upJiggleTimer = new Timer();
-    m_downJiggleTimer = new Timer();
+    m_jiggleTimer = new Timer();
     m_shouldHighJiggle = false;
 
     TalonFXConfiguration intakeConfig = new TalonFXConfiguration();
@@ -290,30 +371,8 @@ public class IntakeSubsystem extends SubsystemBase implements AutoCloseable {
       stopIntakeMotor();
     }
 
-    if (m_isJiggling) {
-      if (
-        intakeDeployed() ||
-        m_downJiggleTimer.hasElapsed(Seconds.of(0.2))
-      ) {
-        if (m_shouldHighJiggle) {
-          intakeToHighJigglePosition();
-        } else {
-          intakeToJigglePosition();
-        }
-        m_shouldHighJiggle = !m_shouldHighJiggle;
-        m_upJiggleTimer.reset();
-        m_upJiggleTimer.start();
-      } else if (
-        (intakeAtJigglePosition() && !m_shouldHighJiggle) ||
-        (intakeAtHighJigglePosition() && m_shouldHighJiggle) ||
-        m_upJiggleTimer.hasElapsed(Seconds.of(0.4))
-      ) {
-        deployIntake();
-        m_downJiggleTimer.reset();
-        m_downJiggleTimer.start();
-      }
-    }
-
+    Logger.recordOutput(getName() + "/currentState", getState().toString());
+    Logger.recordOutput(getName() + "/jiggleTimer", m_jiggleTimer.get());
     Logger.recordOutput(getName() + "/intakeDeployed", intakeDeployed());
     Logger.recordOutput(getName() + "/intakeAtJiggle", intakeAtJigglePosition());
     Logger.recordOutput(getName() + "/intakeAtHighJiggle", intakeAtHighJigglePosition());
