@@ -361,7 +361,8 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
         (m_isIntaking && intakeDeployed()) ||
         m_isJiggling
       ) &&
-      !intakeOverheated) {
+      !intakeOverheated
+    ) {
       if (m_isReversing && !m_isJiggling) {
         reverseIntakeMotor();
       } else {

@@ -135,7 +135,7 @@ public class Robot extends LoggedRobot {
     GameHelpers.initializeStartNumber();
     DriveSubsystem.getInstance().driverControl();
     IntakeSubsystem.getInstance().stopIntake();
-    IntakeSubsystem.getInstance().deployIntake();
+    IntakeSubsystem.getInstance().startIntake();
   }
 
   /** This function is called periodically during operator control. */

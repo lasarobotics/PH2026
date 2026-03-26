@@ -537,7 +537,7 @@ public final class Constants {
 
     // TODO update
     public static final int START_INDEX = 8;
-    public static final int END_INDEX = 45;
+    public static final int END_INDEX = 77;
 
     // #663399
     public static final RGBWColor DEFAULT_COLOR = new RGBWColor(102, 51, 153);
