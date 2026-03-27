@@ -102,7 +102,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     OVER_RAMP {
       @Override
       public void initialize() {
-        DriveSubsystem.getInstance().driveOverRamp();
+        // DriveSubsystem.getInstance().driveOverRamp();
       }
 
       @Override

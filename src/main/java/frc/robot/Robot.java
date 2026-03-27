@@ -9,9 +9,12 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.SignalLogger;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
+import edu.wpi.first.wpilibj.smartdashboard.Field2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
@@ -32,6 +35,8 @@ public class Robot extends LoggedRobot {
 
   public AutoHoncho autoHoncho;
 
+  private Field2d m_field;
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -43,6 +48,8 @@ public class Robot extends LoggedRobot {
     if (isSimulation()) {
       NetworkTableInstance.getDefault().startServer();
     }
+
+    m_field = new Field2d();
 
     // advnatage kit logging
     LoggingInitializer.getInstance();
@@ -72,8 +79,11 @@ public class Robot extends LoggedRobot {
   public void robotPeriodic() {
     ll.RobotStart();
     // Simple always on signal to verify logging is working in AdvantageScope.
+    Pose2d pose = DriveSubsystem.getDrivetrain().getState().Pose;
+    m_field.setRobotPose(pose);
     Logger.recordOutput("Robot/Heartbeat", Timer.getFPGATimestamp());
-    Logger.recordOutput("Robot/CurrentPose", DriveSubsystem.getDrivetrain().getState().Pose);
+    Logger.recordOutput("Robot/CurrentPose", pose);
+    SmartDashboard.putData(m_field);
 
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,

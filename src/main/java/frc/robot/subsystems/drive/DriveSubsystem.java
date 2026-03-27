@@ -165,9 +165,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         if (DriverStation.isDisabled()) return DISABLED;
         if (DriverStation.isAutonomous()) return AUTO;
 
-        if (s_requestedDriveState == DriveStates.OVER_RAMP) {
-          return OVER_RAMP;
-        }
+        // if (s_requestedDriveState == DriveStates.OVER_RAMP) {
+        //   return OVER_RAMP;
+        // }
 
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
         
@@ -280,9 +280,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       @Override
       public SystemState nextState() {
         if (DriverStation.isDisabled()) return DISABLED;
-        if (s_requestedDriveState == DriveStates.OVER_RAMP) {
-          return OVER_RAMP;
-        }
+        // if (s_requestedDriveState == DriveStates.OVER_RAMP) {
+        //   return OVER_RAMP;
+        // }
 
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
@@ -896,10 +896,10 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_requestedDriveState = DriveStates.AUTO_AIM;
   }
 
-  // TODO nuke
-  public void driveOverRamp() {
-    s_requestedDriveState = DriveStates.OVER_RAMP;
-  }
+  // // TODO nuke
+  // public void driveOverRamp() {
+  //   s_requestedDriveState = DriveStates.OVER_RAMP;
+  // }
 
   /**
    * Checks robot's alliance and then checks if robot is in its alliance zone

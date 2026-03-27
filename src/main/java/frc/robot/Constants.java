@@ -35,6 +35,7 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.generated.TunerConstants;
 
 /**
@@ -129,7 +130,7 @@ public final class Constants {
     public static final Pose2d BLUE_RIGHT_ABUMP_AZ_POSE = new Pose2d(
       new Translation2d(
         Meters.of(3.1),
-        Meters.of(2.349)
+        Meters.of(2.375)
       ),
       new Rotation2d(
         Degrees.of(-135)
@@ -204,7 +205,7 @@ public final class Constants {
     // should be negative
     public static final double INDEXER_MOTOR_SPEED = -1.0;
     // duty cycle
-    public static final double VERT_ROLLER_MOTOR_SPEED = 0.75;
+    public static final double VERT_ROLLER_MOTOR_SPEED = 0.5;
 
     // spin up speed for flywheel
     public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
@@ -513,9 +514,10 @@ public final class Constants {
     public static final int ARM_ENCODER_ID = 42;
     public static final int INTAKE_MOTOR_FOLLOWER_ID = 43;
 
-    public static final Temperature OVERHEATING_TEMP = Celsius.of(60);
+    public static final Temperature OVERHEATING_TEMP = Celsius.of(70);
 
-    public static final double INTAKE_SPEED = 1.0;
+    // volts
+    public static final double INTAKE_SPEED = 12;
 
     public static final double JIGGLE_TOLERANCE = 0.2;
 
@@ -551,6 +553,8 @@ public final class Constants {
     public static final RGBWColor RED_COLOR = new RGBWColor(255, 0, 0);
     // #0000FF
     public static final RGBWColor BLUE_COLOR = new RGBWColor(0, 0, 255);
+    // #000000
+    public static final RGBWColor WHITE_COLOR = new RGBWColor(0, 0, 0);
   }
 
   public static class SmartDashboard {

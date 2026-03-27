@@ -8,6 +8,7 @@ import org.littletonrobotics.junction.Logger;
 import com.ctre.phoenix6.configs.CANdiConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.CANdi;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -107,6 +108,7 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
   private final TalonFX m_intakeMotorFollower;
   private final TalonFX m_armMotor;
   private final MotionMagicVoltage m_armPositionSetter;
+  private final VoltageOut m_intakeMotorRequest;
   private CANdi m_intakeEncoder;
 
   private boolean m_isIntaking;
@@ -127,6 +129,7 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
     this.m_intakeEncoder = new CANdi(Constants.Intake.ARM_ENCODER_ID);
 
     m_armPositionSetter = new MotionMagicVoltage(Radians.zero());
+    m_intakeMotorRequest = new VoltageOut(0).withEnableFOC(true);
 
     m_isIntaking = false;
     m_isJiggling = false;
@@ -211,7 +214,7 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
-   *  Stow the intake arm and stop the intake motor[]\
+   *  Stow the intake arm and stop the intake motor
    * 
    */
   public void stopIntake() {
@@ -292,8 +295,12 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
    * Start intake of fuel using intake motor
    */
   private void runIntakeMotor() {
-    m_intakeMotorLeader.set(Constants.Intake.INTAKE_SPEED);
-    m_intakeMotorFollower.set(Constants.Intake.INTAKE_SPEED);
+    m_intakeMotorLeader.setControl(
+      m_intakeMotorRequest.withOutput(Constants.Intake.INTAKE_SPEED)
+    );
+    m_intakeMotorFollower.setControl(
+      m_intakeMotorRequest.withOutput(Constants.Intake.INTAKE_SPEED)
+    );
     m_isIntakeRunning = true;
   }
 
@@ -301,8 +308,12 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
    * Sets intake motor running in reverse
    */
   private void reverseIntakeMotor() {
-    m_intakeMotorLeader.set(-Constants.Intake.INTAKE_SPEED);
-    m_intakeMotorFollower.set(-Constants.Intake.INTAKE_SPEED);
+    m_intakeMotorLeader.setControl(
+      m_intakeMotorRequest.withOutput(-Constants.Intake.INTAKE_SPEED)
+    );
+    m_intakeMotorFollower.setControl(
+      m_intakeMotorRequest.withOutput(-Constants.Intake.INTAKE_SPEED)
+    );
     m_isIntakeRunning = true;
   }
 
@@ -385,6 +396,8 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
     Logger.recordOutput(getName() + "/intakeLeaderMotorTemperature", m_intakeMotorLeader.getDeviceTemp().getValue().in(Celsius));
     Logger.recordOutput(getName() + "/intakeFollowerMotorTemperature", m_intakeMotorFollower.getDeviceTemp().getValue().in(Celsius));
     Logger.recordOutput(getName() + "/intakeOverheated", intakeOverheated);
+    Logger.recordOutput(getName() + "/leaderTorqueCurrent", m_intakeMotorLeader.getTorqueCurrent().getValueAsDouble());
+    Logger.recordOutput(getName() + "/followerTorqueCurrent", m_intakeMotorFollower.getTorqueCurrent().getValueAsDouble());
   }
 
   /**

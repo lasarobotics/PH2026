@@ -1,5 +1,7 @@
 package frc.robot.subsystems.leds;
 
+import java.util.Optional;
+
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix.led.CANdle;
@@ -59,13 +61,18 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void periodic() {
-    Logger.recordOutput(getName() + "wasAutoEnabled", m_wasAutoEnabled);
+    Logger.recordOutput(getName() + "/wasAutoEnabled", m_wasAutoEnabled);
 
-    m_disabledFillHandler.setColor(
-      DriverStation.getAlliance().orElse(Alliance.Blue).equals(Alliance.Blue) ?
-        Constants.LED.BLUE_COLOR :
-        Constants.LED.RED_COLOR
-    );
+    Optional<Alliance> alliance = DriverStation.getAlliance();
+    if (alliance.isEmpty()) {
+      m_disabledFillHandler.setColor(Constants.LED.WHITE_COLOR);
+    } else {
+      m_disabledFillHandler.setColor(
+        alliance.get().equals(Alliance.Blue) ?
+          Constants.LED.BLUE_COLOR :
+          Constants.LED.RED_COLOR
+      );
+    }
     
     if (DriverStation.isDisabled()) {
       // disabled

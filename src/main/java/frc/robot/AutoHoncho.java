@@ -178,7 +178,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.AcrossBumpNZ(),
-          Constants.Drive.MAX_SPEED.div(3),
+          Constants.Drive.MAX_SPEED.div(4),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
