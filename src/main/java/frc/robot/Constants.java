@@ -56,6 +56,7 @@ public final class Constants {
   public static class Auto {
     public static final Time EightBallShootingTime = Seconds.of(5);
 
+    public static final Distance VERY_HIGH_DISTANCE_TOLERANCE = Meters.of(0.5);
     public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.3);
     public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.05);
 
@@ -147,24 +148,24 @@ public final class Constants {
     );
     public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
       new Translation2d(
-        NEUTRAL_ZONE_BLUE_X,
+        Meters.of(7.9),
         Meters.of(6.16)
       ),
-      Rotation2d.kZero
+      Rotation2d.kCCW_90deg
     );
     public static final Pose2d BLUE_RIGHT_HUB_NZ_POSE = new Pose2d(
       new Translation2d(
-        NEUTRAL_ZONE_BLUE_X,
+        Meters.of(7.9),
         Meters.of(3.5)
       ),
       Rotation2d.kCCW_90deg
     );
     public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
       new Translation2d(
-        NEUTRAL_ZONE_BLUE_X,
+        Meters.of(7.7),
         Field.FIELD_Y.minus(BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY())
       ),
-      Rotation2d.kZero
+      new Rotation2d(Degrees.of(45))
     );
     public static final Pose2d BLUE_RIGHT_DOUBLETAP_MIDDLE = new Pose2d(
       new Translation2d(
@@ -446,7 +447,7 @@ public final class Constants {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
     public static final LoggedNetworkNumber MAX_BALL_Y_POS
-      = new LoggedNetworkNumber("Tuning/maxBallYPos", 3.0);
+      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.9);
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
     public static final DoubleSupplier HUB_HANG_TIME =

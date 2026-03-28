@@ -23,7 +23,7 @@ import frc.robot.fsm.SystemState;
 public class IntakeSubsystem extends StateMachine implements AutoCloseable {
 
   public enum IntakeStates implements SystemState {
-    INTAKE_DEPLOYED {
+    DEPLOYED {
       @Override
       public void initialize() {
         getInstance().deployIntake();
@@ -42,14 +42,18 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
           )
         ) {
           return getInstance().m_shouldHighJiggle ?
-            INTAKE_JIGGLE_HIGH :
-            INTAKE_JIGGLE;
+            JIGGLE_HIGH :
+            JIGGLE;
+        }
+
+        if (!getInstance().m_isIntaking) {
+          return STOWED;
         }
 
         return this;
       }
     },
-    INTAKE_JIGGLE {
+    JIGGLE {
       @Override
       public void initialize() {
         getInstance().intakeToJigglePosition();
@@ -69,13 +73,13 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
             getInstance().m_jiggleTimer.hasElapsed(0.4)
           )
         ) {
-          return INTAKE_DEPLOYED;
+          return DEPLOYED;
         }
 
         return this;
       }
     },
-    INTAKE_JIGGLE_HIGH {
+    JIGGLE_HIGH {
       @Override
       public void initialize() {
         getInstance().intakeToHighJigglePosition();
@@ -95,7 +99,22 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
             getInstance().m_jiggleTimer.hasElapsed(0.4)
           )
         ) {
-          return INTAKE_DEPLOYED;
+          return DEPLOYED;
+        }
+
+        return this;
+      }
+    },
+    STOWED {
+      @Override
+      public void initialize() {
+        getInstance().stowIntake();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (getInstance().m_isIntaking || getInstance().m_isJiggling) {
+          return DEPLOYED;
         }
 
         return this;
@@ -121,7 +140,7 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
 
   /** Creates a new IntakeSubsystem */
   private IntakeSubsystem() {
-    super(IntakeStates.INTAKE_DEPLOYED);
+    super(IntakeStates.DEPLOYED);
 
     this.m_intakeMotorLeader = new TalonFX(Constants.Intake.INTAKE_MOTOR_LEADER_ID);
     this.m_intakeMotorFollower = new TalonFX(Constants.Intake.INTAKE_MOTOR_FOLLOWER_ID);
@@ -209,7 +228,6 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
    *  Deploy the intake arm and start the intake motor
    */
   public void startIntake() {
-    deployIntake();
     m_isIntaking = true;
   }
 
@@ -232,11 +250,7 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
    * Disables jiggling of intake. Deploys intake if intaking, stows it if otherwise.
    */
   public void jiggleOff() {
-    if (!m_isJiggling) {
-      return;
-    }
     m_isJiggling = false;
-    deployIntake();
   }
 
   /**
@@ -385,6 +399,9 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
 
     Logger.recordOutput(getName() + "/currentState", getState().toString());
     Logger.recordOutput(getName() + "/jiggleTimer", m_jiggleTimer.get());
+    Logger.recordOutput(getName() + "/actuallyIntaking",
+      m_isIntaking && !m_isJiggling && intakeDeployed()
+    );
     Logger.recordOutput(getName() + "/intakeDeployed", intakeDeployed());
     Logger.recordOutput(getName() + "/intakeAtJiggle", intakeAtJigglePosition());
     Logger.recordOutput(getName() + "/intakeAtHighJiggle", intakeAtHighJigglePosition());

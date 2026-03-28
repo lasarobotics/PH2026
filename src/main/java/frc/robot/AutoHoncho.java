@@ -96,8 +96,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.AcrossBumpNZ(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
-            Constants.Auto.HIGH_ROTATION_TOLERANCE
+            Constants.Auto.VERY_HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.VERY_HIGH_ROTATION_TOLERANCE
           )
         ) return TO_PLOW_START;
         
@@ -114,7 +114,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.NeutralZoneStart(),
-          Constants.Drive.MAX_SPEED.div(3),
+          Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
@@ -127,7 +127,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.NeutralZoneStart(), 
-            Constants.Auto.LOW_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return PLOW;
