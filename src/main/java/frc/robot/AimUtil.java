@@ -118,7 +118,7 @@ public class AimUtil {
       currentAngularVelocity,
       targetPosition,
       targetHeight,
-      Constants.Field.MAX_BALL_Y_POS
+      Constants.Field.MAX_BALL_Y_POS.getAsDouble()
     );
 
     ballVelocity = results.ballVelocity();

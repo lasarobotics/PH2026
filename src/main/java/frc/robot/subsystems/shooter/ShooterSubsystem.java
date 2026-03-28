@@ -316,7 +316,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private boolean shootingTimeOkay() {
     double scoringTimeLeft = GameHelpers.scoringTimeLeft();
-    double hangTime = Constants.Field.HUB_HANG_TIME;
+    double hangTime = Constants.Field.HUB_HANG_TIME.getAsDouble();
     // Basically:
     // If scoring time is greater than 0, it works normally
     // The special thing here is that: the hub counts balls for

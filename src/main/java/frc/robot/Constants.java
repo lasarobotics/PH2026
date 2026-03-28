@@ -19,6 +19,8 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
+import java.util.function.DoubleSupplier;
+
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.ctre.phoenix6.signals.RGBWColor;
@@ -305,7 +307,7 @@ public final class Constants {
     public static final double TAG_UNCERTAINTY_SCALING_FACTOR = 0.3;
 
     public static final int THROTTLE_OFF = 200;
-    public static final int THROTTLE_IDLE = 10;
+    public static final int THROTTLE_IDLE = 0;
     public static final int THROTTLE_RUNNING = 0;
 
     public static final int[] ALL_APRIL_TAGS = new int[]{};
@@ -443,15 +445,16 @@ public final class Constants {
   public static class Field {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
-    public static final double MAX_BALL_Y_POS = 2.5;
+    public static final LoggedNetworkNumber MAX_BALL_Y_POS
+      = new LoggedNetworkNumber("Tuning/maxBallYPos", 3.0);
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
-    public static final double HUB_HANG_TIME =
-      (
-        Math.sqrt((MAX_BALL_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters)) * 2) +
+    public static final DoubleSupplier HUB_HANG_TIME =
+      () -> (
+        Math.sqrt((MAX_BALL_Y_POS.getAsDouble() - Shooter.SHOOTER_OFFSET_Z.in(Meters)) * 2) +
         Math.sqrt(
           2 * (
-            (MAX_BALL_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters)) -
+            (MAX_BALL_Y_POS.getAsDouble() - Shooter.SHOOTER_OFFSET_Z.in(Meters)) -
             (HUB_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters))
           )
         )
