@@ -518,7 +518,7 @@ public final class Constants {
     public static final int ARM_ENCODER_ID = 42;
     public static final int INTAKE_MOTOR_FOLLOWER_ID = 43;
 
-    public static final Temperature OVERHEATING_TEMP = Celsius.of(70);
+    public static final Temperature OVERHEATING_TEMP = Celsius.of(100);
 
     // volts
     public static final double INTAKE_SPEED = 12;
