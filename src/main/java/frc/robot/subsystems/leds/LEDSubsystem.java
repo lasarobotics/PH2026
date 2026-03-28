@@ -99,8 +99,16 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
         m_shiftFillHandler.updateLeds(1);
       } else if (scoringTimeLeft >= 0) {
         // our shift
-        // scoringTimeLeft is between 0 and 55
-        m_shiftFillHandler.setColor(Constants.LED.ACTIVE_COLOR);
+      // scoringTimeLeft is between 0 and 55`1
+        boolean even = ((int)scoringTimeLeft) % 2 == 0;
+        if (
+          GameHelpers.scoringTimeLeft() < 5 &&
+          even
+        ) {
+          m_shiftFillHandler.setColor(Constants.LED.WHITE_COLOR);
+        } else {
+          m_shiftFillHandler.setColor(Constants.LED.ACTIVE_COLOR);
+        }
         double percent = scoringTimeLeft / GameHelpers.MAX_SHIFT_TIME;
         m_shiftFillHandler.updateLeds(percent);
       } else {

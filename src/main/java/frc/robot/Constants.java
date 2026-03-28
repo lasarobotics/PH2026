@@ -81,6 +81,13 @@ public final class Constants {
       );
     }
 
+    public static Pose2d rotate180(Pose2d poseToFlip) {
+      return new Pose2d(
+        poseToFlip.getTranslation(),
+        poseToFlip.getRotation().plus(Rotation2d.k180deg)
+      );
+    }
+
     //                                     //
     // standard poses inside alliance zone //
     //                                     //
@@ -557,8 +564,8 @@ public final class Constants {
     public static final RGBWColor RED_COLOR = new RGBWColor(255, 0, 0);
     // #0000FF
     public static final RGBWColor BLUE_COLOR = new RGBWColor(0, 0, 255);
-    // #000000
-    public static final RGBWColor WHITE_COLOR = new RGBWColor(0, 0, 0);
+    // #FFFFFF
+    public static final RGBWColor WHITE_COLOR = new RGBWColor(255, 255, 255);
   }
 
   public static class SmartDashboard {

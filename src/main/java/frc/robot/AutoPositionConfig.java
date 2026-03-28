@@ -20,6 +20,7 @@ import static frc.robot.Constants.Auto.BLUE_RIGHT_DOUBLETAP_MIDDLE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_HUB_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_OUTPOST_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_POSE;
+import static frc.robot.Constants.Auto.rotate180;
 import static frc.robot.Constants.Field.FIELD_CENTER;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -41,6 +42,7 @@ public class AutoPositionConfig {
   private Pose2d AcrossBumpNZ;
   private Pose2d AcrossBumpNZOpposite;
   private Pose2d AcrossBumpAZ;
+  private Pose2d AcrossBumpNZHeadingFlipped;
   private Pose2d AcrossBumpAZOpposite;
   private Pose2d NZStart;
   private Pose2d NZEnd;
@@ -66,6 +68,8 @@ public class AutoPositionConfig {
 
         this.AcrossBumpNZ =
           BLUE_LEFT_ABUMP_NZ_POSE;
+        this.AcrossBumpNZHeadingFlipped =
+          rotate180(BLUE_LEFT_ABUMP_NZ_POSE);
         this.AcrossBumpNZOpposite =
           BLUE_RIGHT_ABUMP_NZ_POSE;
         this.AcrossBumpAZ =
@@ -98,6 +102,8 @@ public class AutoPositionConfig {
 
         this.AcrossBumpNZ =
           BLUE_RIGHT_ABUMP_NZ_POSE;
+        this.AcrossBumpNZHeadingFlipped =
+          rotate180(BLUE_RIGHT_ABUMP_NZ_POSE);
         this.AcrossBumpNZOpposite =
           BLUE_LEFT_ABUMP_NZ_POSE;
         this.AcrossBumpAZ =
@@ -130,6 +136,8 @@ public class AutoPositionConfig {
 
         this.AcrossBumpNZ =
           BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpNZHeadingFlipped =
+          rotate180(BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg));
         this.AcrossBumpNZOpposite =
           BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.AcrossBumpAZ =
@@ -162,6 +170,8 @@ public class AutoPositionConfig {
 
         this.AcrossBumpNZ =
           BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpNZHeadingFlipped =
+          rotate180(BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg));
         this.AcrossBumpNZOpposite =
           BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.AcrossBumpAZ =
@@ -205,6 +215,11 @@ public class AutoPositionConfig {
   // Position to go to to get across bump initially from AZ to NZ
   public Pose2d AcrossBumpNZ() {
     return AcrossBumpNZ;
+  }
+
+  // Position to go to to get across bump initially from AZ to NZ
+  public Pose2d AcrossBumpNZHeadingFlipped() {
+    return AcrossBumpNZHeadingFlipped;
   }
 
   // Position to go to to get across bump initially from AZ to NZ
