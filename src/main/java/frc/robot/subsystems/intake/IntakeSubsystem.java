@@ -46,7 +46,7 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
             JIGGLE;
         }
 
-        if (!getInstance().m_isIntaking) {
+        if (!getInstance().m_isJiggling && !getInstance().m_isIntaking) {
           return STOWED;
         }
 
