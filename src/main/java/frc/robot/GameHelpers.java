@@ -14,10 +14,19 @@ public class GameHelpers {
   private static Timer timer = new Timer();
 
   public static void initializeStartNumber() {
-    startNumber = 
-      DriverStation.isAutonomous() ?
-        20 :
-        140;
+    // we have to do this because of behavior of getMatchTime
+    // when connected to the real FMS, it'll be counting down
+    // as expected.
+    // otherwise, it counts up
+    // lol
+    if (DriverStation.isFMSAttached()) {
+      startNumber = DriverStation.getMatchTime();
+    } else {
+      startNumber =
+        DriverStation.isTeleop() ?
+          140 :
+          20;
+    }
   }
 
   public static void zeroTimer() {

@@ -155,7 +155,7 @@ public final class Constants {
     );
     public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
       new Translation2d(
-        Meters.of(7.9),
+        Meters.of(7.7),
         Meters.of(6.16)
       ),
       Rotation2d.kCCW_90deg

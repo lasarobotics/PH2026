@@ -186,8 +186,8 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
         .withReverseSoftLimitThreshold(-0.075); // zero position
     armConfig
       .MotionMagic
-        .withMotionMagicCruiseVelocity(15) // measured value
-        .withMotionMagicAcceleration(15); // measured value
+        .withMotionMagicCruiseVelocity(9) // measured value
+        .withMotionMagicAcceleration(9); // measured value
     armConfig
       .MotorOutput
         .withNeutralMode(NeutralModeValue.Coast);
