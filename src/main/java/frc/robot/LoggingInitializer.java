@@ -52,7 +52,27 @@ public class LoggingInitializer extends StateMachine {
         } else {
           dsAttachedTime = null;
         }
+      }
 
+      @Override
+      public SystemState nextState() {
+        // there's an extra 0.5 second delay on top of the 5 seconds
+        // so the robot has time to get things like match type/number/time/etc
+        if (
+          RobotBase.isSimulation() ||
+          (
+            dsAttachedTime != null &&
+            RobotController.getFPGATime() / 1000000.0 - dsAttachedTime
+              > timestampUpdateDelay + 0.5
+          )
+        ) return LOGGING;
+
+        return this;
+      }
+    },
+    LOGGING {
+      @Override
+      public void initialize() {
         MatchType matchType = DriverStation.getMatchType();
         if (logMatchText == null && matchType != MatchType.None) {
           logMatchText = "";
@@ -92,28 +112,9 @@ public class LoggingInitializer extends StateMachine {
           folderNameBuilder.append("_");
           folderNameBuilder.append(logMatchText);
         }
-        folder = basePath.resolve(folderNameBuilder.toString());
-      }
+        String savedSlug = folderNameBuilder.toString();
+        folder = basePath.resolve(savedSlug);
 
-      @Override
-      public SystemState nextState() {
-        // there's an extra 0.5 second delay on top of the 5 seconds
-        // so the robot has time to get things like match type/number/time/etc
-        if (
-          RobotBase.isSimulation() ||
-          (
-            dsAttachedTime != null &&
-            RobotController.getFPGATime() / 1000000.0 - dsAttachedTime
-              > timestampUpdateDelay + 0.5
-          )
-        ) return LOGGING;
-
-        return this;
-      }
-    },
-    LOGGING {
-      @Override
-      public void initialize() {
         try {
           Files.createDirectories(folder);
         } catch (IOException e) {
@@ -123,7 +124,7 @@ public class LoggingInitializer extends StateMachine {
         
         // advantagekit
         Logger.addDataReceiver(new WPILOGWriter(
-          folder.resolve("akit_log.wpilog").toString()
+          folder.resolve("akit_" + savedSlug + ".wpilog").toString()
         ));
         Logger.addDataReceiver(new NT4Publisher());
 
