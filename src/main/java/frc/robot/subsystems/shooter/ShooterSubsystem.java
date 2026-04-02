@@ -390,10 +390,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     boolean shooting = HeadHoncho.getInstance().wantToShoot();
     boolean dumbShooting = HeadHoncho.getInstance().wantToDumbShoot();
     boolean forceShooting = HeadHoncho.getInstance().wantToForceShoot();
-    Logger.recordOutput(getName() + "/wantToShoot", shooting);
-    Logger.recordOutput(getName() + "/wantToDumbShoot", dumbShooting);
-    Logger.recordOutput(getName() + "/wantToForceShoot", forceShooting);
-    Logger.recordOutput(getName() + "/inAllianceZone", DriveSubsystem.inAllianceZone());
+    Logger.recordOutput("ShooterSubsystem/wantToShoot", shooting);
+    Logger.recordOutput("ShooterSubsystem/wantToDumbShoot", dumbShooting);
+    Logger.recordOutput("ShooterSubsystem/wantToForceShoot", forceShooting);
+    Logger.recordOutput("ShooterSubsystem/inAllianceZone", DriveSubsystem.inAllianceZone());
     
 
     if (m_isRunning) {
@@ -418,7 +418,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
           )
         );
 
-        Logger.recordOutput(getName() + "/readyToShoot", readyToShoot);
+        Logger.recordOutput("ShooterSubsystem/readyToShoot", readyToShoot);
 
         if ((readyToShoot && shooting) ||
             // BTW: wantedHoodPosition & wantedShooterSpeed
@@ -447,27 +447,27 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       stopEverything();
     }
     
-    Logger.recordOutput(getName() + "/shooterSpeed",
+    Logger.recordOutput("ShooterSubsystem/shooterSpeed",
       m_shooterMotorLeader.getVelocity().getValue().in(RotationsPerSecond));
-    Logger.recordOutput(getName() + "/indexerSpeed",
+    Logger.recordOutput("ShooterSubsystem/indexerSpeed",
       m_indexerMotor.getVelocity().getValue().in(RotationsPerSecond));
-    Logger.recordOutput(getName() + "/indexerTorqueCurrent",
+    Logger.recordOutput("ShooterSubsystem/indexerTorqueCurrent",
       m_indexerMotor.getTorqueCurrent().getValue().in(Amps));
-    Logger.recordOutput(getName() + "/verticalRollerSpeed",
+    Logger.recordOutput("ShooterSubsystem/verticalRollerSpeed",
       m_vertRollerMotor.getVelocity().getValue().in(RotationsPerSecond));
-    Logger.recordOutput(getName() + "/hoodPosition",
+    Logger.recordOutput("ShooterSubsystem/hoodPosition",
       m_hoodMotor.getPosition().getValue().in(Degrees));
-    Logger.recordOutput(getName() + "/atShootSpeed",
+    Logger.recordOutput("ShooterSubsystem/atShootSpeed",
       atShootSpeed());
-    Logger.recordOutput(getName() + "/atHoodPosition",
+    Logger.recordOutput("ShooterSubsystem/atHoodPosition",
       atHoodPosition());
-    Logger.recordOutput(getName() + "/shootingTimeOkay",
+    Logger.recordOutput("ShooterSubsystem/shootingTimeOkay",
       shootingTimeOkay());
-    Logger.recordOutput(getName() + "/wantedShooterSpeed",
+    Logger.recordOutput("ShooterSubsystem/wantedShooterSpeed",
       wantedShooterSpeed());
-    Logger.recordOutput(getName() + "/wantedHoodPosition",
+    Logger.recordOutput("ShooterSubsystem/wantedHoodPosition",
       wantedHoodPosition().in(Degrees));
-    Logger.recordOutput(getName() + "/isRunning",
+    Logger.recordOutput("ShooterSubsystem/isRunning",
       m_isRunning);
   }
 

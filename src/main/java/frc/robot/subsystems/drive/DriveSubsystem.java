@@ -836,25 +836,25 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
      * This ensures driving behavior doesn't change until an explicit disable event occurs during testing.
      */
     if (!m_hasAppliedOperatorPerspective || DriverStation.isDisabled()) {
-      Logger.recordOutput(getName() + "/settingOperatorPerspective", true);
+      Logger.recordOutput("DriveSubsystem/settingOperatorPerspective", true);
       if (DriverStation.getAlliance().orElse(DriverStation.Alliance.Blue).equals(Alliance.Red)) {
-        Logger.recordOutput(getName() + "/setOperatorPerspective", Alliance.Red);
+        Logger.recordOutput("DriveSubsystem/setOperatorPerspective", Alliance.Red);
         s_drivetrain.setOperatorPerspectiveForward(
             CommandSwerveDrivetrain.kRedAlliancePerspectiveRotation);
       } else {
-        Logger.recordOutput(getName() + "/setOperatorPerspective", Alliance.Blue);
+        Logger.recordOutput("DriveSubsystem/setOperatorPerspective", Alliance.Blue);
         s_drivetrain.setOperatorPerspectiveForward(
             CommandSwerveDrivetrain.kBlueAlliancePerspectiveRotation);
       }
       m_hasAppliedOperatorPerspective = true;
     } else {
-      Logger.recordOutput(getName() + "/settingOperatorPerspective", false);
+      Logger.recordOutput("DriveSubsystem/settingOperatorPerspective", false);
     }
 
     s_lastGoodPose.keySet().forEach(
       (String key) -> {
         Logger.recordOutput(
-          getName() + "/lastGoodLimelightPose/" + key,
+          "DriveSubsystem/lastGoodLimelightPose/" + key,
           s_lastGoodPose.get(key)
         );
       }
@@ -862,18 +862,18 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_lastGoodPoseTime.keySet().forEach(
       (String key) -> {
         Logger.recordOutput(
-          getName() + "/lastGoodLimelightPoseTime/" + key,
+          "DriveSubsystem/lastGoodLimelightPoseTime/" + key,
           s_lastGoodPoseTime.get(key)
         );
       }
     );
 
-    Logger.recordOutput(getName() + "/doingGlobalPoseEstimation", s_shouldDoGlobalPoseEstimation);
-    Logger.recordOutput(getName() + "/percieved_alliance", DriverStation.getAlliance().toString());
-    Logger.recordOutput(getName() + "/resettingOdometry", resettingOdom);
-    Logger.recordOutput(getName() + "/inAllianceZone", inAllianceZone());
-    Logger.recordOutput(getName() + "/atShootingRotation", atShootingRotation());
-    Logger.recordOutput(getName() + "/subsystemState", getState().toString());
+    Logger.recordOutput("DriveSubsystem/doingGlobalPoseEstimation", s_shouldDoGlobalPoseEstimation);
+    Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
+    Logger.recordOutput("DriveSubsystem/resettingOdometry", resettingOdom);
+    Logger.recordOutput("DriveSubsystem/inAllianceZone", inAllianceZone());
+    Logger.recordOutput("DriveSubsystem/atShootingRotation", atShootingRotation());
+    Logger.recordOutput("DriveSubsystem/subsystemState", getState().toString());
   }
 
   /**

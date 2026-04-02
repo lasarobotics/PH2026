@@ -995,17 +995,17 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
   public AutoHoncho() {
     super(startingState);
     if (startingState == null) {
-      Logger.recordOutput(getName() + "/creationAutoType", "null");
+      Logger.recordOutput("AutoHoncho/creationAutoType", "null");
     } else {
-      Logger.recordOutput(getName() + "/creationAutoType", startingState.toString());
+      Logger.recordOutput("AutoHoncho/creationAutoType", startingState.toString());
     }
   }
 
   public void periodic() {
     if (getState() == null) {
-      Logger.recordOutput(getName() + "/currentState", "null");
+      Logger.recordOutput("AutoHoncho/currentState", "null");
     } else {
-      Logger.recordOutput(getName() + "/currentState", getState().toString());
+      Logger.recordOutput("AutoHoncho/currentState", getState().toString());
     }
   }
 

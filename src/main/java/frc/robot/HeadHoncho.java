@@ -161,8 +161,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    * Periodically called method to log subsystem values
    */
   public void periodic() {
-    Logger.recordOutput(getName() + "/currentState", getState().toString());
-    Logger.recordOutput(getName() + "/overRampButton", m_overRampButton.getAsBoolean());
+    Logger.recordOutput("HeadHoncho/currentState", getState().toString());
+    Logger.recordOutput("HeadHoncho/overRampButton", m_overRampButton.getAsBoolean());
   }
 
   /**

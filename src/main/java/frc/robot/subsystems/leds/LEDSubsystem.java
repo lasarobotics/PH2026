@@ -61,7 +61,7 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
 
   @Override
   public void periodic() {
-    Logger.recordOutput(getName() + "/wasAutoEnabled", m_wasAutoEnabled);
+    Logger.recordOutput("LEDSubsystem/wasAutoEnabled", m_wasAutoEnabled);
 
     Optional<Alliance> alliance = DriverStation.getAlliance();
     if (alliance.isEmpty()) {
@@ -76,12 +76,12 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
     
     if (DriverStation.isDisabled()) {
       // disabled
-      Logger.recordOutput(getName() + "/status", "Disabled");
+      Logger.recordOutput("LEDSubsystem/status", "Disabled");
       m_candle.clearAnimation(0);
       m_disabledFillHandler.updateLeds(1);
     } else if (DriverStation.isAutonomousEnabled()) {
       // enabled in auto
-      Logger.recordOutput(getName() + "/status", "Auto Enabled");
+      Logger.recordOutput("LEDSubsystem/status", "Auto Enabled");
       if (!m_wasAutoEnabled) {
         m_candle.animate(
           m_rainbowAnim
@@ -90,7 +90,7 @@ public class LEDSubsystem extends SubsystemBase implements AutoCloseable {
     } else if (DriverStation.isTeleopEnabled()) {
       // enabled in teleop
       m_candle.clearAnimation(0);
-      Logger.recordOutput(getName() + "/status", "Teleop Enabled");
+      Logger.recordOutput("LEDSubsystem/status", "Teleop Enabled");
       double scoringTimeLeft = GameHelpers.scoringTimeLeft();
       if (scoringTimeLeft == GameHelpers.DEFAULT_SCORING_TIME_LEFT) {
         // No gamedata/something has gone wrong with getting the scoring time left

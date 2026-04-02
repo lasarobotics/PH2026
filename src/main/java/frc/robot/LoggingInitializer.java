@@ -211,8 +211,7 @@ public class LoggingInitializer extends StateMachine {
 
   @Override
   public void periodic() {
-    Logger.recordOutput(getName() + "/state", getState().toString());
-    // Logger.recordOutput(getName() + "/test", shouldStopLogging.get());
+    Logger.recordOutput("LoggingInitializer/state", getState().toString());
   }
 
   public void stopLogging() {

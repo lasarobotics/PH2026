@@ -397,24 +397,24 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
       stopIntakeMotor();
     }
 
-    Logger.recordOutput(getName() + "/currentState", getState().toString());
-    Logger.recordOutput(getName() + "/jiggleTimer", m_jiggleTimer.get());
-    Logger.recordOutput(getName() + "/actuallyIntaking",
+    Logger.recordOutput("IntakeSubsystem/currentState", getState().toString());
+    Logger.recordOutput("IntakeSubsystem/jiggleTimer", m_jiggleTimer.get());
+    Logger.recordOutput("IntakeSubsystem/actuallyIntaking",
       m_isIntaking && !m_isJiggling && intakeDeployed()
     );
-    Logger.recordOutput(getName() + "/intakeDeployed", intakeDeployed());
-    Logger.recordOutput(getName() + "/intakeAtJiggle", intakeAtJigglePosition());
-    Logger.recordOutput(getName() + "/intakeAtHighJiggle", intakeAtHighJigglePosition());
-    Logger.recordOutput(getName() + "/intakeAtStow", intakeStowed());
-    Logger.recordOutput(getName() + "/isIntakeRunning", m_isIntakeRunning);
-    Logger.recordOutput(getName() + "/isJiggling", m_isJiggling);
-    Logger.recordOutput(getName() + "/isIntaking", m_isIntaking);
-    Logger.recordOutput(getName() + "/intakeEncoder", m_intakeEncoder.getPWM1Position().getValue());
-    Logger.recordOutput(getName() + "/intakeLeaderMotorTemperature", m_intakeMotorLeader.getDeviceTemp().getValue().in(Celsius));
-    Logger.recordOutput(getName() + "/intakeFollowerMotorTemperature", m_intakeMotorFollower.getDeviceTemp().getValue().in(Celsius));
-    Logger.recordOutput(getName() + "/intakeOverheated", intakeOverheated);
-    Logger.recordOutput(getName() + "/leaderTorqueCurrent", m_intakeMotorLeader.getTorqueCurrent().getValueAsDouble());
-    Logger.recordOutput(getName() + "/followerTorqueCurrent", m_intakeMotorFollower.getTorqueCurrent().getValueAsDouble());
+    Logger.recordOutput("IntakeSubsystem/intakeDeployed", intakeDeployed());
+    Logger.recordOutput("IntakeSubsystem/intakeAtJiggle", intakeAtJigglePosition());
+    Logger.recordOutput("IntakeSubsystem/intakeAtHighJiggle", intakeAtHighJigglePosition());
+    Logger.recordOutput("IntakeSubsystem/intakeAtStow", intakeStowed());
+    Logger.recordOutput("IntakeSubsystem/isIntakeRunning", m_isIntakeRunning);
+    Logger.recordOutput("IntakeSubsystem/isJiggling", m_isJiggling);
+    Logger.recordOutput("IntakeSubsystem/isIntaking", m_isIntaking);
+    Logger.recordOutput("IntakeSubsystem/intakeEncoder", m_intakeEncoder.getPWM1Position().getValue());
+    Logger.recordOutput("IntakeSubsystem/intakeLeaderMotorTemperature", m_intakeMotorLeader.getDeviceTemp().getValue().in(Celsius));
+    Logger.recordOutput("IntakeSubsystem/intakeFollowerMotorTemperature", m_intakeMotorFollower.getDeviceTemp().getValue().in(Celsius));
+    Logger.recordOutput("IntakeSubsystem/intakeOverheated", intakeOverheated);
+    Logger.recordOutput("IntakeSubsystem/leaderTorqueCurrent", m_intakeMotorLeader.getTorqueCurrent().getValueAsDouble());
+    Logger.recordOutput("IntakeSubsystem/followerTorqueCurrent", m_intakeMotorFollower.getTorqueCurrent().getValueAsDouble());
   }
 
   /**
