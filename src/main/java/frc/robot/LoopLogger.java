@@ -188,6 +188,10 @@ public class LoopLogger {
   private long accMemGain= 0;
   private long nMemDrop= 0;
   private long priorUsedMemory= 0;
+  private long nRPMemGain= 0;
+  private long accRPMemGain= 0;
+  private long nRPMemDrop= 0;
+  private long robotPeriodic_priorUsedMemory= 0;
 
   LoopLogger() {};
 
@@ -208,6 +212,8 @@ public class LoopLogger {
   void RobotStart() {
     
     robotLogger.Start();
+
+    robotPeriodic_priorUsedMemory = memoryBean.getHeapMemoryUsage().getUsed();  
     
     if( bPriorEnabled ) {
       double periodDelay= robotLogger.startTime - priorRobotStartTime - 0.020;
@@ -224,8 +230,8 @@ public class LoopLogger {
 
   void RobotEnd( boolean bEnabled ) {
 
-    long usedMemory = memoryBean.getHeapMemoryUsage().getUsed();    
-
+    long usedMemory = memoryBean.getHeapMemoryUsage().getUsed();  
+  
     if( bEnabled ) {
 
       bPriorEnabled= true;
@@ -242,16 +248,33 @@ public class LoopLogger {
         accMemGain += deltaMemory;
       }
 
+      deltaMemory= usedMemory - robotPeriodic_priorUsedMemory;
+
+      if( deltaMemory < 0 ) {
+        nRPMemDrop++;
+      }
+      else {
+        nRPMemGain++;
+        accRPMemGain += deltaMemory;
+      }
+
     }
     else if( bPriorEnabled ) {
       bPriorEnabled= false;
 
       PrintStats();
 
+      System.out.println( "FULL JVM" );
       System.out.println( "current used memory " + usedMemory );
       System.out.println( "nDrop " + nMemDrop );
       System.out.println( "nGain " + nMemGain );
       System.out.println( "gained per iter " + ( accMemGain * 1.0 / nMemGain ) );      
+      
+      System.out.println( "JUST PERIODIC" );
+      System.out.println( "current used memory " + usedMemory );
+      System.out.println( "nDrop " + nRPMemDrop );
+      System.out.println( "nGain " + nRPMemGain );
+      System.out.println( "gained per iter " + ( accRPMemGain * 1.0 / nRPMemGain ) );      
     }
 
     priorUsedMemory= usedMemory;
