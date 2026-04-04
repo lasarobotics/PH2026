@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 import static edu.wpi.first.units.Units.Celsius;
 import static edu.wpi.first.units.Units.Radians;
+import static edu.wpi.first.units.Units.RotationsPerSecond;
 
 import org.littletonrobotics.junction.Logger;
 
@@ -412,6 +413,8 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
     Logger.recordOutput("IntakeSubsystem/intakeEncoder", m_intakeEncoder.getPWM1Position().getValue());
     Logger.recordOutput("IntakeSubsystem/intakeLeaderMotorTemperature", m_intakeMotorLeader.getDeviceTemp().getValue().in(Celsius));
     Logger.recordOutput("IntakeSubsystem/intakeFollowerMotorTemperature", m_intakeMotorFollower.getDeviceTemp().getValue().in(Celsius));
+    Logger.recordOutput("IntakeSubsystem/intakeLeaderMotorSpeed", m_intakeMotorLeader.getVelocity().getValue().in(RotationsPerSecond));
+    Logger.recordOutput("IntakeSubsystem/intakeFollowerMotorSpeed", m_intakeMotorFollower.getVelocity().getValue().in(RotationsPerSecond));
     Logger.recordOutput("IntakeSubsystem/intakeOverheated", intakeOverheated);
     Logger.recordOutput("IntakeSubsystem/leaderTorqueCurrent", m_intakeMotorLeader.getTorqueCurrent().getValueAsDouble());
     Logger.recordOutput("IntakeSubsystem/followerTorqueCurrent", m_intakeMotorFollower.getTorqueCurrent().getValueAsDouble());
