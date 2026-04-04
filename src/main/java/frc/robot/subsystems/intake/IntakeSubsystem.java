@@ -182,8 +182,8 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
       .SoftwareLimitSwitch
         .withForwardSoftLimitEnable(true)
         .withReverseSoftLimitEnable(true)
-        .withForwardSoftLimitThreshold(0.2685) // measured value
-        .withReverseSoftLimitThreshold(-0.075); // zero position
+        .withForwardSoftLimitThreshold(0.258)
+        .withReverseSoftLimitThreshold(-0.081);
     armConfig
       .MotionMagic
         .withMotionMagicCruiseVelocity(9) // measured value
@@ -194,7 +194,7 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
 
     intakeEncoderConfig
       .PWM1
-        .withAbsoluteSensorOffset(0.174805)
+        .withAbsoluteSensorOffset(0.1643536)
         .withAbsoluteSensorDiscontinuityPoint(0.5);
     m_intakeMotorLeader.getConfigurator().apply(intakeConfig);
     m_intakeMotorFollower.getConfigurator().apply(intakeConfig);
