@@ -14,10 +14,14 @@ import frc.robot.fsm.StateMachine;
 import frc.robot.fsm.SystemState;
 import org.littletonrobotics.junction.Logger;
 
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.Utils;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveModule.SteerRequestType;
+import com.ctre.phoenix6.swerve.SwerveModule;
 import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveControlParameters;
 import com.ctre.phoenix6.swerve.SwerveRequest.ForwardPerspectiveValue;
 
 import edu.wpi.first.math.MathUtil;
@@ -182,6 +186,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
      * automatically aims to enable shooting to the target.
      */
     AUTO_AIM {
+      boolean wasBraking;
+
       @Override
       public void initialize() {
         // turn on shooter limelight
@@ -231,59 +237,78 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           s_drivetrain.resetPose(pose_estimate.pose.toPose2d());
         }
 
-        double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
-        double wantedAngle = AimUtil.getRobotHeading().in(Radians);
-        double angleDiff = wantedAngle - currentAngle;
+        boolean shouldBrake =
+          getInstance().atShootingRotation() &&
+          Math.abs(s_driveRequest.getAsDouble()) < 0.1 &&
+          Math.abs(s_strafeRequest.getAsDouble()) < 0.1;
 
-        boolean shouldMaxSpin =
-          Math.abs(angleDiff) > Degrees.of(30).in(Radians) &&
-          Math.abs(angleDiff) < Degrees.of(360).minus(Degrees.of(30)).in(Radians);
+        Logger.recordOutput("DriveSubsystem/braking", shouldBrake);
 
-        if (
-          Math.sqrt(
-            Math.pow(s_drivetrain.getState().Speeds.vxMetersPerSecond, 2) +
-            Math.pow(s_drivetrain.getState().Speeds.vyMetersPerSecond, 2)
-          ) > 0.05
-        ) {
-          // moving
-          s_autoAimController.setP(7);
+        if (shouldBrake) {
+          if (!wasBraking) {
+            getInstance().m_module0DrivePos = s_drivetrain.getModule(0).getDriveMotor().getPosition().getValue();
+            getInstance().m_module1DrivePos = s_drivetrain.getModule(1).getDriveMotor().getPosition().getValue();
+            getInstance().m_module2DrivePos = s_drivetrain.getModule(2).getDriveMotor().getPosition().getValue();
+            getInstance().m_module3DrivePos = s_drivetrain.getModule(3).getDriveMotor().getPosition().getValue();
+          }
+          s_drivetrain.setControl(new BrakeRequest());
+          wasBraking = true;
         } else {
-          // stationary
-          s_autoAimController.setP(6.5);
-        }
-        double output = s_autoAimController.calculate(currentAngle, wantedAngle);
+          wasBraking = false;
 
-        Translation2d translationVec = new Translation2d(
-          Constants.Drive.MAX_SPEED
-            .times(-s_strafeRequest.getAsDouble())
-            .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
-          Constants.Drive.MAX_SPEED
-            .times(-s_driveRequest.getAsDouble())
-            .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond)
-        );
+          double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
+          double wantedAngle = AimUtil.getRobotHeading().in(Radians);
+          double angleDiff = wantedAngle - currentAngle;
 
-        // 1 meter per second
-        if (translationVec.getNorm() > Constants.Drive.MAX_SHOOTING_SPEED) {
-          translationVec = new Translation2d(
-            translationVec.getX() / translationVec.getNorm() * Constants.Drive.MAX_SHOOTING_SPEED,
-            translationVec.getY() / translationVec.getNorm() * Constants.Drive.MAX_SHOOTING_SPEED
+          boolean shouldMaxSpin =
+            Math.abs(angleDiff) > Degrees.of(30).in(Radians) &&
+            Math.abs(angleDiff) < Degrees.of(360).minus(Degrees.of(30)).in(Radians);
+
+          if (
+            Math.sqrt(
+              Math.pow(s_drivetrain.getState().Speeds.vxMetersPerSecond, 2) +
+              Math.pow(s_drivetrain.getState().Speeds.vyMetersPerSecond, 2)
+            ) > 0.05
+          ) {
+            // moving
+            s_autoAimController.setP(7);
+          } else {
+            // stationary
+            s_autoAimController.setP(6.5);
+          }
+          double output = s_autoAimController.calculate(currentAngle, wantedAngle);
+
+          Translation2d translationVec = new Translation2d(
+            Constants.Drive.MAX_SPEED
+              .times(-s_strafeRequest.getAsDouble())
+              .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
+            Constants.Drive.MAX_SPEED
+              .times(-s_driveRequest.getAsDouble())
+              .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond)
           );
-        }
 
-        s_drivetrain.setControl(
-          s_autoAimDrive
-            .withVelocityX(
-              translationVec.getX()
-            )
-            .withVelocityY(
-              translationVec.getY()
-            )
-            .withRotationalRate(
-              shouldMaxSpin ?
-                Math.signum(angleDiff) * Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond) :
-                output
-            )
-          );
+          // 1 meter per second
+          if (translationVec.getNorm() > Constants.Drive.MAX_SHOOTING_SPEED) {
+            translationVec = new Translation2d(
+              translationVec.getX() / translationVec.getNorm() * Constants.Drive.MAX_SHOOTING_SPEED,
+              translationVec.getY() / translationVec.getNorm() * Constants.Drive.MAX_SHOOTING_SPEED
+            );
+          }
+          s_drivetrain.setControl(
+            s_autoAimDrive
+              .withVelocityX(
+                translationVec.getX()
+              )
+              .withVelocityY(
+                translationVec.getY()
+              )
+              .withRotationalRate(
+                shouldMaxSpin ?
+                  Math.signum(angleDiff) * Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond) :
+                  output
+              )
+            );
+        }
       }
 
       @Override
@@ -455,6 +480,12 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private static PIDController s_autoDriveController;
 
   private static DriveStates s_requestedDriveState;
+
+  //Swerve Module Drive Motor Positions--- used for braking
+  private Angle m_module0DrivePos;
+  private Angle m_module1DrivePos;
+  private Angle m_module2DrivePos;
+  private Angle m_module3DrivePos;
 
   //camera vars
   protected final Thread m_limelight_thread;
@@ -880,7 +911,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         );
       }
     );
-
+    
     Logger.recordOutput("DriveSubsystem/doingGlobalPoseEstimation", s_shouldDoGlobalPoseEstimation);
     Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
     Logger.recordOutput("DriveSubsystem/resettingOdometry", resettingOdom);
@@ -1054,5 +1085,16 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   @Override
   public void close() throws Exception {
     s_drivetrain.close();
+  }
+
+  public static class BrakeRequest implements SwerveRequest {
+    public StatusCode apply(SwerveControlParameters parameters, SwerveModule<?, ?, ?>... modulesToApply){
+      s_drivetrain.getModule(0).apply(new PositionVoltage(getInstance().m_module0DrivePos).withSlot(1), new PositionVoltage(0.25));
+      s_drivetrain.getModule(1).apply(new PositionVoltage(getInstance().m_module1DrivePos).withSlot(1), new PositionVoltage(0));
+      s_drivetrain.getModule(2).apply(new PositionVoltage(getInstance().m_module2DrivePos).withSlot(1), new PositionVoltage(0));
+      s_drivetrain.getModule(3).apply(new PositionVoltage(getInstance().m_module3DrivePos).withSlot(1), new PositionVoltage(0.25));
+
+      return StatusCode.OK;
+    }
   }
 }
