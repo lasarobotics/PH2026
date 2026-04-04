@@ -247,29 +247,35 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         }
         double output = s_autoAimController.calculate(currentAngle, angle);
 
+        Translation2d translationVec = new Translation2d(
+          Constants.Drive.MAX_SPEED
+            .times(-s_strafeRequest.getAsDouble())
+            .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
+          Constants.Drive.MAX_SPEED
+            .times(-s_driveRequest.getAsDouble())
+            .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond)
+        );
+
+        // 1 meter per second
+        if (translationVec.getNorm() > Constants.Drive.MAX_SHOOTING_SPEED) {
+          translationVec = new Translation2d(
+            translationVec.getX() / translationVec.getNorm() * Constants.Drive.MAX_SHOOTING_SPEED,
+            translationVec.getY() / translationVec.getNorm() * Constants.Drive.MAX_SHOOTING_SPEED
+          );
+        }
+
         s_drivetrain.setControl(
           s_autoAimDrive
             .withVelocityX(
-              MathUtil.clamp(
-                Constants.Drive.MAX_SPEED
-                  .times(-Math.pow(s_strafeRequest.getAsDouble(), 1))
-                  .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
-                -1.0,
-                1.0
-              )
+              translationVec.getX()
             )
             .withVelocityY(
-              MathUtil.clamp(
-                Constants.Drive.MAX_SPEED
-                  .times(-Math.pow(s_driveRequest.getAsDouble(), 1))
-                  .times(Constants.Drive.FAST_SPEED_SCALAR).in(MetersPerSecond),
-                -1.0,
-                1.0
-              )
+              translationVec.getY()
             )
             .withRotationalRate(
               output
-            ));
+            )
+          );
       }
 
       @Override

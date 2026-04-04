@@ -280,22 +280,27 @@ public final class Constants {
   }
 
   public static class Drive {
-    // note:
-    // these values (for max acceleration, max angular rate, max angular acceleration)
-    // are guesses. but it's fine
-    // public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
+    public static final Distance WHEEL_FROM_CENTER_DIST =
+      Meters.of(
+        Math.sqrt(
+          Math.pow(Inches.of(9.375).in(Meters), 2) +
+          Math.pow(Inches.of(12.375).in(Meters), 2)
+        )
+      );
     public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
-    public static final LinearAcceleration MAX_ACCELERATION =
-        MetersPerSecondPerSecond.of(3);
+    // map linear speed onto circumference
     public static final AngularVelocity MAX_ANGULAR_RATE =
-        RotationsPerSecond.of(0.75);
-    public static final AngularVelocity AUTO_NAV_MAX_ANGULAR_RATE =
-      RadiansPerSecond.of(2.0); // ~115 deg/s — controllable for auto
-    public static final AngularAcceleration MAX_ANGULAR_ACCELERATION =
-        RotationsPerSecondPerSecond.of(1);
+      RotationsPerSecond.of(
+        MAX_SPEED.in(MetersPerSecond) /
+        (2 * Math.PI * WHEEL_FROM_CENTER_DIST.in(Meters))
+      );
+
     // normally 0.3 and 1.0
     public static final double SLOW_SPEED_SCALAR = 0.15;
     public static final double FAST_SPEED_SCALAR = .75;
+
+    // meters per second
+    public static final double MAX_SHOOTING_SPEED = 1.0;
 
     public static final Double DEADBAND_SCALAR = 0.085;
     public static final Double AUTO_DEADBAND_SCALAR = 0.02;
@@ -326,7 +331,7 @@ public final class Constants {
       2, 3, 4, 5, 8, 9, 10, 11
     };
     public static final int[] RED_TOWER_AND_HUB_APRIL_TAGS = new int[] {
-      9, 10, 15, 16
+      2, 3, 4, 5, 8, 9, 10, 11, 15, 16
     };
     public static final int[] RED_TRENCH_APRIL_TAGS = new int[] {
       1, 12, 6, 7
@@ -341,7 +346,7 @@ public final class Constants {
       18, 19, 20, 21, 24, 25, 26, 27
     };
     public static final int[] BLUE_TOWER_AND_HUB_APRIL_TAGS = new int[] {
-      25, 26, 31, 32
+      18, 19, 20, 21, 24, 25, 26, 27, 31, 32
     };
     public static final int[] BLUE_TRENCH_APRIL_TAGS = new int[] {
       17, 28, 22, 23
@@ -357,18 +362,6 @@ public final class Constants {
     // never changed
     // it works
     public static final double ROBOT_LATENCY = 0.15;
-
-    public static final TrapezoidProfile.Constraints TRANSLATE_CONSTRAINTS =
-      new TrapezoidProfile.Constraints(
-        MAX_SPEED.in(MetersPerSecond),
-        MAX_ACCELERATION.in(MetersPerSecondPerSecond)
-      );
-
-    public static final TrapezoidProfile.Constraints TURN_CONSTRAINTS =
-      new TrapezoidProfile.Constraints(
-        MAX_ANGULAR_RATE.in(RadiansPerSecond),
-        MAX_ANGULAR_ACCELERATION.in(RadiansPerSecondPerSecond)
-      );
 
     public static final LinearVelocity[] OVER_RAMP_STAGE_MAX_SPEED = {
       MetersPerSecond.of(2.25),
