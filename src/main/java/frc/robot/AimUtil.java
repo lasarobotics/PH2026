@@ -25,6 +25,7 @@ public class AimUtil {
     
   private static LinearVelocity ballVelocity = MetersPerSecond.of(0);
   private static Angle exitAngle = Degrees.of(45);
+  private static Angle lastRobotHeading = Radians.of(0);
   private static Angle robotHeading = Radians.of(0);
   private static Time hangTime = Seconds.of(1.5);
 
@@ -122,6 +123,7 @@ public class AimUtil {
 
     ballVelocity = results.ballVelocity();
     exitAngle = results.exitAngle();
+    lastRobotHeading = robotHeading;
     robotHeading = results.robotHeading();
     hangTime = results.hangTime();
   
@@ -133,6 +135,7 @@ public class AimUtil {
       rotationsPerSecond
     );
     Logger.recordOutput("AimUtil/exitAngle", exitAngle.in(Degrees));
+    Logger.recordOutput("AimUtil/lastRobotHeading", lastRobotHeading);
     Logger.recordOutput("AimUtil/robotHeading", robotHeading);
     Logger.recordOutput("AimUtil/hangTime", hangTime);
   }
@@ -294,6 +297,13 @@ public class AimUtil {
    */
   public static Angle getExitAngle() {
     return exitAngle;
+  }
+
+  /**
+   * @return Returns the robot heading calculated in the previous loop
+   */
+  public static Angle getLastRobotHeading() {
+    return lastRobotHeading;
   }
 
   /**
