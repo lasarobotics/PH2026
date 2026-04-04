@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
 
 import org.littletonrobotics.junction.Logger;
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
@@ -207,8 +206,8 @@ public class AimUtil {
         // causes feedback
         // .plus(
         //   new Translation2d(
-        //     currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.cos(currentRobotHeading),
-        //     currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.sin(currentRobotHeading)
+        //     currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.sin(currentRobotHeading),
+        //     currentAngularVelocity.magnitude() * Constants.Shooter.SHOOTER_DISTANCE_FROM_CENTER.in(Meters) * Math.cos(currentRobotHeading)
         //   )
         // )
         .times(latency + hangTime)
@@ -230,11 +229,15 @@ public class AimUtil {
     Logger.recordOutput("AimUtil/futurePos",
       new Pose2d(futurePos, new Rotation2d(targetVec.getAngle().getMeasure()))
     );
+    Angle rotationToLog = targetVec.getAngle().getMeasure().plus(Constants.Shooter.SHOOTER_ROTATION);
+    if (rotationToLog.in(Radians) > Math.PI) {
+      rotationToLog = rotationToLog.minus(Degrees.of(360));
+    }
     Logger.recordOutput("AimUtil/wantedPos",
       new Pose2d(
         currentRobotPose.getX(),
         currentRobotPose.getY(),
-        new Rotation2d(targetVec.getAngle().getMeasure().plus(Constants.Shooter.SHOOTER_ROTATION))
+        new Rotation2d(rotationToLog)
       )
     );
     Logger.recordOutput("AimUtil/targetVec", targetVec);

@@ -232,7 +232,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         }
 
         double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
-        double angle = AimUtil.getRobotHeading().in(Radians);
+        double wantedAngle = AimUtil.getRobotHeading().in(Radians);
+        double angleDiff = wantedAngle - currentAngle;
+
+        boolean shouldMaxSpin =
+          Math.abs(angleDiff) > Degrees.of(30).in(Radians) &&
+          Math.abs(angleDiff) < Degrees.of(360).minus(Degrees.of(30)).in(Radians);
+
         if (
           Math.sqrt(
             Math.pow(s_drivetrain.getState().Speeds.vxMetersPerSecond, 2) +
@@ -245,7 +251,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           // stationary
           s_autoAimController.setP(6.5);
         }
-        double output = s_autoAimController.calculate(currentAngle, angle);
+        double output = s_autoAimController.calculate(currentAngle, wantedAngle);
 
         Translation2d translationVec = new Translation2d(
           Constants.Drive.MAX_SPEED
@@ -273,7 +279,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
               translationVec.getY()
             )
             .withRotationalRate(
-              output
+              shouldMaxSpin ?
+                Math.signum(angleDiff) * Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond) :
+                output
             )
           );
       }
@@ -525,7 +533,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
 
     s_autoAimController = new PIDController(6.5, 0.0, 0.0);
-    // TODO adjust how much it divides by
     s_autoAimController.setTolerance(Degrees.of(1).in(Radians));
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
 

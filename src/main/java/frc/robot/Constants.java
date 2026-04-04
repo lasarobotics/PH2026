@@ -300,7 +300,7 @@ public final class Constants {
     public static final double FAST_SPEED_SCALAR = .75;
 
     // meters per second
-    public static final double MAX_SHOOTING_SPEED = 1.0;
+    public static final double MAX_SHOOTING_SPEED = 2.0;
 
     public static final Double DEADBAND_SCALAR = 0.085;
     public static final Double AUTO_DEADBAND_SCALAR = 0.02;
