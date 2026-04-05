@@ -36,6 +36,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.Timer;
 import frc.robot.AimUtil;
 import frc.robot.Constants;
@@ -263,27 +264,24 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           boolean shouldMaxSpin =
             Math.abs(angleDiff) > Constants.Drive.MAX_SPEED_ROTATION_TOLERANCE.in(Radians) &&
             Math.abs(angleDiff) < Degrees.of(360).minus(Constants.Drive.MAX_SPEED_ROTATION_TOLERANCE).in(Radians);
-
-          if (
+          
+          PIDController rotationController =
+            // if moving faster than 5 cm/s in any direction
             Math.sqrt(
               Math.pow(s_drivetrain.getState().Speeds.vxMetersPerSecond, 2) +
               Math.pow(s_drivetrain.getState().Speeds.vyMetersPerSecond, 2)
-            ) > 0.05
-          ) {
-            // moving
-            s_autoAimController.setP(7);
-          } else {
-            // stationary
-            s_autoAimController.setP(6.5);
-          }
-          double output = s_autoAimController.calculate(currentAngle, wantedAngle);
+            ) > 0.05 ?
+              s_autoAimMovingController :
+              s_autoAimController;
 
-          double rotationFF =
+          double output = rotationController.calculate(currentAngle, wantedAngle);
+
+          double rotationDeltaFF =
             (
               (AimUtil.getRobotHeading().in(Radians) - AimUtil.getLastRobotHeading().in(Radians)) /
               0.02
             ) *
-            Constants.Drive.ROTATION_FEEDFORWARD_MULTIPLIER.get();
+            Constants.Drive.ROTATION_DELTA_FEEDFORWARD_MULTIPLIER.get();
 
           Translation2d translationVec = new Translation2d(
             Constants.Drive.MAX_SPEED
@@ -312,7 +310,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
               .withRotationalRate(
                 shouldMaxSpin ?
                   Math.signum(angleDiff) * Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond) :
-                  output + rotationFF
+                  output + rotationDeltaFF
               )
             );
         }
@@ -484,6 +482,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
   private static PIDController s_headingController;
   private static PIDController s_autoAimController;
+  private static PIDController s_autoAimMovingController;
   private static PIDController s_autoDriveController;
 
   private static DriveStates s_requestedDriveState;
@@ -569,13 +568,21 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_headingController = new PIDController(7, 0.0, 0.0);
     s_headingController.setTolerance(Degrees.of(1).in(Radians));
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
+    SmartDashboard.putData("Auto Rotation PID", s_headingController);
 
     s_autoAimController = new PIDController(6.5, 0.0, 0.0);
     s_autoAimController.setTolerance(Degrees.of(1).in(Radians));
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
+    SmartDashboard.putData("Stationary Shooting Rotation PID", s_autoAimController);
+
+    s_autoAimMovingController = new PIDController(7, 0.0, 0.0);
+    s_autoAimMovingController.setTolerance(Degrees.of(1).in(Radians));
+    s_autoAimMovingController.enableContinuousInput(-Math.PI, Math.PI);
+    SmartDashboard.putData("SOTM Rotation PID", s_autoAimMovingController);
 
     s_autoDriveController = new PIDController(1.65, 0.0, 0.0);
     s_autoDriveController.setTolerance(0.04); // 4 cm tolerance
+    SmartDashboard.putData("Auto Drive PID", s_autoDriveController);
 
     // set throttle to idle here
     LimelightHelpers.SetThrottle(

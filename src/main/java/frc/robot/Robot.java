@@ -51,6 +51,7 @@ public class Robot extends LoggedRobot {
     }
 
     m_field = new Field2d();
+    SmartDashboard.putData(m_field);
 
     // advnatage kit logging
     LoggingInitializer.getInstance();
@@ -85,7 +86,6 @@ public class Robot extends LoggedRobot {
     m_field.setRobotPose(pose);
     Logger.recordOutput("Robot/Heartbeat", Timer.getFPGATimestamp());
     Logger.recordOutput("Robot/CurrentPose", pose);
-    SmartDashboard.putData(m_field);
 
     // Runs the Scheduler.  This is responsible for polling buttons, adding newly-scheduled
     // commands, running already-scheduled commands, removing finished or interrupted commands,
