@@ -301,10 +301,10 @@ public final class Constants {
 
     // what to multiply the derivative of angle change by for the autoaim feedforward
     public static final LoggedNetworkNumber ROTATION_DELTA_FEEDFORWARD_MULTIPLIER =
-      new LoggedNetworkNumber("/Tuning/rotationDeltaFeedforwardMultiplier", 1);
+      new LoggedNetworkNumber("/Tuning/rotationDeltaFeedforwardMultiplier", 0.7);
     // how many degrees away from the wanted rotation to just max out speed for autoaim
     public static final Angle MAX_SPEED_ROTATION_TOLERANCE =
-      Degrees.of(15);
+      Degrees.of(60);
 
     // meters per second
     public static final double MAX_SHOOTING_SPEED = 2.0;

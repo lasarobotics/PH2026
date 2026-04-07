@@ -299,6 +299,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
               translationVec.getY() / translationVec.getNorm() * Constants.Drive.MAX_SHOOTING_SPEED
             );
           }
+          Logger.recordOutput("DriveSubsystem/angleDiffSign", Math.signum(angleDiff));
+          Logger.recordOutput("DriveSubsystem/shouldMaxSpin", shouldMaxSpin);
           s_drivetrain.setControl(
             s_autoAimDrive
               .withVelocityX(
@@ -575,7 +577,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Stationary Shooting Rotation PID", s_autoAimController);
 
-    s_autoAimMovingController = new PIDController(7, 0.0, 0.0);
+    s_autoAimMovingController = new PIDController(4.5, 0.0, 0.0);
     s_autoAimMovingController.setTolerance(Degrees.of(1).in(Radians));
     s_autoAimMovingController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("SOTM Rotation PID", s_autoAimMovingController);
