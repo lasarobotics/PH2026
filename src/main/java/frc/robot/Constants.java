@@ -533,7 +533,7 @@ public final class Constants {
     public static final double JIGGLE_TOLERANCE = 0.2;
 
     public static final Angle STOW_ANGLE = Rotations.of(-.07);
-    public static final Angle DEPLOY_ANGLE = Rotations.of(0.2546);
+    public static final Angle DEPLOY_ANGLE = Rotations.of(0.2478);
     // straight up jiggling it
     public static final Angle JIGGLE_ANGLE = Rotations.of(0.15);
     public static final Angle HIGH_JIGGLE_ANGLE = Rotations.of(0.05);

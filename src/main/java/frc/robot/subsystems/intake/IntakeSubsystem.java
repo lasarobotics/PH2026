@@ -169,21 +169,21 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
         .withInverted(InvertedValue.Clockwise_Positive);
     armConfig
       .Slot0
-        .withKP(40)
-        .withKS(.185)
-        .withKG(.4)
+        .withKP(90)
+        .withKS(.425)
+        .withKG(.475)
         .withGravityType(GravityTypeValue.Arm_Cosine)
         .withGravityArmPositionOffset(.25);
     armConfig
       .Feedback
         .withRemoteCANdiPWM1(m_intakeEncoder)
-        // gearbox is 9:1, sprockets are 40:28, sprockets are 2:1 again
-        .withRotorToSensorRatio((40.0 / 28.0) * 9.0 * 2);
+        // 75.4036363636:1
+        .withRotorToSensorRatio(75.403636363636);
     armConfig
       .SoftwareLimitSwitch
         .withForwardSoftLimitEnable(true)
         .withReverseSoftLimitEnable(true)
-        .withForwardSoftLimitThreshold(0.258)
+        .withForwardSoftLimitThreshold(0.2565)
         .withReverseSoftLimitThreshold(-0.081);
     armConfig
       .MotionMagic
