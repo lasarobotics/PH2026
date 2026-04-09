@@ -543,7 +543,7 @@ public final class Constants {
     // Tolerance of check for arm being deployed
     // percent based on deploy angle
     // 5% probably reasonable for now
-    public static final Angle DEPLOY_TOLERANCE = Degrees.of(5);
+    public static final Angle DEPLOY_TOLERANCE = Degrees.of(15);
   }
 
   public static class LED {
