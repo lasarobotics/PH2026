@@ -69,9 +69,6 @@ public class Robot extends LoggedRobot {
     LEDSubsystem.getInstance();
     
     IntakeSubsystem.getInstance().deployIntake();
-
-    // Cue the music!
-    ShooterSubsystem.getInstance().startMusic();
   }
 
   /**
@@ -124,7 +121,6 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
-    ShooterSubsystem.getInstance().stopMusic();
     GameHelpers.zeroTimer();
     GameHelpers.initializeStartNumber();
     autoHoncho = new AutoHoncho();
@@ -139,8 +135,6 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
-    ShooterSubsystem.getInstance().stopMusic();
-
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove

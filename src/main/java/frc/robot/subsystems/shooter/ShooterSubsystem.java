@@ -9,7 +9,6 @@ import static edu.wpi.first.units.Units.RotationsPerSecond;
 import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.CANBus;
-import com.ctre.phoenix6.Orchestra;
 import com.ctre.phoenix6.configs.CANcoderConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.DutyCycleOut;
@@ -57,8 +56,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   private Debouncer m_shootSpeedDebouncer = new Debouncer(0.25, DebounceType.kFalling);
   private boolean m_isRunning = true;
-
-  private Orchestra m_orchestra;
 
   /**
    * Get an instance of ShooterSubsystem
@@ -166,18 +163,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_shooterMotorFollowerTwo.setControl(
       new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
     );
-
-    m_orchestra = new Orchestra();
-    m_orchestra.addInstrument(m_shooterMotorLeader);
-    m_orchestra.addInstrument(m_shooterMotorFollowerOne);
-    m_orchestra.addInstrument(m_shooterMotorFollowerTwo);
-    m_orchestra.addInstrument(m_indexerMotor);
-    m_orchestra.addInstrument(m_hoodMotor);
-    m_orchestra.addInstrument(m_vertRollerMotor);
-    var status = m_orchestra.loadMusic("music/pokemon_red_theme.chrp");
-    if (!status.isOK()) {
-      Logger.recordOutput("ShooterSubsystem/musicStatus", status);
-    }
   }
 
   /**
@@ -193,27 +178,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void stopOperation() {
     m_isRunning = false;
-  }
-
-  /**
-   * Start the music
-   */
-  public void startMusic() {
-    m_orchestra.play();
-  }
-
-  /**
-   * Stop the music
-   */
-  public void stopMusic() {
-    m_orchestra.stop();
-  }
-
-  /**
-   * Stop the music
-   */
-  public void pauseMusic() {
-    m_orchestra.pause();
   }
 
   /**
