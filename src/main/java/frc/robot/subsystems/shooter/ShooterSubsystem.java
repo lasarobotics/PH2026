@@ -185,17 +185,19 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   private void stopEverything() {
     stopShooter();
-    stopIndexer();
+    stopIndexing();
     stopHood();
   }
 
   /**
-   * Stop the {@link #m_indexerMotor indexer motor} and the
-   * {@link #m_vertRollerMotor vertical roller}.
+   * Stop the {@link #m_indexerMotor indexer motor}, the
+   * {@link #m_vertRollerMotor vertical roller} and the
+   * {@link #m_beltMotor belt motor}
    */
-  private void stopIndexer() {
+  private void stopIndexing() {
     m_indexerMotor.setVoltage(0);
     m_vertRollerMotor.setVoltage(0);
+    m_beltMotor.setVoltage(0);
   }
 
   /**
@@ -239,9 +241,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public void runBeltMotorReverse(boolean shouldReverse) {
     if (shouldReverse) {
-    m_beltMotor.setControl(
-      m_beltRequest.withOutput(-Constants.Shooter.BELT_MOTOR_SPEED)
-    );
+      m_beltMotor.setControl(
+        m_beltRequest.withOutput(Constants.Shooter.REVERSE_BELT_MOTOR_SPEED)
+      );
     }
   }
   
@@ -461,7 +463,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
           runVertRoller();
           runBeltMotor();
         } else {
-          stopIndexer();
+          stopIndexing();
         }
       } else {
         IntakeSubsystem.getInstance().jiggleOff();
@@ -470,7 +472,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         } else {
           stopShooter();
         }
-        stopIndexer();
+        stopIndexing();
       }
     } else {
       IntakeSubsystem.getInstance().jiggleOff();

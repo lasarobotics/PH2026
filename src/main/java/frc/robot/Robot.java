@@ -11,6 +11,7 @@ import com.ctre.phoenix6.SignalLogger;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.Timer;
@@ -59,6 +60,7 @@ public class Robot extends LoggedRobot {
     SignalLogger.enableAutoLogging(false);
 
     RobotController.setBrownoutVoltage(6.25);
+    DriverStation.silenceJoystickConnectionWarning(true);
 
     m_robotContainer = new RobotContainer();
 
