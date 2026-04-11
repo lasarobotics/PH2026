@@ -60,6 +60,7 @@ public final class Constants {
     public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.3);
     public static final Distance LOW_DISTANCE_TOLERANCE = Meters.of(0.05);
 
+    public static final Angle ULTRA_HIGH_ROTATION_TOLERANCE = Degrees.of(45);
     public static final Angle VERY_HIGH_ROTATION_TOLERANCE = Degrees.of(20);
     public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(10);
     public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2.5); 
@@ -283,7 +284,7 @@ public final class Constants {
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.75);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.6);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
       = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
@@ -471,7 +472,7 @@ public final class Constants {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
     public static final LoggedNetworkNumber MAX_BALL_Y_POS
-      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.5);
+      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.65);
       // TODO for comp
       // = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.7);
     public static final double HUB_Y_POS = 1.83;
@@ -527,11 +528,10 @@ public final class Constants {
         new Pose2d(
             new Translation2d(Meters.of(12.919), Meters.of(5.1)), Rotation2d.fromDegrees(180));  
 
-    
-    public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d(14.231, 2.235);
-    public static final Translation2d RED_TOP_PASS_COORDINATES = new Translation2d(14.231, 6.235);
-    public static final Translation2d BLUE_BOTTOM_PASS_COORDINATES = new Translation2d(2.051, 2.235);
-    public static final Translation2d BLUE_TOP_PASS_COORDINATES = new Translation2d(2.051, 6.235);
+    public static final Translation2d BLUE_BOTTOM_PASS_COORDINATES = new Translation2d(1.5, 2.235);
+    public static final Translation2d BLUE_TOP_PASS_COORDINATES = new Translation2d(BLUE_BOTTOM_PASS_COORDINATES.getX(), 6.235);
+    public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d(FIELD_X.minus(BLUE_BOTTOM_PASS_COORDINATES.getMeasureX()).in(Meters), BLUE_BOTTOM_PASS_COORDINATES.getY());
+    public static final Translation2d RED_TOP_PASS_COORDINATES = new Translation2d(RED_BOTTOM_PASS_COORDINATES.getX(), BLUE_TOP_PASS_COORDINATES.getY());
 
     // meters
     public static final double HALF_FIELD_Y_POS = 4.022;

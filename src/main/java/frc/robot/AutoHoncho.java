@@ -398,6 +398,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         DriveSubsystem.getInstance().driveAutoAim();
         s_wantToSpinUpShooter = false;
         s_wantToShoot = true;
+        shootTimer.reset();
         shootTimer.start();
       }
 
@@ -437,7 +438,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           DriveSubsystem.atDestination(
             positionConfig.AcrossBumpNZHeadingFlipped(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
-            Constants.Auto.HIGH_ROTATION_TOLERANCE
+            Constants.Auto.ULTRA_HIGH_ROTATION_TOLERANCE
           )
         ) return DOUBLETAP_START;
         
@@ -546,7 +547,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           DriveSubsystem.atDestination(
             positionConfig.AcrossBumpAZ(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
-            Constants.Auto.HIGH_ROTATION_TOLERANCE
+            Constants.Auto.VERY_HIGH_ROTATION_TOLERANCE
           )
         ) return SHOOT_AGAIN;
 
