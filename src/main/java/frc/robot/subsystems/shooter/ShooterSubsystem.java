@@ -46,7 +46,6 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private CANcoder m_hoodCanCoder;
   private TalonFX m_vertRollerMotor;
   private TalonFX m_beltMotor;
-  
 
   private final VelocityDutyCycle m_shooterDutyCycleRequest;
   private final MotionMagicVoltage m_hoodRequest;
@@ -77,6 +76,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodMotor = new TalonFX(Constants.Shooter.HOOD_MOTOR_ID);
     m_hoodCanCoder = new CANcoder(Constants.Shooter.HOOD_CANCODER_ID);
     m_vertRollerMotor = new TalonFX(Constants.Shooter.VERT_ROLLER_MOTOR_ID);
+    m_beltMotor = new TalonFX(Constants.Shooter.BELT_MOTOR_ID);
 
     m_shooterDutyCycleRequest = new VelocityDutyCycle(0);
     m_hoodRequest = new MotionMagicVoltage(0);

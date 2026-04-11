@@ -210,6 +210,7 @@ public final class Constants {
     public static final int HOOD_MOTOR_ID = 34;
     public static final int HOOD_CANCODER_ID = 35;
     public static final int VERT_ROLLER_MOTOR_ID = 36;
+    public static final int BELT_MOTOR_ID = 37;
 
     // duty cycle
     // should be negative
