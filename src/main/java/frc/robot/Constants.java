@@ -230,8 +230,8 @@ public final class Constants {
     public static final double INDEXER_MOTOR_SPEED = -1.0;
     // duty cycle
     public static final double VERT_ROLLER_MOTOR_SPEED = 0.5;
-    public static final double BELT_MOTOR_SPEED = 0.75;
-    public static final double REVERSE_BELT_MOTOR_SPEED = -0.5;
+    public static final double BELT_MOTOR_SPEED = 0.85;
+    public static final double REVERSE_BELT_MOTOR_SPEED = -0.75;
     // spin up speed for flywheel
     public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
 
@@ -555,7 +555,7 @@ public final class Constants {
     public static final Angle DEPLOY_ANGLE = Rotations.of(0.2478);
     // straight up jiggling it
     public static final Angle JIGGLE_ANGLE = Rotations.of(0.15);
-    public static final Angle HIGH_JIGGLE_ANGLE = Rotations.of(0.05);
+    public static final Angle HIGH_JIGGLE_ANGLE = Rotations.of(0.15);
 
     // Tolerance of check for arm being deployed
     // percent based on deploy angle

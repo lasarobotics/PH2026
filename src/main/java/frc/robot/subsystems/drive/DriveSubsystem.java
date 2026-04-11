@@ -284,18 +284,33 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
           double output =
             MathUtil.clamp(
               AimUtil.getFilteredRobotHeadingOmega()
-                + (
+              + (
                   AimUtil.getRobotHeading()
                   .minus(s_drivetrain.getState().Pose.getRotation())
                   .getRadians()
                 ) * Constants.Drive.AIM_ROTATION_P.get()
-                + (
-                  AimUtil.getFilteredRobotHeadingOmega()
-                    - s_drivetrain.getState().Speeds.omegaRadiansPerSecond
-                ) * Constants.Drive.AIM_ROTATION_D.get(),
+              + (
+                AimUtil.getFilteredRobotHeadingOmega()
+                  - s_drivetrain.getState().Speeds.omegaRadiansPerSecond
+              ) * Constants.Drive.AIM_ROTATION_D.get(),
               Constants.Drive.MAX_ANGULAR_RATE.times(-1).in(RadiansPerSecond),
               Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond)
             );
+
+          Logger.recordOutput("DriveSubsystem/aimRotationPOutput",
+            (
+              AimUtil.getRobotHeading()
+                .minus(s_drivetrain.getState().Pose.getRotation())
+                .getRadians()
+            ) * Constants.Drive.AIM_ROTATION_P.get()
+          );
+          Logger.recordOutput("DriveSubsystem/aimRotationDOutput",
+            (
+              AimUtil.getFilteredRobotHeadingOmega()
+                - s_drivetrain.getState().Speeds.omegaRadiansPerSecond
+            ) * Constants.Drive.AIM_ROTATION_D.get()
+          );
+          Logger.recordOutput("DriveSubsystem/aimRotationOutput", output);
 
           s_drivetrain.setControl(
             s_autoAimDrive

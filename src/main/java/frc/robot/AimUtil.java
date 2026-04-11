@@ -140,8 +140,6 @@ public class AimUtil {
       );
     lastRobotHeading = robotHeading;
     hangTime = results.hangTime();
-  
-    // wangle was here
 
     Logger.recordOutput("AimUtil/ballVelocity", ballVelocity.in(MetersPerSecond));
     double rotationsPerSecond =
@@ -152,6 +150,7 @@ public class AimUtil {
     );
     Logger.recordOutput("AimUtil/exitAngle", exitAngle.in(Degrees));
     Logger.recordOutput("AimUtil/lastRobotHeading", lastRobotHeading);
+    Logger.recordOutput("AimUtil/filteredRobotHeadingOmega", filteredRobotHeadingOmega);
     Logger.recordOutput("AimUtil/robotHeading", robotHeading);
     Logger.recordOutput("AimUtil/hangTime", hangTime);
   }
