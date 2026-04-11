@@ -257,32 +257,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         } else {
           wasBraking = false;
 
-          double currentAngle = s_drivetrain.getState().Pose.getRotation().getRadians();
-          double wantedAngle = AimUtil.getRobotHeading().in(Radians);
-          double angleDiff = wantedAngle - currentAngle;
-
-          boolean shouldMaxSpin =
-            Math.abs(angleDiff) > Constants.Drive.MAX_SPEED_ROTATION_TOLERANCE.in(Radians) &&
-            Math.abs(angleDiff) < Degrees.of(360).minus(Constants.Drive.MAX_SPEED_ROTATION_TOLERANCE).in(Radians);
-          
-          PIDController rotationController =
-            // if moving faster than 5 cm/s in any direction
-            Math.sqrt(
-              Math.pow(s_drivetrain.getState().Speeds.vxMetersPerSecond, 2) +
-              Math.pow(s_drivetrain.getState().Speeds.vyMetersPerSecond, 2)
-            ) > 0.05 ?
-              s_autoAimMovingController :
-              s_autoAimController;
-
-          double output = rotationController.calculate(currentAngle, wantedAngle);
-
-          double rotationDeltaFF =
-            (
-              (AimUtil.getRobotHeading().in(Radians) - AimUtil.getLastRobotHeading().in(Radians)) /
-              0.02
-            ) *
-            Constants.Drive.ROTATION_DELTA_FEEDFORWARD_MULTIPLIER.get();
-
           Translation2d translationVec = new Translation2d(
             Constants.Drive.MAX_SPEED
               .times(-s_strafeRequest.getAsDouble())
@@ -299,8 +273,26 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
               translationVec.getY() / translationVec.getNorm() * Constants.Drive.MAX_SHOOTING_SPEED
             );
           }
-          Logger.recordOutput("DriveSubsystem/angleDiffSign", Math.signum(angleDiff));
-          Logger.recordOutput("DriveSubsystem/shouldMaxSpin", shouldMaxSpin);
+
+          // thanks to 6328
+          // https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/main/src/main/java/org/littletonrobotics/frc2026/commands/DriveCommands.java#L215
+          // don't let chris see this
+          double output =
+            MathUtil.clamp(
+              AimUtil.getFilteredRobotHeadingOmega()
+                + (
+                  AimUtil.getRobotHeading()
+                  .minus(s_drivetrain.getState().Pose.getRotation())
+                  .getRadians()
+                ) * Constants.Drive.AIM_ROTATION_P.get()
+                + (
+                  AimUtil.getFilteredRobotHeadingOmega()
+                    - s_drivetrain.getState().Speeds.omegaRadiansPerSecond
+                ) * Constants.Drive.AIM_ROTATION_D.get(),
+              Constants.Drive.MAX_ANGULAR_RATE.times(-1).in(RadiansPerSecond),
+              Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond)
+            );
+
           s_drivetrain.setControl(
             s_autoAimDrive
               .withVelocityX(
@@ -310,9 +302,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
                 translationVec.getY()
               )
               .withRotationalRate(
-                shouldMaxSpin ?
-                  Math.signum(angleDiff) * Constants.Drive.MAX_ANGULAR_RATE.in(RadiansPerSecond) :
-                  output + rotationDeltaFF
+                output
               )
             );
         }
@@ -483,8 +473,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
   private boolean m_hasAppliedOperatorPerspective = false;
 
   private static PIDController s_headingController;
-  private static PIDController s_autoAimController;
-  private static PIDController s_autoAimMovingController;
   private static PIDController s_autoDriveController;
 
   private static DriveStates s_requestedDriveState;
@@ -571,16 +559,6 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     s_headingController.setTolerance(Degrees.of(1).in(Radians));
     s_headingController.enableContinuousInput(-Math.PI, Math.PI);
     SmartDashboard.putData("Auto Rotation PID", s_headingController);
-
-    s_autoAimController = new PIDController(6.5, 0.0, 0.0);
-    s_autoAimController.setTolerance(Degrees.of(1).in(Radians));
-    s_autoAimController.enableContinuousInput(-Math.PI, Math.PI);
-    SmartDashboard.putData("Stationary Shooting Rotation PID", s_autoAimController);
-
-    s_autoAimMovingController = new PIDController(4.5, 0.0, 0.0);
-    s_autoAimMovingController.setTolerance(Degrees.of(1).in(Radians));
-    s_autoAimMovingController.enableContinuousInput(-Math.PI, Math.PI);
-    SmartDashboard.putData("SOTM Rotation PID", s_autoAimMovingController);
 
     s_autoDriveController = new PIDController(1.65, 0.0, 0.0);
     s_autoDriveController.setTolerance(0.04); // 4 cm tolerance
@@ -1012,7 +990,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
    * @return True if within tolerance of target.
    */
   public boolean atShootingRotation() {
-    double delta = Rotation2d.fromDegrees(AimUtil.getRobotHeading().in(Degrees)).minus(
+    double delta = AimUtil.getRobotHeading().minus(
       s_drivetrain.getState().Pose.getRotation()
     ).getMeasure().abs(Degrees);
     return delta <=

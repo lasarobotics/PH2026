@@ -289,6 +289,8 @@ public final class Constants {
       );
     public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
     // map linear speed onto circumference
+    // approximately 2.066 rotations per second
+    // or 12.981 radians
     public static final AngularVelocity MAX_ANGULAR_RATE =
       RotationsPerSecond.of(
         MAX_SPEED.in(MetersPerSecond) /
@@ -299,12 +301,12 @@ public final class Constants {
     public static final double SLOW_SPEED_SCALAR = 0.15;
     public static final double FAST_SPEED_SCALAR = .75;
 
-    // what to multiply the derivative of angle change by for the autoaim feedforward
-    public static final LoggedNetworkNumber ROTATION_DELTA_FEEDFORWARD_MULTIPLIER =
-      new LoggedNetworkNumber("/Tuning/rotationDeltaFeedforwardMultiplier", 0.7);
-    // how many degrees away from the wanted rotation to just max out speed for autoaim
-    public static final Angle MAX_SPEED_ROTATION_TOLERANCE =
-      Degrees.of(60);
+    // P on rotation error for auto aim
+    public static final LoggedNetworkNumber AIM_ROTATION_P =
+      new LoggedNetworkNumber("/Tuning/aimRotationP", 7);
+    // D on rotation error for auto aim
+    public static final LoggedNetworkNumber AIM_ROTATION_D =
+      new LoggedNetworkNumber("/Tuning/aimRotationD", 0.5);
 
     // meters per second
     public static final double MAX_SHOOTING_SPEED = 2.0;

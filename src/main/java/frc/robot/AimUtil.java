@@ -11,6 +11,7 @@ import org.littletonrobotics.junction.Logger;
 
 import com.ctre.phoenix6.swerve.SwerveDrivetrain.SwerveDriveState;
 
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -25,9 +26,15 @@ public class AimUtil {
     
   private static LinearVelocity ballVelocity = MetersPerSecond.of(0);
   private static Angle exitAngle = Degrees.of(45);
-  private static Angle lastRobotHeading = Radians.of(0);
-  private static Angle robotHeading = Radians.of(0);
+  private static double filteredRobotHeadingOmega = 0;
+  private static Rotation2d lastRobotHeading = Rotation2d.kZero;
+  private static Rotation2d robotHeading = Rotation2d.kZero;
   private static Time hangTime = Seconds.of(1.5);
+
+  // average over the last 5 datapoints
+  // i.e. 0.1 seconds
+  private static LinearFilter robotHeadingFilter =
+    LinearFilter.movingAverage(5);
 
   private static Translation2d targetPosition;
   private static double targetHeight;
@@ -123,10 +130,19 @@ public class AimUtil {
 
     ballVelocity = results.ballVelocity();
     exitAngle = results.exitAngle();
-    lastRobotHeading = robotHeading;
     robotHeading = results.robotHeading();
+    // divide by loop time
+    // credit to 6328 for using a filter
+    // https://github.com/Mechanical-Advantage/RobotCode2026Public/blob/main/src/main/java/org/littletonrobotics/frc2026/subsystems/launcher/LaunchCalculator.java#L314
+    filteredRobotHeadingOmega =
+      robotHeadingFilter.calculate(
+        robotHeading.minus(lastRobotHeading).getRadians() / 0.02
+      );
+    lastRobotHeading = robotHeading;
     hangTime = results.hangTime();
   
+    // wangle was here
+
     Logger.recordOutput("AimUtil/ballVelocity", ballVelocity.in(MetersPerSecond));
     double rotationsPerSecond =
       ballVelocity.in(MetersPerSecond) /
@@ -144,13 +160,13 @@ public class AimUtil {
    * Record to store calculated shooter data
    * @param exitAngle The exit angle of the ball
    * @param ballVelocity The ball's exit velocity
-   * @param robotHeading Angle of robot[\]
+   * @param robotHeading Angle of robot
    * @param hangTime Time the ball spends in the air
    */
   public record ShooterMathResults(
     Angle exitAngle,
     LinearVelocity ballVelocity,
-    Angle robotHeading,
+    Rotation2d robotHeading,
     Time hangTime
   ){}
 
@@ -278,7 +294,7 @@ public class AimUtil {
 
       // The angle of the target vector is your robot heading
       // plus 90 because shooter is on right side of robot
-      targetVec.getAngle().getMeasure().plus(Constants.Shooter.SHOOTER_ROTATION),
+      new Rotation2d(targetVec.getAngle().getMeasure().plus(Constants.Shooter.SHOOTER_ROTATION)),
 
       // hang time
       Seconds.of(hangTime)
@@ -300,16 +316,16 @@ public class AimUtil {
   }
 
   /**
-   * @return Returns the robot heading calculated in the previous loop
+   * @return Returns the filtered change in target robot heading
    */
-  public static Angle getLastRobotHeading() {
-    return lastRobotHeading;
+  public static double getFilteredRobotHeadingOmega() {
+    return filteredRobotHeadingOmega;
   }
 
   /**
    * @return Returns the robot heading needed to shoot at any given point
    */
-  public static Angle getRobotHeading() {
+  public static Rotation2d getRobotHeading() {
     return robotHeading;
   }
 
