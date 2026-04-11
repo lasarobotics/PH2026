@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.Constants.Shooter;
 import frc.robot.subsystems.drive.DriveSubsystem;
 import frc.robot.subsystems.intake.IntakeSubsystem;
 import frc.robot.subsystems.leds.LEDSubsystem;
@@ -68,6 +69,9 @@ public class Robot extends LoggedRobot {
     LEDSubsystem.getInstance();
     
     IntakeSubsystem.getInstance().deployIntake();
+
+    // Cue the music!
+    ShooterSubsystem.getInstance().startMusic();
   }
 
   /**
@@ -120,6 +124,7 @@ public class Robot extends LoggedRobot {
   /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
   @Override
   public void autonomousInit() {
+    ShooterSubsystem.getInstance().stopMusic();
     GameHelpers.zeroTimer();
     GameHelpers.initializeStartNumber();
     autoHoncho = new AutoHoncho();
@@ -134,6 +139,8 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void teleopInit() {
+    ShooterSubsystem.getInstance().stopMusic();
+
     // This makes sure that the autonomous stops running when
     // teleop starts running. If you want the autonomous to
     // continue until interrupted by another command, remove
