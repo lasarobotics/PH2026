@@ -216,7 +216,7 @@ public final class Constants {
     public static final double INDEXER_MOTOR_SPEED = -1.0;
     // duty cycle
     public static final double VERT_ROLLER_MOTOR_SPEED = 0.5;
-
+    public static final double BELT_MOTOR_SPEED = 0.5;
     // spin up speed for flywheel
     public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
 

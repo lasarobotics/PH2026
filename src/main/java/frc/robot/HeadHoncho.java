@@ -84,6 +84,9 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
         IntakeSubsystem.getInstance().reverseIntake(
           s_headHoncho.m_reverseIntakeButton.getAsBoolean()
         );
+        ShooterSubsystem.getInstance().runBeltMotorReverse(
+          s_headHoncho.m_reverseIntakeButton.getAsBoolean()
+        );
       }
 
       @Override

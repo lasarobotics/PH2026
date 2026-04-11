@@ -45,10 +45,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
   private TalonFX m_hoodMotor;
   private CANcoder m_hoodCanCoder;
   private TalonFX m_vertRollerMotor;
+  private TalonFX m_beltMotor;
+  
 
   private final VelocityDutyCycle m_shooterDutyCycleRequest;
   private final MotionMagicVoltage m_hoodRequest;
   private final DutyCycleOut m_indexerRequest;
+  private final DutyCycleOut m_beltRequest;
   private final DutyCycleOut m_vertRollerRequest;
 
   private Debouncer m_shootSpeedDebouncer = new Debouncer(0.25, DebounceType.kFalling);
@@ -79,6 +82,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodRequest = new MotionMagicVoltage(0);
     m_indexerRequest = new DutyCycleOut(0);
     m_vertRollerRequest = new DutyCycleOut(0);
+    m_beltRequest = new DutyCycleOut(0);
 
     TalonFXConfiguration shooterConfig = new TalonFXConfiguration();
     shooterConfig
@@ -214,6 +218,31 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_vertRollerMotor.setControl(
       m_vertRollerRequest.withOutput(Constants.Shooter.VERT_ROLLER_MOTOR_SPEED)
     );
+  }
+
+ /**
+   * Set the speed of the {@link #m_beltMotor belt motor}
+   * to the (constant)
+   * {@link Constants.Shooter#BELT_MOTOR_SPEED belt run speed}.
+   */
+  public void runBeltMotor() {
+    m_beltMotor.setControl(
+      m_beltRequest.withOutput(Constants.Shooter.BELT_MOTOR_SPEED)
+    );
+  }
+
+  /**
+   * Set the speed of the {@link #m_beltMotor belt motor}
+   * to the (constant) if we want to reverse
+   * @param shouldReverse Whether we want to reverse or not
+   * {@link Constants.Shooter#BELT_MOTOR_SPEED reverse belt run speed}.
+   */
+  public void runBeltMotorReverse(boolean shouldReverse) {
+    if (shouldReverse) {
+    m_beltMotor.setControl(
+      m_beltRequest.withOutput(-Constants.Shooter.BELT_MOTOR_SPEED)
+    );
+    }
   }
   
   /**
@@ -430,6 +459,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         ) {
           runIndexer();
           runVertRoller();
+          runBeltMotor();
         } else {
           stopIndexer();
         }
