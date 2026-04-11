@@ -132,8 +132,6 @@ public final class Constants {
     // bump traversal & neutral zone poses //
     //                                     //
 
-    public static final Distance NEUTRAL_ZONE_BLUE_X = Meters.of(7.9);
-
     //              //
     //  blue right  //
     //              //
@@ -159,7 +157,7 @@ public final class Constants {
     // first tap
     public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
       new Translation2d(
-        Meters.of(7.7),
+        Meters.of(7.5),
         Meters.of(6.16)
       ),
       Rotation2d.kCCW_90deg
@@ -173,7 +171,7 @@ public final class Constants {
     );
     public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
       new Translation2d(
-        Meters.of(7.7),
+        Meters.of(7.5),
         Field.FIELD_Y.minus(BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY())
       ),
       new Rotation2d(Degrees.of(45))
@@ -316,6 +314,7 @@ public final class Constants {
     // normally 0.3 and 1.0
     public static final double SLOW_SPEED_SCALAR = 0.15;
     public static final double FAST_SPEED_SCALAR = .75;
+    public static final double ROTATION_SPEED_SCALAR = .75 * .85;
 
     // P on rotation error for auto aim
     public static final LoggedNetworkNumber AIM_ROTATION_P =
@@ -472,7 +471,7 @@ public final class Constants {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
     public static final LoggedNetworkNumber MAX_BALL_Y_POS
-      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.65);
+      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.6);
       // TODO for comp
       // = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.7);
     public static final double HUB_Y_POS = 1.83;

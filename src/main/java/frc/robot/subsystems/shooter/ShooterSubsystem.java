@@ -457,7 +457,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
             // doesn't check orientation if the dumb
             // shooting button is held
             (readyToShoot && dumbShooting) ||
-            forceShooting
+            (forceShooting && atShootSpeed())
         ) {
           runIndexer();
           runVertRoller();

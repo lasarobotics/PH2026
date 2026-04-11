@@ -162,7 +162,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
             .withRotationalRate(
               Constants.Drive.MAX_ANGULAR_RATE
                 .times(-s_rotateRequest.getAsDouble())
-                .times(Constants.Drive.FAST_SPEED_SCALAR)));
+                .times(Constants.Drive.ROTATION_SPEED_SCALAR)));
       }
 
       @Override
