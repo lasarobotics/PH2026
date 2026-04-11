@@ -137,6 +137,7 @@ public final class Constants {
     //  blue right  //
     //              //
 
+    // bump crossing
     public static final Pose2d BLUE_RIGHT_ABUMP_AZ_POSE = new Pose2d(
       new Translation2d(
         Meters.of(3.1),
@@ -153,6 +154,8 @@ public final class Constants {
       ),
       Rotation2d.kZero
     );
+
+    // first tap
     public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
       new Translation2d(
         Meters.of(7.7),
@@ -174,19 +177,28 @@ public final class Constants {
       ),
       new Rotation2d(Degrees.of(45))
     );
-    public static final Pose2d BLUE_RIGHT_DOUBLETAP_MIDDLE = new Pose2d(
+
+    // double tap stuff
+    public static final Pose2d BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE = new Pose2d(
       new Translation2d(
-        Meters.of(6.844),
-        Meters.of(4.862)
+        BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
+        BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY()
       ),
-      Rotation2d.k180deg
+      BLUE_RIGHT_DEPOT_NZ_POSE.getRotation()
     );
-    public static final Pose2d BLUE_RIGHT_DOUBLETAP_END = new Pose2d(
+    public static final Pose2d BLUE_RIGHT_HUB_CLOSE_NZ_POSE = new Pose2d(
       new Translation2d(
-        BLUE_RIGHT_ABUMP_NZ_POSE.getMeasureX(),
+        BLUE_RIGHT_HUB_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
         BLUE_RIGHT_HUB_NZ_POSE.getMeasureY()
       ),
-      Rotation2d.kCW_90deg
+      BLUE_RIGHT_HUB_NZ_POSE.getRotation()
+    );
+    public static final Pose2d BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE = new Pose2d(
+      new Translation2d(
+        BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
+        BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureY()
+      ),
+      Rotation2d.kCCW_90deg
     );
   
     //             //
@@ -198,8 +210,9 @@ public final class Constants {
     public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_NZ_POSE);
     public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_NZ_POSE);
-    public static final Pose2d BLUE_LEFT_DOUBLETAP_MIDDLE = mirrorY(BLUE_RIGHT_DOUBLETAP_MIDDLE);
-    public static final Pose2d BLUE_LEFT_DOUBLETAP_END = mirrorY(BLUE_RIGHT_DOUBLETAP_END);
+    public static final Pose2d BLUE_LEFT_DEPOT_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_HUB_CLOSE_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_CLOSE_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE);
   }
 
   public static class Shooter {

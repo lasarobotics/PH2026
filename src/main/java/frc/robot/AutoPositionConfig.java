@@ -7,18 +7,20 @@ import static frc.robot.Constants.Auto.BLUE_DEPOT_EXIT_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_ABUMP_AZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_ABUMP_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_DEPOT_NZ_POSE;
-import static frc.robot.Constants.Auto.BLUE_LEFT_DOUBLETAP_END;
-import static frc.robot.Constants.Auto.BLUE_LEFT_DOUBLETAP_MIDDLE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_HUB_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_OUTPOST_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_LEFT_DEPOT_CLOSE_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_LEFT_HUB_CLOSE_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_ABUMP_AZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_ABUMP_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_DEPOT_NZ_POSE;
-import static frc.robot.Constants.Auto.BLUE_RIGHT_DOUBLETAP_END;
-import static frc.robot.Constants.Auto.BLUE_RIGHT_DOUBLETAP_MIDDLE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_HUB_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_OUTPOST_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_RIGHT_HUB_CLOSE_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_POSE;
 import static frc.robot.Constants.Auto.rotate180;
 import static frc.robot.Constants.Field.FIELD_CENTER;
@@ -47,7 +49,7 @@ public class AutoPositionConfig {
   private Pose2d NZStart;
   private Pose2d NZEnd;
   private Pose2d NZEndFull;
-  private Pose2d NZDoubleTapMiddle;
+  private Pose2d NZDoubleTapStart;
   private Pose2d NZDoubleTapEnd;
 
   public AutoPositionConfig(
@@ -82,10 +84,10 @@ public class AutoPositionConfig {
           BLUE_LEFT_OUTPOST_NZ_POSE;
         this.AcrossBumpAZOpposite =
           BLUE_RIGHT_ABUMP_AZ_POSE;
-        this.NZDoubleTapMiddle =
-          BLUE_LEFT_DOUBLETAP_MIDDLE;
+        this.NZDoubleTapStart =
+          BLUE_LEFT_DEPOT_CLOSE_NZ_POSE;
         this.NZDoubleTapEnd =
-          BLUE_LEFT_DOUBLETAP_END;
+          BLUE_LEFT_HUB_CLOSE_NZ_POSE;
         break;
 
       case BLUE_RIGHT:
@@ -116,10 +118,10 @@ public class AutoPositionConfig {
           BLUE_RIGHT_DEPOT_NZ_POSE;
         this.AcrossBumpAZOpposite =
           BLUE_LEFT_ABUMP_AZ_POSE;
-        this.NZDoubleTapMiddle =
-          BLUE_RIGHT_DOUBLETAP_MIDDLE;
+        this.NZDoubleTapStart =
+          BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE;
         this.NZDoubleTapEnd =
-          BLUE_RIGHT_DOUBLETAP_END;
+          BLUE_RIGHT_HUB_CLOSE_NZ_POSE;
         break;
 
       case RED_LEFT:
@@ -150,10 +152,10 @@ public class AutoPositionConfig {
           BLUE_LEFT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.AcrossBumpAZOpposite =
           BLUE_RIGHT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZDoubleTapMiddle =
-          BLUE_LEFT_DOUBLETAP_MIDDLE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZDoubleTapStart =
+          BLUE_LEFT_DEPOT_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZDoubleTapEnd =
-          BLUE_LEFT_DOUBLETAP_END.rotateAround(FIELD_CENTER, k180deg);
+          BLUE_LEFT_HUB_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         break;
 
       case RED_RIGHT:
@@ -184,10 +186,10 @@ public class AutoPositionConfig {
           BLUE_RIGHT_DEPOT_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.AcrossBumpAZOpposite =
           BLUE_LEFT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZDoubleTapMiddle =
-          BLUE_RIGHT_DOUBLETAP_MIDDLE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZDoubleTapStart =
+          BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZDoubleTapEnd =
-          BLUE_RIGHT_DOUBLETAP_END.rotateAround(FIELD_CENTER, k180deg);
+          BLUE_RIGHT_HUB_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         break;
     }
   }
@@ -252,8 +254,8 @@ public class AutoPositionConfig {
     return NZEndFull;
   }
 
-  public Pose2d NeutralZoneDoubleTapMiddle() {
-    return NZDoubleTapMiddle;
+  public Pose2d NeutralZoneDoubleTapStart() {
+    return NZDoubleTapStart;
   }
 
   public Pose2d NeutralZoneDoubleTapEnd() {

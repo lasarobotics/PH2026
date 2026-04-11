@@ -147,13 +147,6 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
 
       @Override
-      public void end(boolean interrupted) {
-        // we want it out but not running lol
-        IntakeSubsystem.getInstance().stopIntake();
-        IntakeSubsystem.getInstance().deployIntake();
-      }
-
-      @Override
       public SystemState nextState() {
         if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
 
@@ -274,8 +267,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.AcrossBumpNZ(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
-            Constants.Auto.HIGH_ROTATION_TOLERANCE
+            Constants.Auto.VERY_HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.VERY_HIGH_ROTATION_TOLERANCE
           )
         ) return TO_PLOW_START;
         
@@ -325,11 +318,6 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
 
       @Override
-      public void end(boolean interrupted) {
-        IntakeSubsystem.getInstance().stopIntake();
-      }
-
-      @Override
       public SystemState nextState() {
         if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
 
@@ -353,8 +341,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.AcrossBumpNZ(),
-          Constants.Drive.MAX_SPEED,
+          positionConfig.AcrossBumpNZHeadingFlipped(),
+          Constants.Drive.MAX_SPEED.div(4),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
@@ -366,7 +354,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
         if (
           DriveSubsystem.atDestination(
-            positionConfig.AcrossBumpNZ(), 
+            positionConfig.AcrossBumpNZHeadingFlipped(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE,
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -380,8 +368,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.AcrossBumpAZ(),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(5),
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -393,8 +381,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         if (
           DriveSubsystem.atDestination(
             positionConfig.AcrossBumpAZ(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
-            Constants.Auto.HIGH_ROTATION_TOLERANCE
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE,
+            Constants.Auto.VERY_HIGH_ROTATION_TOLERANCE
           )
         ) return SHOOT;
 
@@ -402,26 +390,28 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
     },
     SHOOT {
+      Timer shootTimer = new Timer();
+
       @Override
       public void initialize() {
         DriveSubsystem.getInstance().stopMoving();
         DriveSubsystem.getInstance().driveAutoAim();
         s_wantToSpinUpShooter = false;
         s_wantToShoot = true;
+        shootTimer.start();
       }
 
       @Override
       public void end(boolean interrupted) {
         s_wantToShoot = false;
+        DriveSubsystem.getInstance().driverControl();
       }
 
       @Override
       public SystemState nextState() {
         if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
 
-        // if 10 seconds left in auto, go back to NZ for double tap
-        // SHOULD give us about 5 seconds of shooting
-        if (GameHelpers.matchTimeLeft() <= 10) {
+        if (shootTimer.hasElapsed(5)) {
           return TO_NZ_AGAIN;
         }
 
@@ -430,15 +420,9 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     },
     TO_NZ_AGAIN {
       @Override
-      public void initialize() {
-        IntakeSubsystem.getInstance().startIntake();
-        DriveSubsystem.getInstance().driverControl();
-      }
-
-      @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.AcrossBumpNZ(),
+          positionConfig.AcrossBumpNZHeadingFlipped(),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
@@ -451,51 +435,23 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
         if (
           DriveSubsystem.atDestination(
-            positionConfig.AcrossBumpNZ(), 
+            positionConfig.AcrossBumpNZHeadingFlipped(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
-        ) return DOUBLETAP_STAGE_ONE;
+        ) return DOUBLETAP_START;
         
         return this;
       }
     },
-    DOUBLETAP_STAGE_ONE {
-      @Override
-      public void execute() {
-        // using NZend is weird but it gets us to about where we
-        // want to be (center of NZ)
-        DriveSubsystem.getInstance().goTo(
-          positionConfig.NeutralZoneEnd(),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_ANGULAR_RATE
-        );
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
-
-        if (
-          DriveSubsystem.atDestination(
-            positionConfig.NeutralZoneEnd(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
-            Constants.Auto.HIGH_ROTATION_TOLERANCE
-          )
-        ) return DOUBLETAP_STAGE_TWO;
-        
-        return this;
-      }
-    },
-    DOUBLETAP_STAGE_TWO {
+    DOUBLETAP_START {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.NeutralZoneDoubleTapMiddle(),
+          positionConfig.NeutralZoneDoubleTapStart(),
+          Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_SPEED.div(2),
-          MetersPerSecond.of(1),
-          Constants.Drive.MAX_ANGULAR_RATE.div(2)
+          Constants.Drive.MAX_ANGULAR_RATE
         );
       }
 
@@ -505,23 +461,23 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
         if (
           DriveSubsystem.atDestination(
-            positionConfig.NeutralZoneDoubleTapMiddle(), 
+            positionConfig.NeutralZoneDoubleTapStart(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
-        ) return DOUBLETAP_STAGE_THREE;
+        ) return DOUBLETAP_END;
         
         return this;
       }
     },
-    DOUBLETAP_STAGE_THREE {
+    DOUBLETAP_END {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.NeutralZoneDoubleTapEnd(),
           Constants.Drive.MAX_SPEED.div(2),
           MetersPerSecond.of(1),
-          Constants.Drive.MAX_ANGULAR_RATE.div(2)
+          Constants.Drive.MAX_ANGULAR_RATE
         );
       }
 
@@ -536,7 +492,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return PREOVERRAMP_AGAIN;
-
+        
         return this;
       }
     },
@@ -549,8 +505,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
-          positionConfig.AcrossBumpNZ(),
-          Constants.Drive.MAX_SPEED,
+          positionConfig.AcrossBumpNZHeadingFlipped(),
+          Constants.Drive.MAX_SPEED.div(4),
           Constants.Drive.MAX_SPEED,
           Constants.Drive.MAX_ANGULAR_RATE
         );
@@ -562,7 +518,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
         if (
           DriveSubsystem.atDestination(
-            positionConfig.AcrossBumpNZ(), 
+            positionConfig.AcrossBumpNZHeadingFlipped(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
@@ -573,16 +529,11 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     },
     OVERRAMP_AGAIN {
       @Override
-      public void initialize() {
-        IntakeSubsystem.getInstance().stopIntake();
-      }
-
-      @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.AcrossBumpAZ(),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(5),
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }

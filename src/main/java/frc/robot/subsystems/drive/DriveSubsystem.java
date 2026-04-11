@@ -247,9 +247,13 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
 
         if (shouldBrake) {
           if (!wasBraking) {
+            // front left
             getInstance().m_module0DrivePos = s_drivetrain.getModule(0).getDriveMotor().getPosition().getValue();
+            // front right
             getInstance().m_module1DrivePos = s_drivetrain.getModule(1).getDriveMotor().getPosition().getValue();
+            // back left
             getInstance().m_module2DrivePos = s_drivetrain.getModule(2).getDriveMotor().getPosition().getValue();
+            // back right
             getInstance().m_module3DrivePos = s_drivetrain.getModule(3).getDriveMotor().getPosition().getValue();
           }
           s_drivetrain.setControl(new BrakeRequest());
@@ -311,6 +315,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       @Override
       public void end(boolean interrupted) {
         getInstance().setAllLimelightsToAllTags();
+        wasBraking = false;
+        Logger.recordOutput("DriveSubsystem/braking", false);
       }
 
       @Override
