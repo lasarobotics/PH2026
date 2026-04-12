@@ -9,6 +9,7 @@ import static frc.robot.Constants.Auto.BLUE_LEFT_ABUMP_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_DEPOT_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_HUB_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_OUTPOST_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_LEFT_PLOW_1_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_DEPOT_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_HUB_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE;
@@ -18,6 +19,7 @@ import static frc.robot.Constants.Auto.BLUE_RIGHT_ABUMP_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_DEPOT_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_HUB_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_OUTPOST_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_RIGHT_PLOW_1_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_HUB_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE;
@@ -47,6 +49,7 @@ public class AutoPositionConfig {
   private Pose2d AcrossBumpNZHeadingFlipped;
   private Pose2d AcrossBumpAZOpposite;
   private Pose2d NZStart;
+  private Pose2d Plow1;
   private Pose2d NZEnd;
   private Pose2d NZEndFull;
   private Pose2d NZDoubleTapStart;
@@ -76,10 +79,14 @@ public class AutoPositionConfig {
           BLUE_RIGHT_ABUMP_NZ_POSE;
         this.AcrossBumpAZ =
           BLUE_LEFT_ABUMP_AZ_POSE;
+        this.Plow1 = 
+          BLUE_LEFT_PLOW_1_NZ_POSE;
         this.NZStart =
           BLUE_LEFT_DEPOT_NZ_POSE;
         this.NZEnd =
           BLUE_LEFT_HUB_NZ_POSE;
+        this.Plow1 = 
+        
         this.NZEndFull =
           BLUE_LEFT_OUTPOST_NZ_POSE;
         this.AcrossBumpAZOpposite =
@@ -110,6 +117,8 @@ public class AutoPositionConfig {
           BLUE_LEFT_ABUMP_NZ_POSE;
         this.AcrossBumpAZ =
           BLUE_RIGHT_ABUMP_AZ_POSE;
+        this.Plow1 = 
+          BLUE_RIGHT_PLOW_1_NZ_POSE;
         this.NZStart =
           BLUE_RIGHT_OUTPOST_NZ_POSE;
         this.NZEnd =
@@ -144,6 +153,8 @@ public class AutoPositionConfig {
           BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.AcrossBumpAZ =
           BLUE_LEFT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.Plow1 = 
+          BLUE_LEFT_PLOW_1_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZStart =
           BLUE_LEFT_DEPOT_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZEnd =
@@ -178,6 +189,8 @@ public class AutoPositionConfig {
           BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.AcrossBumpAZ =
           BLUE_RIGHT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.Plow1 = 
+          BLUE_RIGHT_PLOW_1_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZStart =
           BLUE_RIGHT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZEnd =
@@ -239,10 +252,16 @@ public class AutoPositionConfig {
     return AcrossBumpAZOpposite;
   }
 
+  //Go to the PLOW_1 position before you plow in auto
+  public Pose2d Plow1() {
+    return Plow1;
+  }
+
   // Position to start plow
   public Pose2d NeutralZoneStart() {
     return NZStart;
   }
+
 
   // Position to end plow (for short)
   public Pose2d NeutralZoneEnd() {

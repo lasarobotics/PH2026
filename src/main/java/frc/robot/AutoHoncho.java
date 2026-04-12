@@ -275,7 +275,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         return this;
       }
     },
-    TO_PLOW_START {
+    TO_PLOW_1 {
       @Override
       public void initialize() {
         IntakeSubsystem.getInstance().startIntake();
@@ -284,10 +284,41 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void execute() {
         DriveSubsystem.getInstance().goTo(
+          positionConfig.Plow1(), 
+          Constants.Drive.MAX_SPEED.div(1.5), 
+          Constants.Drive.MAX_SPEED, 
+          Constants.Drive.MAX_ANGULAR_RATE);
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.Plow1(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE,
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return PLOW;
+
+        return this;
+
+      }
+    },
+    TO_PLOW_START {
+      @Override
+      public void initialize() {
+        // IntakeSubsystem.getInstance().startIntake();
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
           positionConfig.NeutralZoneStart(),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_ANGULAR_RATE
+          Constants.Drive.MAX_SPEED.div(2),
+          MetersPerSecond.of(1),
+          Constants.Drive.MAX_ANGULAR_RATE.div(2)
         );
       }
 

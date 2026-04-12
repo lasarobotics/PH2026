@@ -176,6 +176,12 @@ public final class Constants {
       ),
       new Rotation2d(Degrees.of(45))
     );
+    public static final Pose2d BLUE_RIGHT_PLOW_1_NZ_POSE = new Pose2d(
+      new Translation2d(
+        Meters.of(7.0),
+        Meters.of(2.2)
+      ), new Rotation2d(Degrees.of(0))
+    );
 
     // double tap stuff
     public static final Pose2d BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE = new Pose2d(
@@ -212,6 +218,7 @@ public final class Constants {
     public static final Pose2d BLUE_LEFT_DEPOT_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_CLOSE_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_CLOSE_NZ_POSE);
     public static final Pose2d BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_PLOW_1_NZ_POSE = mirrorY(BLUE_RIGHT_PLOW_1_NZ_POSE);
   }
 
   public static class Shooter {
