@@ -178,7 +178,7 @@ public final class Constants {
     );
     public static final Pose2d BLUE_RIGHT_PLOW_1_NZ_POSE = new Pose2d(
       new Translation2d(
-        Meters.of(7.0),
+        Meters.of(7.2),
         Meters.of(2.2)
       ), new Rotation2d(Degrees.of(0))
     );

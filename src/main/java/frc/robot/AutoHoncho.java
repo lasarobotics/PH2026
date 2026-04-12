@@ -270,7 +270,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             Constants.Auto.VERY_HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.VERY_HIGH_ROTATION_TOLERANCE
           )
-        ) return TO_PLOW_START;
+        ) return TO_PLOW_1;
         
         return this;
       }
@@ -285,7 +285,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.Plow1(), 
-          Constants.Drive.MAX_SPEED.div(1.5), 
+          Constants.Drive.MAX_SPEED, 
           Constants.Drive.MAX_SPEED, 
           Constants.Drive.MAX_ANGULAR_RATE);
       }
@@ -300,7 +300,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             Constants.Auto.HIGH_DISTANCE_TOLERANCE,
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
-        ) return PLOW;
+        ) return TO_PLOW_START;
 
         return this;
 
