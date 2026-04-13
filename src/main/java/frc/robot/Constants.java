@@ -397,7 +397,7 @@ public final class Constants {
     // this is an initial guess lol
     // never changed
     // it works
-    public static final double ROBOT_LATENCY = 0.15;
+    public static final double ROBOT_LATENCY = 0.0;
 
     public static final LinearVelocity[] OVER_RAMP_STAGE_MAX_SPEED = {
       MetersPerSecond.of(2.25),
