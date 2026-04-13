@@ -382,10 +382,14 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
       m_intakeMotorLeader.getDeviceTemp().getValue().gte(Constants.Intake.OVERHEATING_TEMP) ||
       m_intakeMotorFollower.getDeviceTemp().getValue().gte(Constants.Intake.OVERHEATING_TEMP);
 
+    // not jiggling (i.e. shooting),
+    // intaking,
+    // intake deployed,
+    // and intake not overheated
     if (
-      (
-        m_isIntaking && intakeDeployed()
-      ) &&
+      !m_isJiggling &&
+      m_isIntaking &&
+      intakeDeployed() &&
       !intakeOverheated
     ) {
       if (m_isReversing) {
