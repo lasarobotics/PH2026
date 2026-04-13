@@ -598,7 +598,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     m_limelight_thread.setDaemon(true);
     m_limelight_thread.start();
     
-    Logger.recordOutput("DriveSubsystem/Odometry/target", new Pose2d(0.0, 0.0, new Rotation2d(0.0)));
+    Logger.recordOutput("DriveSubsystem/goTo/target", new Pose2d(0.0, 0.0, new Rotation2d(0.0)));
   }
 
   /**
@@ -806,25 +806,25 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     LinearVelocity maxVelocity,
     AngularVelocity maxRotationRate
   ) {
-    Logger.recordOutput("DriveSubsystem/Odometry/target", target);
-    Logger.recordOutput("DriveSubsystem/Odometry/lastGotoTimestamp", Utils.fpgaToCurrentTime(Timer.getFPGATimestamp()));
+    Logger.recordOutput("DriveSubsystem/goTo/target", target);
+    Logger.recordOutput("DriveSubsystem/goTo/lastGotoTimestamp", Utils.fpgaToCurrentTime(Timer.getFPGATimestamp()));
 
     Pose2d robotPose = s_drivetrain.getState().Pose;
     Translation2d newPosition = target.getTranslation().minus(robotPose.getTranslation());
     double distance = robotPose.getTranslation().getDistance(target.getTranslation());
 
-    Logger.recordOutput("DriveSubsystem/Odometry/radiansToRotate",
+    Logger.recordOutput("DriveSubsystem/goTo/radiansToRotate",
       Math.abs(
         MathUtil.angleModulus(
           robotPose.getRotation().getRadians() - target.getRotation().getRadians()
         )
       )
     );
-    Logger.recordOutput("DriveSubsystem/Odometry/distance", distance);
+    Logger.recordOutput("DriveSubsystem/goTo/distance", distance);
 
     Rotation2d directionOfTravel = newPosition.getAngle();
 
-    Logger.recordOutput("DriveSubsystem/Odometry/directionOfTravel", directionOfTravel);
+    Logger.recordOutput("DriveSubsystem/goTo/directionOfTravel", directionOfTravel);
 
     // The PID is trying to make distance 0, so its output is negative.
     // We negate it to get a positive "drive toward target" speed.
@@ -854,8 +854,8 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
     double xComponent = outputVelocity * directionOfTravel.getCos();
     double yComponent = outputVelocity * directionOfTravel.getSin();
 
-    Logger.recordOutput("DriveSubsystem/Odometry/outputVelocity", outputVelocity);
-    Logger.recordOutput("DriveSubsystem/Odometry/rotationRate", rotationRate);
+    Logger.recordOutput("DriveSubsystem/goTo/outputVelocity", outputVelocity);
+    Logger.recordOutput("DriveSubsystem/goTo/rotationRate", rotationRate);
 
     s_drivetrain.setControl(
       s_autoDrive
@@ -927,6 +927,9 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
       }
     );
     
+    Logger.recordOutput("DriveSubsystem/drivetrainXSpeed", s_drivetrain.getState().Speeds.vxMetersPerSecond);
+    Logger.recordOutput("DriveSubsystem/drivetrainYSpeed", s_drivetrain.getState().Speeds.vyMetersPerSecond);
+    Logger.recordOutput("DriveSubsystem/drivetrainOmegaSpeed", s_drivetrain.getState().Speeds.omegaRadiansPerSecond);
     Logger.recordOutput("DriveSubsystem/doingGlobalPoseEstimation", s_shouldDoGlobalPoseEstimation);
     Logger.recordOutput("DriveSubsystem/percieved_alliance", DriverStation.getAlliance().toString());
     Logger.recordOutput("DriveSubsystem/resettingOdometry", resettingOdom);
