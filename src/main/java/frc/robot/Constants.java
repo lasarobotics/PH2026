@@ -18,6 +18,7 @@ import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
 import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
+import static edu.wpi.first.units.Units.Volts;
 
 import java.util.function.DoubleSupplier;
 
@@ -238,13 +239,15 @@ public final class Constants {
     public static final double VERT_ROLLER_MOTOR_SPEED = 0.5;
     public static final double BELT_MOTOR_SPEED = 0.85;
     public static final double REVERSE_BELT_MOTOR_SPEED = -0.75;
-    // spin up speed for flywheel
-    public static final AngularVelocity SHOOTER_HOLD_SPEED = RotationsPerSecond.of(35);
+    // spin up voltage for flywheel
+    // settles at just about 40 rotations per second
+    // generally I think we shoot at around 40 to 50 rotations per second
+    public static final double HOLD_VOLTAGE = 3.9;
 
     // shooter speed tolerance is in rotations per second
     public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 1;
     public static final double SHOOTER_SPEED_ABOVE_TOLERANCE = 6;
-    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(5);
+    public static final Angle HOOD_POSITION_TOLERANCE = Degrees.of(3.75);
 
     // how long we can be shooting after the end of the shift
     // this accounts for hang time:
@@ -253,6 +256,8 @@ public final class Constants {
     // hub takes like 1 to 2 seconds to count & counts for 3 seconds after end of period
     // so -1.5 is probably alright
     public static final double SHOOTER_TIME_MARGIN = -1.5;
+
+    public static final double SPIN_UP_TIME = 1;
 
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;

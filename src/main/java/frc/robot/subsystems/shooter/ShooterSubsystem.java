@@ -260,9 +260,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * This is intended for spinning up the flywheel.
    */
   private void holdShooter() {
-    m_shooterMotorLeader.setControl(
-      m_shooterDutyCycleRequest.withVelocity(Constants.Shooter.SHOOTER_HOLD_SPEED)
-    );
+    m_shooterMotorLeader.setVoltage(Constants.Shooter.HOLD_VOLTAGE);
   }
 
   /**
@@ -363,6 +361,33 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         -3 + hangTime ||
       scoringTimeLeft <
         -25 + hangTime
+    );
+  }
+
+    /**
+   * Shifted check for shooting time to see if we should
+   * spin up
+   * @return True if we want to spin up
+   */
+  private boolean spinUpTimeOkay() {
+    double scoringTimeLeft = GameHelpers.scoringTimeLeft();
+    double hangTime = Constants.Field.HUB_HANG_TIME.getAsDouble();
+    double spinUpTime = Constants.Shooter.SPIN_UP_TIME;
+    // Basically:
+    // If scoring time is greater than 0, it works normally
+    // The special thing here is that: the hub counts balls for
+    // 3 seconds after the shift. So the real scoring time left
+    // goes until 3 seconds after - we do want to wait for hang time,
+    // though.
+    // The other aspect is shooting before the shift starts. Since
+    // the scoring time just goes negative, we can check if it's below
+    // -25 plus the hang time plus the spin up time (because the inactive shifts are always
+    // 25 seconds).
+    return (
+      scoringTimeLeft >
+        -3 + hangTime + spinUpTime ||
+      scoringTimeLeft <
+        -25 + hangTime + spinUpTime
     );
   }
 
@@ -467,7 +492,13 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         }
       } else {
         IntakeSubsystem.getInstance().jiggleOff();
-        if (AutoHoncho.autoWantToSpinUpShooter()) {
+        if (
+          AutoHoncho.autoWantToSpinUpShooter() ||
+          (
+            DriveSubsystem.inAllianceZone() &&
+            spinUpTimeOkay()
+          )
+        ) {
           holdShooter();
         } else {
           stopShooter();
