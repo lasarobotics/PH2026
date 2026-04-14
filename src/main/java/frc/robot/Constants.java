@@ -240,9 +240,11 @@ public final class Constants {
     public static final double BELT_MOTOR_SPEED = 0.85;
     public static final double REVERSE_BELT_MOTOR_SPEED = -0.75;
     // spin up voltage for flywheel
-    // settles at just about 40 rotations per second
+    // 3.9V settles at just about 40 rotations per second
     // generally I think we shoot at around 40 to 50 rotations per second
-    public static final double HOLD_VOLTAGE = 3.9;
+    // chris suggests going higher so we're above rather than below
+    // call it 4.5 volts tbh
+    public static final double HOLD_VOLTAGE = 4.5;
 
     // shooter speed tolerance is in rotations per second
     public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 1;
