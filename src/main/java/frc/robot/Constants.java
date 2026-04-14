@@ -259,7 +259,8 @@ public final class Constants {
     // so -1.5 is probably alright
     public static final double SHOOTER_TIME_MARGIN = -1.5;
 
-    public static final double SPIN_UP_TIME = 1;
+    // seconds
+    public static final double SPIN_UP_TIME = 1.5;
 
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;

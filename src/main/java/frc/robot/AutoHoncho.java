@@ -495,7 +495,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
           positionConfig.NeutralZoneStart(),
           Constants.Drive.MAX_SPEED.div(2),
           MetersPerSecond.of(1),
-          Constants.Drive.MAX_ANGULAR_RATE.div(2)
+          Constants.Drive.MAX_ANGULAR_RATE.div(4)
         );
       }
 
