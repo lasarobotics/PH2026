@@ -156,7 +156,7 @@ public class AutoPositionConfig {
         this.Plow1 = 
           BLUE_LEFT_PLOW_1_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZStart =
-          BLUE_LEFT_DEPOT_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+          BLUE_LEFT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZEnd =
           BLUE_LEFT_HUB_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZEndFull =
