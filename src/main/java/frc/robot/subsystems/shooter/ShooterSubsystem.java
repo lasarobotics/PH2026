@@ -157,12 +157,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     m_hoodMotor.getConfigurator().apply(hoodConfig);
     m_hoodCanCoder.getConfigurator().apply(canCoderConfig);
 
-    m_shooterMotorFollowerOne.setControl(
-      new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
-    );
-    m_shooterMotorFollowerTwo.setControl(
-      new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
-    );
+    // m_shooterMotorFollowerOne.setControl(
+    //   new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
+    // );
+    // m_shooterMotorFollowerTwo.setControl(
+    //   new Follower(m_shooterMotorLeader.getDeviceID(), MotorAlignmentValue.Aligned)
+    // );
   }
 
   /**
@@ -260,16 +260,16 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * This is intended for spinning up the flywheel.
    */
   private void holdShooter() {
-    m_shooterMotorLeader.setVoltage(Constants.Shooter.HOLD_VOLTAGE);
-  }
+  //   m_shooterMotorLeader.setVoltage(Constants.Shooter.HOLD_VOLTAGE);
+   }
 
   /**
    * Run shooter at the speed wanted by {@link #wantedShooterSpeed()}
    */
   private void runShooter() {
-    m_shooterMotorLeader.setControl(
-      m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
-    );
+    // m_shooterMotorLeader.setControl(
+    //   m_shooterDutyCycleRequest.withVelocity(wantedShooterSpeed())
+    // );
   }
 
   /**
@@ -456,7 +456,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       adjustHood();
 
       if (shooting || forceShooting || dumbShooting) {
-        runShooter();
+        // runShooter();
         IntakeSubsystem.getInstance().jiggleOn();
 
         // If the shooter is ready (rpm, position, hood) and

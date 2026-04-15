@@ -161,7 +161,7 @@ public final class Constants {
         Meters.of(7.5),
         Meters.of(6.16)
       ),
-      Rotation2d.kCCW_90deg
+      new Rotation2d(Degrees.of(45))
     );
     public static final Pose2d BLUE_RIGHT_HUB_NZ_POSE = new Pose2d(
       new Translation2d(
@@ -172,8 +172,8 @@ public final class Constants {
     );
     public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
       new Translation2d(
-        Meters.of(7.5),
-        Field.FIELD_Y.minus(BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY())
+        Meters.of(8),
+        Field.FIELD_Y.minus(BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY().minus(Meters.of(1.5)))
       ),
       new Rotation2d(Degrees.of(45))
     );
@@ -188,7 +188,7 @@ public final class Constants {
     public static final Pose2d BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE = new Pose2d(
       new Translation2d(
         BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
-        BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY()
+        BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY().minus(Meters.of(1.5))
       ),
       BLUE_RIGHT_DEPOT_NZ_POSE.getRotation()
     );
@@ -295,9 +295,9 @@ public final class Constants {
     //   = new LoggedNetworkNumber("/Tuning/dumbShooterSpeed", 42.148);
 
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1.05);
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.6);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.85);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
       = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
@@ -486,7 +486,7 @@ public final class Constants {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
     public static final LoggedNetworkNumber MAX_BALL_Y_POS
-      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.6);
+      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.76);
       // TODO for comp
       // = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.7);
     public static final double HUB_Y_POS = 1.83;

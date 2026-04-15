@@ -478,9 +478,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return TO_PLOW_START;
-
+        
         return this;
-
       }
     },
     TO_PLOW_START {
@@ -493,7 +492,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.NeutralZoneStart(),
-          Constants.Drive.MAX_SPEED.div(2),
+          Constants.Drive.MAX_SPEED.div(1.5),
           MetersPerSecond.of(1),
           Constants.Drive.MAX_ANGULAR_RATE.div(4)
         );
@@ -620,7 +619,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
 
-        if (shootTimer.hasElapsed(5)) {
+        if (shootTimer.hasElapsed(4)) {
           return TO_NZ_AGAIN;
         }
 
@@ -647,32 +646,6 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             positionConfig.AcrossBumpNZHeadingFlipped(), 
             Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
             Constants.Auto.ULTRA_HIGH_ROTATION_TOLERANCE
-          )
-        ) return DOUBLETAP_START;
-        
-        return this;
-      }
-    },
-    DOUBLETAP_START {
-      @Override
-      public void execute() {
-        DriveSubsystem.getInstance().goTo(
-          positionConfig.NeutralZoneDoubleTapStart(),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_SPEED.div(2),
-          Constants.Drive.MAX_ANGULAR_RATE
-        );
-      }
-
-      @Override
-      public SystemState nextState() {
-        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
-
-        if (
-          DriveSubsystem.atDestination(
-            positionConfig.NeutralZoneDoubleTapStart(), 
-            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
-            Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
         ) return DOUBLETAP_END;
         
