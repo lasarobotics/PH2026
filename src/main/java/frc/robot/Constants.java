@@ -173,7 +173,7 @@ public final class Constants {
     public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
       new Translation2d(
         Meters.of(8),
-        Field.FIELD_Y.minus(BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY().minus(Meters.of(1.5)))
+        Field.FIELD_Y.minus(BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY()).minus(Meters.of(1.5))
       ),
       new Rotation2d(Degrees.of(45))
     );
