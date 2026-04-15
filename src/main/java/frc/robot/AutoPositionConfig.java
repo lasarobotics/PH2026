@@ -82,7 +82,7 @@ public class AutoPositionConfig {
         this.Plow1 = 
           BLUE_LEFT_PLOW_1_NZ_POSE;
         this.NZStart =
-          BLUE_LEFT_DEPOT_NZ_POSE;
+          BLUE_LEFT_OUTPOST_NZ_POSE;
         this.NZEnd =
           BLUE_LEFT_HUB_NZ_POSE;
         this.Plow1 =
