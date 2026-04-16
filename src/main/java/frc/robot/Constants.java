@@ -244,7 +244,7 @@ public final class Constants {
     // generally I think we shoot at around 40 to 50 rotations per second
     // chris suggests going higher so we're above rather than below
     // call it 4.5 volts tbh
-    public static final double HOLD_VOLTAGE = 4.5;
+    public static final double HOLD_VOLTAGE = 5;
 
     // shooter speed tolerance is in rotations per second
     public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 1;
@@ -297,11 +297,11 @@ public final class Constants {
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1.05);
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.4);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.3);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
       = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
-      = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
+      = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -3);
     // public static final double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
     // public static final double AIMUTIL_SHOOTER_SPEED_ADDEND = -0.75;
     // public static final double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
@@ -486,7 +486,7 @@ public final class Constants {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
     public static final LoggedNetworkNumber MAX_BALL_Y_POS
-      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.9);
+      = new LoggedNetworkNumber("Tuning/maxBallYPos", 3);
       // TODO for comp
       // = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.7);
     public static final double HUB_Y_POS = 1.83;
