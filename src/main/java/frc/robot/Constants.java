@@ -143,9 +143,7 @@ public final class Constants {
         Meters.of(3.1),
         Meters.of(2.375)
       ),
-      new Rotation2d(
-        Degrees.of(-135)
-      )
+      Rotation2d.k180deg
     );
     public static final Pose2d BLUE_RIGHT_ABUMP_NZ_POSE = new Pose2d(
       new Translation2d(
@@ -243,7 +241,7 @@ public final class Constants {
     // 3.9V settles at just about 40 rotations per second
     // generally I think we shoot at around 40 to 50 rotations per second
     // chris suggests going higher so we're above rather than below
-    // call it 4.5 volts tbh
+    // call it 5 volts tbh
     public static final double HOLD_VOLTAGE = 5;
 
     // shooter speed tolerance is in rotations per second
