@@ -68,6 +68,79 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         return this;
       }
     }
+  }  
+
+  public enum CenterBasicShootAuto implements SystemState {
+    START {
+      @Override
+      public void execute() {
+        if (positionConfig == null) {
+          return;
+        }
+
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AllianceZoneCenter(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (
+          !DriverStation.isAutonomous() ||
+          positionConfig == null
+        ) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AllianceZoneCenter(), 
+            Constants.Auto.VERY_HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.VERY_HIGH_ROTATION_TOLERANCE
+          )
+        ) return SHOOT;
+        
+        return this;
+      }
+    },
+    SHOOT {
+      Timer stopShootTimer = new Timer();
+
+      @Override
+      public void initialize() {
+        DriveSubsystem.getInstance().driveAutoAim();
+        stopShootTimer.reset();
+        stopShootTimer.start();
+        s_wantToShoot = true;
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        s_wantToShoot = false;
+        DriveSubsystem.getInstance().driverControl();
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        // don't want to waste battery
+        if (stopShootTimer.hasElapsed(Constants.Auto.EightBallShootingTime)) {
+          return END;
+        }
+
+        return this;
+      }
+    },
+    END {
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        return this;
+      }
+    }
   }
 
   public enum NZLiteAuto implements SystemState {
@@ -1104,6 +1177,9 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     switch (type) {
       case "Basic Shoot":
         startingState = BasicShootAuto.SHOOT;
+        break;
+      case "Center Shoot":
+        startingState = CenterBasicShootAuto.START;
         break;
       case "Neutral Zone Lite":
         startingState = NZLiteAuto.START;

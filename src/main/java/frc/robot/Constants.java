@@ -55,7 +55,7 @@ public final class Constants {
   }
 
   public static class Auto {
-    public static final Time EightBallShootingTime = Seconds.of(5);
+    public static final Time EightBallShootingTime = Seconds.of(7);
 
     public static final Distance VERY_HIGH_DISTANCE_TOLERANCE = Meters.of(0.5);
     public static final Distance HIGH_DISTANCE_TOLERANCE = Meters.of(0.3);
