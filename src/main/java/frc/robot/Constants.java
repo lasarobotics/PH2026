@@ -194,7 +194,7 @@ public final class Constants {
     );
     public static final Pose2d BLUE_RIGHT_HUB_CLOSE_NZ_POSE = new Pose2d(
       new Translation2d(
-        BLUE_RIGHT_HUB_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
+        BLUE_RIGHT_HUB_NZ_POSE.getMeasureX().minus(Meters.of(1.0)),
         BLUE_RIGHT_HUB_NZ_POSE.getMeasureY().plus(Meters.of(1.5))
       ),
       BLUE_RIGHT_HUB_NZ_POSE.getRotation()
@@ -297,7 +297,7 @@ public final class Constants {
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1.05);
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 0.3);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 1.0);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
       = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
@@ -486,7 +486,7 @@ public final class Constants {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
     public static final LoggedNetworkNumber MAX_BALL_Y_POS
-      = new LoggedNetworkNumber("Tuning/maxBallYPos", 3);
+      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.8);
       // TODO for comp
       // = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.7);
     public static final double HUB_Y_POS = 1.83;

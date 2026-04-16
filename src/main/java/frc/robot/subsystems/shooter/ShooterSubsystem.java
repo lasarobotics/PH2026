@@ -135,7 +135,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
         .withReverseSoftLimitThreshold(-0.096);
     hoodConfig
       .Slot0
-        .withKP(300)
+        .withKP(150)
         .withKD(3)
         .withKS(0.515);
     hoodConfig
