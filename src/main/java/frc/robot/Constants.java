@@ -260,7 +260,7 @@ public final class Constants {
     public static final double SHOOTER_TIME_MARGIN = -1.5;
 
     // seconds
-    public static final double SPIN_UP_TIME = 1.5;
+    public static final double SPIN_UP_TIME = 2;
 
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;
@@ -297,7 +297,7 @@ public final class Constants {
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1.05);
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.3);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 0.3);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
       = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND

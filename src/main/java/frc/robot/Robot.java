@@ -83,7 +83,7 @@ public class Robot extends LoggedRobot {
   @Override
   public void robotPeriodic() {
     ll.RobotStart();
-    Threads.setCurrentThreadPriority(true, 99);
+    // Threads.setCurrentThreadPriority(true, 99);
     // Simple always on signal to verify logging is working in AdvantageScope.
     Pose2d pose = DriveSubsystem.getDrivetrain().getState().Pose;
     m_field.setRobotPose(pose);
@@ -101,7 +101,7 @@ public class Robot extends LoggedRobot {
 
     Logger.recordOutput("GameHelpers/matchTimeLeft", GameHelpers.matchTimeLeft());
     Logger.recordOutput("GameHelpers/scoringTimeLeft", GameHelpers.scoringTimeLeft());
-    Threads.setCurrentThreadPriority(false, 0);
+    // Threads.setCurrentThreadPriority(false, 0);
     ll.RobotEnd(isEnabled());
   }
 
