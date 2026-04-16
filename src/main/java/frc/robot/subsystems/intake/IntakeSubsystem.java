@@ -320,6 +320,19 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
   }
 
   /**
+   * Run intake at 1 V output
+   */
+  private void runIntakeMotorOneVolt() {
+    m_intakeMotorLeader.setControl(
+      m_intakeMotorRequest.withOutput(1)
+    );
+    m_intakeMotorFollower.setControl(
+      m_intakeMotorRequest.withOutput(1)
+    );
+    m_isIntakeRunning = true;
+  }
+
+  /**
    * Sets intake motor running in reverse
    */
   private void reverseIntakeMotor() {
@@ -382,17 +395,22 @@ public class IntakeSubsystem extends StateMachine implements AutoCloseable {
       m_intakeMotorLeader.getDeviceTemp().getValue().gte(Constants.Intake.OVERHEATING_TEMP) ||
       m_intakeMotorFollower.getDeviceTemp().getValue().gte(Constants.Intake.OVERHEATING_TEMP);
 
-    // not jiggling (i.e. shooting),
-    // intaking,
-    // intake deployed,
-    // and intake not overheated
+    // intaking & intake deployed
+    // or jiggling
+    // AND intake not overheated
     if (
-      !m_isJiggling &&
-      m_isIntaking &&
-      intakeDeployed() &&
+      (
+        m_isJiggling ||
+        (
+          m_isIntaking &&
+          intakeDeployed()
+        )
+      ) &&
       !intakeOverheated
     ) {
-      if (m_isReversing) {
+      if (m_isJiggling) {
+        runIntakeMotorOneVolt();
+      } else if (m_isReversing) {
         reverseIntakeMotor();
       } else {
         runIntakeMotor();
