@@ -297,7 +297,7 @@ public final class Constants {
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1.05);
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.85);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.4);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
       = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
@@ -486,7 +486,7 @@ public final class Constants {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
     public static final LoggedNetworkNumber MAX_BALL_Y_POS
-      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.76);
+      = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.9);
       // TODO for comp
       // = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.7);
     public static final double HUB_Y_POS = 1.83;
