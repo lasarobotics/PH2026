@@ -242,7 +242,7 @@ public final class Constants {
     // generally I think we shoot at around 40 to 50 rotations per second
     // chris suggests going higher so we're above rather than below
     // call it 5 volts tbh
-    public static final double HOLD_VOLTAGE = 5;
+    public static final double HOLD_VOLTAGE = 4.5;
 
     // shooter speed tolerance is in rotations per second
     public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 1;
@@ -293,13 +293,13 @@ public final class Constants {
     //   = new LoggedNetworkNumber("/Tuning/dumbShooterSpeed", 42.148);
 
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1.05);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 1.0);
+      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", -0.6);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
       = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
-      = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -3);
+      = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
     // public static final double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
     // public static final double AIMUTIL_SHOOTER_SPEED_ADDEND = -0.75;
     // public static final double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
