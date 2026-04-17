@@ -342,6 +342,7 @@ public class DriveSubsystem extends StateMachine implements AutoCloseable {
         // }
 
         if (s_requestedDriveState == DriveStates.DRIVER_CONTROL) return DRIVER_CONTROL;
+        if (s_requestedDriveState == DriveStates.AUTO) return AUTO;
         if (s_requestedDriveState == DriveStates.AUTO_AIM) return AUTO_AIM;
 
         return this;

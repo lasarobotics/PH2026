@@ -46,6 +46,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void end(boolean interrupted) {
         s_wantToShoot = false;
+        DriveSubsystem.getInstance().driverControl();
       }
 
       @Override
@@ -303,6 +304,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void end(boolean interrupted) {
         s_wantToShoot = false;
+        DriveSubsystem.getInstance().driverControl();
       }
 
       @Override
@@ -478,6 +480,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void end(boolean interrupted) {
         s_wantToShoot = false;
+        DriveSubsystem.getInstance().driverControl();
       }
 
       @Override
@@ -820,6 +823,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       @Override
       public void end(boolean interrupted) {
         s_wantToShoot = false;
+        DriveSubsystem.getInstance().driverControl();
       }
 
       @Override
