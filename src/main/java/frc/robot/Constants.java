@@ -171,14 +171,14 @@ public final class Constants {
     public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
       new Translation2d(
         Meters.of(7.8),
-        Meters.of(3)
+        Meters.of(2.375)
       ),
-      new Rotation2d(Degrees.of(45))
+      new Rotation2d(Degrees.of(90))
     );
     public static final Pose2d BLUE_RIGHT_PLOW_1_NZ_POSE = new Pose2d(
       new Translation2d(
-        Meters.of(7.2),
-        Meters.of(2.2)
+        Meters.of(7.8),
+        BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureY()
       ), new Rotation2d(Degrees.of(0))
     );
 
@@ -193,7 +193,7 @@ public final class Constants {
     public static final Pose2d BLUE_RIGHT_HUB_CLOSE_NZ_POSE = new Pose2d(
       new Translation2d(
         BLUE_RIGHT_HUB_NZ_POSE.getMeasureX().minus(Meters.of(1.0)),
-        BLUE_RIGHT_HUB_NZ_POSE.getMeasureY().plus(Meters.of(1.5))
+        BLUE_RIGHT_HUB_NZ_POSE.getMeasureY().plus(Meters.of(0.5))
       ),
       BLUE_RIGHT_HUB_NZ_POSE.getRotation()
     );
@@ -213,7 +213,7 @@ public final class Constants {
     public static final Pose2d BLUE_LEFT_ABUMP_NZ_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_POSE);
     public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_NZ_POSE);
-    public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = new Pose2d(new Translation2d(Meters.of(7.8), Meters.of(5)), new Rotation2d(Degrees.of(-45)));
+    public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = mirrorY(BLUE_RIGHT_OUTPOST_NZ_POSE);
     public static final Pose2d BLUE_LEFT_DEPOT_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_CLOSE_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_CLOSE_NZ_POSE);
     public static final Pose2d BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE);
