@@ -403,7 +403,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
     },
     INVADE {
-      
+
       @Override
       public void initialize() {
         IntakeSubsystem.getInstance().startIntake();
@@ -512,7 +512,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
             Constants.Auto.HIGH_DISTANCE_TOLERANCE,
             Constants.Auto.HIGH_ROTATION_TOLERANCE
           )
-        ) return NZLiteDoubleTapAuto.OVERRAMP;
+        ) return NZLiteAuto.OVERRAMP;
 
         return this;
       }
