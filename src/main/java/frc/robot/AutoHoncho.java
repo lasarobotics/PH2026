@@ -403,6 +403,11 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       }
     },
     INVADE {
+      
+      @Override
+      public void initialize() {
+        IntakeSubsystem.getInstance().startIntake();
+      }
 
       @Override
       public void execute() {
