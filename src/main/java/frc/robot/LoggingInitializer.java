@@ -126,7 +126,7 @@ public class LoggingInitializer extends StateMachine {
         Logger.addDataReceiver(new WPILOGWriter(
           folder.resolve("akit_" + savedSlug + ".wpilog").toString()
         ));
-        // Logger.addDataReceiver(new NT4Publisher());
+        Logger.addDataReceiver(new NT4Publisher()); // CHARLIE CHANGE
 
         Logger.start();
 

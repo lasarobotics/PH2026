@@ -66,6 +66,8 @@ public final class Constants {
     public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(10);
     public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2.5); 
 
+    public static final double HEIST_OFFSET = 0.416;
+
     public static Pose2d mirrorY(Pose2d poseToMirror) {
       return new Pose2d(
         new Translation2d(
@@ -87,6 +89,20 @@ public final class Constants {
       return new Pose2d(
         poseToFlip.getTranslation(),
         poseToFlip.getRotation().plus(Rotation2d.k180deg)
+      );
+    }
+
+    public static Pose2d rotate45(Pose2d poseToFlip) {
+      return new Pose2d(
+        poseToFlip.getTranslation(),
+        poseToFlip.getRotation().plus(new Rotation2d(Degrees.of(45)))
+      );
+    }
+
+    public static Pose2d rotate225(Pose2d poseToFlip) {
+      return new Pose2d(
+        poseToFlip.getTranslation(),
+        poseToFlip.getRotation().plus(new Rotation2d(Degrees.of(45+180)))
       );
     }
 
@@ -182,6 +198,22 @@ public final class Constants {
       ), new Rotation2d(Degrees.of(0))
     );
 
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_FAR_POSE = new Pose2d(
+      new Translation2d(
+        Meters.of(5.983).plus(Meters.of(HEIST_OFFSET)),
+        BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()
+      ),
+      Rotation2d.kZero
+    );
+
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE = new Pose2d(
+      new Translation2d(
+        Meters.of(5.983).plus(Meters.of(HEIST_OFFSET)),
+        BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()
+      ),
+      new Rotation2d(Degrees.of(45))
+    );
+
     // double tap stuff
     public static final Pose2d BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE = new Pose2d(
       new Translation2d(
@@ -204,12 +236,14 @@ public final class Constants {
       ),
       Rotation2d.kCCW_90deg
     );
-  
+    
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE = rotate225(BLUE_RIGHT_ABUMP_NZ_POSE);
     //             //
     //  blue left  //
     //             //
 
     public static final Pose2d BLUE_LEFT_ABUMP_AZ_POSE = mirrorY(BLUE_RIGHT_ABUMP_AZ_POSE);
+    public static final Pose2d BLUE_LEFT_ABUMP_NZ_ROTATED_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE);
     public static final Pose2d BLUE_LEFT_ABUMP_NZ_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_POSE);
     public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_NZ_POSE);
@@ -218,6 +252,9 @@ public final class Constants {
     public static final Pose2d BLUE_LEFT_HUB_CLOSE_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_CLOSE_NZ_POSE);
     public static final Pose2d BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE);
     public static final Pose2d BLUE_LEFT_PLOW_1_NZ_POSE = mirrorY(BLUE_RIGHT_PLOW_1_NZ_POSE);
+
+    public static final Pose2d BLUE_LEFT_ABUMP_NZ_FAR_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_FAR_POSE);
+    public static final Pose2d BLUE_LEFT_ABUMP_NZ_FAR_ROTATED_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE);
   }
 
   public static class Shooter {
