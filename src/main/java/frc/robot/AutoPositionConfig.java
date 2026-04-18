@@ -55,6 +55,11 @@ public class AutoPositionConfig {
   private Pose2d NZDoubleTapStart;
   private Pose2d NZDoubleTapEnd;
 
+  // if we are on blue left this is the right side on red alliance from our view
+  private Pose2d OppositeOtherBumpNZ;
+  // if we are on blue left this is the left side on red alliance from our view (directly across)
+  private Pose2d OppositeAcrossBumpNZ; 
+
   public AutoPositionConfig(
     Quadrant quadrant
   ) {
@@ -93,6 +98,11 @@ public class AutoPositionConfig {
           BLUE_LEFT_DEPOT_CLOSE_NZ_POSE;
         this.NZDoubleTapEnd =
           BLUE_LEFT_HUB_CLOSE_NZ_POSE;
+        
+        this.OppositeAcrossBumpNZ =
+          BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.OppositeOtherBumpNZ =
+          BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         break;
 
       case BLUE_RIGHT:
@@ -129,6 +139,11 @@ public class AutoPositionConfig {
           BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE;
         this.NZDoubleTapEnd =
           BLUE_RIGHT_HUB_CLOSE_NZ_POSE;
+
+        this.OppositeAcrossBumpNZ =
+          BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.OppositeOtherBumpNZ =
+          BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         break;
 
       case RED_LEFT:
@@ -165,6 +180,11 @@ public class AutoPositionConfig {
           BLUE_LEFT_DEPOT_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZDoubleTapEnd =
           BLUE_LEFT_HUB_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        
+        this.OppositeAcrossBumpNZ =
+          BLUE_RIGHT_ABUMP_NZ_POSE;
+        this.OppositeOtherBumpNZ =
+          BLUE_LEFT_ABUMP_NZ_POSE;
         break;
 
       case RED_RIGHT:
@@ -201,6 +221,11 @@ public class AutoPositionConfig {
           BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZDoubleTapEnd =
           BLUE_RIGHT_HUB_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+
+        this.OppositeAcrossBumpNZ =
+          BLUE_LEFT_ABUMP_NZ_POSE;
+        this.OppositeOtherBumpNZ =
+          BLUE_RIGHT_ABUMP_NZ_POSE;
         break;
     }
   }
@@ -277,5 +302,13 @@ public class AutoPositionConfig {
 
   public Pose2d NeutralZoneDoubleTapEnd() {
     return NZDoubleTapEnd;
+  }
+
+  public Pose2d OppositeAcrossBumpNZ() {
+    return OppositeAcrossBumpNZ;
+  }
+
+  public Pose2d OppositeOtherBumpNZ() {
+    return OppositeOtherBumpNZ;
   }
 }

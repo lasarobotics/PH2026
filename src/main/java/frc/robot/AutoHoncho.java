@@ -316,6 +316,183 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
     }
   }
 
+  public enum HeistAuto implements SystemState {
+    START {
+      @Override
+      public void execute() {
+        if (positionConfig == null) {
+          return;
+        }
+
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpNZ(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (
+          !DriverStation.isAutonomous() ||
+          positionConfig == null
+        ) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpNZ(), 
+            Constants.Auto.VERY_HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.VERY_HIGH_ROTATION_TOLERANCE
+          )
+        ) return TO_PLOW_1;
+        
+        return this;
+      }
+    },
+    TO_PLOW_1 {
+      @Override
+      public void initialize() {
+        IntakeSubsystem.getInstance().startIntake();
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.Plow1(), 
+          Constants.Drive.MAX_SPEED.div(1), 
+          Constants.Drive.MAX_SPEED.div(1),
+          Constants.Drive.MAX_ANGULAR_RATE.div(4));
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.Plow1(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE,
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return PASS;
+        
+        return this;
+      }
+    },
+    PASS {
+      Timer stopShootTimer = new Timer();
+
+      @Override
+      public void initialize() {
+        stopShootTimer.reset();
+        stopShootTimer.start();
+        s_wantToDumbShoot = true;
+      }
+
+      @Override
+      public void end(boolean interrupted) {
+        s_wantToDumbShoot = false;
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (stopShootTimer.hasElapsed(2.0)) {
+          return INVADE;
+        }
+        return this;
+      }
+    },
+    INVADE {
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.OppositeAcrossBumpNZ(),
+          Constants.Drive.MAX_SPEED.div(1.5),
+          Constants.Drive.MAX_SPEED.div(1.5),
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.OppositeAcrossBumpNZ(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return SWIPE;
+
+        return this;
+      }
+    },
+    SWIPE {
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.OppositeOtherBumpNZ(),
+          Constants.Drive.MAX_SPEED.div(1.5),
+          Constants.Drive.MAX_SPEED.div(1.5),
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.OppositeOtherBumpNZ(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE, 
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return PREOVERRAMP;
+
+        return this;
+      }
+    },
+    PREOVERRAMP {
+      @Override
+      public void initialize() {
+        s_wantToSpinUpShooter = true;
+      }
+
+      @Override
+      public void execute() {
+        DriveSubsystem.getInstance().goTo(
+          positionConfig.AcrossBumpNZHeadingFlipped(),
+          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(2),
+          Constants.Drive.MAX_ANGULAR_RATE
+        );
+      }
+
+      @Override
+      public SystemState nextState() {
+        if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
+
+        if (
+          DriveSubsystem.atDestination(
+            positionConfig.AcrossBumpNZHeadingFlipped(), 
+            Constants.Auto.HIGH_DISTANCE_TOLERANCE,
+            Constants.Auto.HIGH_ROTATION_TOLERANCE
+          )
+        ) return NZLiteDoubleTapAuto.OVERRAMP;
+
+        return this;
+      }
+    },
+  }
+
+
+
   public enum CaniacComboAuto implements SystemState {
     START {
       @Override
@@ -1199,6 +1376,9 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
         break;
       case "Caniac Combo":
         startingState = CaniacComboAuto.START;
+        break;
+      case "The Heist":
+        startingState = HeistAuto.START;
         break;
       case "Nothing":
       default:

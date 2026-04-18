@@ -150,6 +150,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
     AutoHoncho.s_autoQuadrantChooser.addOption("Red Right", "Red Right");
 
     AutoHoncho.s_autoTypeChooser.setDefaultOption("Basic Shoot", "Basic Shoot");
+    AutoHoncho.s_autoTypeChooser.addOption("The Heist", "The Heist");
     AutoHoncho.s_autoTypeChooser.addOption("Neutral Zone Lite", "Neutral Zone Lite");
     AutoHoncho.s_autoTypeChooser.addOption("Caniac Combo", "Caniac Combo");
     AutoHoncho.s_autoTypeChooser.addOption("Center Shoot", "Center Shoot");
