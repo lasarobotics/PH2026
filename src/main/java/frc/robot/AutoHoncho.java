@@ -396,7 +396,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public SystemState nextState() {
         if (!DriverStation.isAutonomous()) return NothingAuto.NOTHING;
 
-        if (GameHelpers.matchTimeLeft() <= 12.0) {
+        if (GameHelpers.matchTimeLeft() <= 13) {
           return INVADE;
         }
         return this;
