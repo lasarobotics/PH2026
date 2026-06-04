@@ -319,6 +319,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       // hood position before indexing
       (
         HeadHoncho.getInstance().wantToDumbShoot() ||
+        HeadHoncho.getInstance().wantToSlowShoot() ||
         DriveSubsystem.getInstance().atShootingRotation()
       )
     );
@@ -395,13 +396,19 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
    * Get the current wanted ball velocity from AimUtil
    * and convert to rotations per second. If the
    * dumb shoot button is being held, return the
-   * constant dumb speed instead.
+   * constant dumb speed instead. If the slow shoot
+   * button is being held, return the constant slow
+   * speed instead.
    * @return The wanted rotations per second
    */
   private double wantedShooterSpeed() {
     if (HeadHoncho.getInstance().wantToDumbShoot()) {
       return Constants.Shooter.DUMB_SHOOTER_SPEED;
       // return Constants.Shooter.DUMB_SHOOTER_SPEED.get();
+    }
+
+    if (HeadHoncho.getInstance().wantToSlowShoot()) {
+      return Constants.Shooter.SLOW_SHOOTER_SPEED;
     }
 
     LinearVelocity ballVelocity = AimUtil.getBallVelocity();
@@ -413,8 +420,9 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
 
   /**
    * Returns the exit angle wanted by AimUtil, unless
-   * the driver wants to dumb shoot, in which case this
-   * method returns the constant dumb hood position.
+   * the driver wants to dumb shoot or slow shoot, in
+   * which case this method returns the corresponding
+   * constant hood position.
    * @return The angle that the hood should be at. This
    * value accounts for the offset of the hood relative
    * to the exit angle.
@@ -424,6 +432,10 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       return Constants.Shooter.DUMB_HOOD_POSITION;
       // return Degrees.of(Constants.Shooter.DUMB_HOOD_POSITION.get())
       //   .minus(Degrees.of(80));
+    }
+
+    if (HeadHoncho.getInstance().wantToSlowShoot()) {
+      return Constants.Shooter.SLOW_HOOD_POSITION;
     }
 
     return AimUtil.getExitAngle().minus(Degrees.of(80.0));
@@ -445,9 +457,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     // If not in operation, just stop everything
     boolean shooting = HeadHoncho.getInstance().wantToShoot();
     boolean dumbShooting = HeadHoncho.getInstance().wantToDumbShoot();
+    boolean slowShooting = HeadHoncho.getInstance().wantToSlowShoot();
     boolean forceShooting = HeadHoncho.getInstance().wantToForceShoot();
     Logger.recordOutput("ShooterSubsystem/wantToShoot", shooting);
     Logger.recordOutput("ShooterSubsystem/wantToDumbShoot", dumbShooting);
+    Logger.recordOutput("ShooterSubsystem/wantToSlowShoot", slowShooting);
     Logger.recordOutput("ShooterSubsystem/wantToForceShoot", forceShooting);
     Logger.recordOutput("ShooterSubsystem/inAllianceZone", DriveSubsystem.inAllianceZone());
     
@@ -455,7 +469,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     if (m_isRunning) {
       adjustHood();
 
-      if (shooting || forceShooting || dumbShooting) {
+      if (shooting || forceShooting || dumbShooting || slowShooting) {
         runShooter();
         IntakeSubsystem.getInstance().jiggleOn();
 
@@ -482,6 +496,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
             // doesn't check orientation if the dumb
             // shooting button is held
             (readyToShoot && dumbShooting) ||
+            // Same as dumb shoot: wantedHoodPosition &
+            // wantedShooterSpeed return the slow constants
+            // and readyToShoot doesn't check orientation
+            // if the slow shooting button is held
+            (readyToShoot && slowShooting) ||
             (forceShooting && atShootSpeed())
         ) {
           runIndexer();

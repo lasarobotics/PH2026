@@ -329,6 +329,12 @@ public final class Constants {
     // public static final LoggedNetworkNumber DUMB_SHOOTER_SPEED
     //   = new LoggedNetworkNumber("/Tuning/dumbShooterSpeed", 42.148);
 
+    // slow shoot: fixed low-speed shot bound to right bumper
+    // hood position is a placeholder copy of DUMB_HOOD_POSITION; tune as needed
+    public static final Angle SLOW_HOOD_POSITION = Degrees.of(-18.906);
+    // In rotations per second
+    public static final double SLOW_SHOOTER_SPEED = 10;
+
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND

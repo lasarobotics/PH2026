@@ -79,6 +79,8 @@ public class RobotContainer {
       m_driverController.rightTrigger(),
       // dumbshoot button
       m_driverController.b(),
+      // slowshoot button
+      m_driverController.rightBumper(),
       // forceshoot button
       m_driverController.y(),
       // cancel button

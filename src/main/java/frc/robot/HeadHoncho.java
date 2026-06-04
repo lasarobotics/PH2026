@@ -63,7 +63,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
           s_headHoncho.m_shootButton.getAsBoolean()     ||
           AutoHoncho.autoWantToShoot()                  ||
           s_headHoncho.m_dumbShootButton.getAsBoolean() ||
-          AutoHoncho.autoWantToDumbShoot();
+          AutoHoncho.autoWantToDumbShoot()              ||
+          s_headHoncho.m_slowShootButton.getAsBoolean();
 
         Translation3d shootPos = wantedShootPosition();
         AimUtil.setTarget(
@@ -122,6 +123,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   private static HeadHoncho s_headHoncho;
   private BooleanSupplier m_shootButton;
   private BooleanSupplier m_dumbShootButton;
+  private BooleanSupplier m_slowShootButton;
   private BooleanSupplier m_forceShootButton;
   private BooleanSupplier m_cancelButton;
   private BooleanSupplier m_reverseIntakeButton;
@@ -185,6 +187,14 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    */
   public boolean wantToDumbShoot() {
     return m_dumbShootButton.getAsBoolean() || AutoHoncho.autoWantToDumbShoot();
+  }
+
+  /**
+   * Determines whether the robot should slow shoot or not
+   * @return {@code true} if robot wants to slow shoot, {@code false} if otherwise
+   */
+  public boolean wantToSlowShoot() {
+    return m_slowShootButton.getAsBoolean();
   }
 
   /**
@@ -277,6 +287,8 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
    * @param shootButton True if we currently want to shoot.
    * @param dumbShootButton True if we currently want to
    * do a dumb shoot (constant hood position & speed).
+   * @param slowShootButton True if we currently want to
+   * do a slow shoot (constant low hood position & speed).
    * @param forceShootButton True if we want to override
    * shooter checks & force run the indexer.
    * @param cancelButton Currently unused.
@@ -294,6 +306,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   public void configureBindings(
     BooleanSupplier shootButton,
     BooleanSupplier dumbShootButton,
+    BooleanSupplier slowShootButton,
     BooleanSupplier forceShootButton,
     BooleanSupplier cancelButton,
     BooleanSupplier reverseIntakeButton,
@@ -307,6 +320,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
   ) {
     m_shootButton = shootButton;
     m_dumbShootButton = dumbShootButton;
+    m_slowShootButton = slowShootButton;
     m_forceShootButton = forceShootButton;
     m_cancelButton = cancelButton;
     m_reverseIntakeButton = reverseIntakeButton;
