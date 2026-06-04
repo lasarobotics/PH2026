@@ -63,8 +63,7 @@ public class HeadHoncho extends StateMachine implements AutoCloseable {
           s_headHoncho.m_shootButton.getAsBoolean()     ||
           AutoHoncho.autoWantToShoot()                  ||
           s_headHoncho.m_dumbShootButton.getAsBoolean() ||
-          AutoHoncho.autoWantToDumbShoot()              ||
-          s_headHoncho.m_slowShootButton.getAsBoolean();
+          AutoHoncho.autoWantToDumbShoot();
 
         Translation3d shootPos = wantedShootPosition();
         AimUtil.setTarget(

@@ -408,7 +408,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
 
     if (HeadHoncho.getInstance().wantToSlowShoot()) {
-      return Constants.Shooter.SLOW_SHOOTER_SPEED;
+      return Constants.Shooter.SLOW_SHOOTER_SPEED.get();
     }
 
     LinearVelocity ballVelocity = AimUtil.getBallVelocity();
@@ -435,7 +435,7 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
     }
 
     if (HeadHoncho.getInstance().wantToSlowShoot()) {
-      return Constants.Shooter.SLOW_HOOD_POSITION;
+      return Degrees.of(Constants.Shooter.SLOW_HOOD_POSITION.get());
     }
 
     return AimUtil.getExitAngle().minus(Degrees.of(80.0));
@@ -512,11 +512,12 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       } else {
         IntakeSubsystem.getInstance().jiggleOff();
         if (
-          AutoHoncho.autoWantToSpinUpShooter() ||
-          (
-            DriveSubsystem.inAllianceZone() &&
-            spinUpTimeOkay()
-          )
+          false
+          // AutoHoncho.autoWantToSpinUpShooter() ||
+          // (
+          //   DriveSubsystem.inAllianceZone() &&
+          //   spinUpTimeOkay()
+          // )
         ) {
           holdShooter();
         } else {

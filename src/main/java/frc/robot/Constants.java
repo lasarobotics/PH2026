@@ -331,9 +331,12 @@ public final class Constants {
 
     // slow shoot: fixed low-speed shot bound to right bumper
     // hood position is a placeholder copy of DUMB_HOOD_POSITION; tune as needed
-    public static final Angle SLOW_HOOD_POSITION = Degrees.of(-18.906);
+    // public static final Angle SLOW_HOOD_POSITION = Degrees.of(-18.906);
+    public static final LoggedNetworkNumber SLOW_HOOD_POSITION
+      = new LoggedNetworkNumber("/Tuning/slowHoodPosition", -18.906);
     // In rotations per second
-    public static final double SLOW_SHOOTER_SPEED = 10;
+    public static final LoggedNetworkNumber SLOW_SHOOTER_SPEED
+      = new LoggedNetworkNumber("/Tuning/slowShootSpeed", 27.5);
 
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
@@ -369,8 +372,10 @@ public final class Constants {
 
     // normally 0.3 and 1.0
     public static final double SLOW_SPEED_SCALAR = 0.15;
-    public static final double FAST_SPEED_SCALAR = .75;
-    public static final double ROTATION_SPEED_SCALAR = .75 * .85;
+    // public static final double FAST_SPEED_SCALAR = .75;
+    public static final double FAST_SPEED_SCALAR = .4;
+    // public static final double ROTATION_SPEED_SCALAR = .75 * .85;
+    public static final double ROTATION_SPEED_SCALAR = .4 * .85;
 
     // P on rotation error for auto aim
     public static final LoggedNetworkNumber AIM_ROTATION_P =
