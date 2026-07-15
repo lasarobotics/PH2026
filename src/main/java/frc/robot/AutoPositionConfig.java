@@ -1,7 +1,6 @@
 package frc.robot;
 
 import static edu.wpi.first.math.geometry.Rotation2d.k180deg;
-import static edu.wpi.first.units.Units.Degrees;
 import static frc.robot.Constants.Auto.BLUE_CENTER_POSE;
 import static frc.robot.Constants.Auto.BLUE_DEPOT_ENTER_POSE;
 import static frc.robot.Constants.Auto.BLUE_DEPOT_EXIT_POSE;
@@ -9,32 +8,26 @@ import static frc.robot.Constants.Auto.BLUE_LEFT_ABUMP_AZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_ROTATED_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_ABUMP_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_ABUMP_NZ_ROTATED_POSE;
-import static frc.robot.Constants.Auto.BLUE_LEFT_DEPOT_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_LEFT_DEPOT_CLOSE_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_LEFT_HUB_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_HUB_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_OUTPOST_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_PLOW_1_NZ_POSE;
-import static frc.robot.Constants.Auto.BLUE_LEFT_DEPOT_CLOSE_NZ_POSE;
-import static frc.robot.Constants.Auto.BLUE_LEFT_HUB_CLOSE_NZ_POSE;
-import static frc.robot.Constants.Auto.BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_LEFT_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_ABUMP_AZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_ABUMP_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_DEPOT_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_RIGHT_HUB_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_HUB_NZ_POSE;
+import static frc.robot.Constants.Auto.BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_OUTPOST_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_PLOW_1_NZ_POSE;
-import static frc.robot.Constants.Auto.BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE;
-import static frc.robot.Constants.Auto.BLUE_RIGHT_HUB_CLOSE_NZ_POSE;
-import static frc.robot.Constants.Auto.BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE;
 import static frc.robot.Constants.Auto.BLUE_RIGHT_POSE;
-import static frc.robot.Constants.Auto.HEIST_OFFSET;
 import static frc.robot.Constants.Auto.rotate180;
 import static frc.robot.Constants.Field.FIELD_CENTER;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Transform2d;
 
 public class AutoPositionConfig {
   public enum Quadrant {
@@ -49,7 +42,7 @@ public class AutoPositionConfig {
   private Pose2d AllianceZoneCenter;
   private Pose2d DepotEnterPose;
   private Pose2d DepotExitPose;
-  
+
   private Pose2d AcrossBumpNZ;
   private Pose2d AcrossBumpNZOpposite;
   private Pose2d AcrossBumpAZ;
@@ -65,192 +58,121 @@ public class AutoPositionConfig {
   // if we are on blue left this is the right side on red alliance from our view
   private Pose2d OppositeOtherBumpNZ;
   // if we are on blue left this is the left side on red alliance from our view (directly across)
-  private Pose2d OppositeAcrossBumpNZ; 
+  private Pose2d OppositeAcrossBumpNZ;
   private Pose2d OppositeOtherBumpRotatedNZ;
   private Pose2d AcrossBumpNZRotated;
 
-  public AutoPositionConfig(
-    Quadrant quadrant
-  ) {
+  public AutoPositionConfig(Quadrant quadrant) {
     switch (quadrant) {
       case BLUE_LEFT:
-        this.AllianceZoneSide =
-          BLUE_LEFT_POSE;
-        this.AllianceZoneOppositeSide =
-          BLUE_RIGHT_POSE;
-        this.AllianceZoneCenter =
-          BLUE_CENTER_POSE;
-        this.DepotEnterPose =
-          BLUE_DEPOT_ENTER_POSE;
-        this.DepotExitPose =
-          BLUE_DEPOT_EXIT_POSE;
+        this.AllianceZoneSide = BLUE_LEFT_POSE;
+        this.AllianceZoneOppositeSide = BLUE_RIGHT_POSE;
+        this.AllianceZoneCenter = BLUE_CENTER_POSE;
+        this.DepotEnterPose = BLUE_DEPOT_ENTER_POSE;
+        this.DepotExitPose = BLUE_DEPOT_EXIT_POSE;
 
-        this.AcrossBumpNZ =
-          BLUE_LEFT_ABUMP_NZ_POSE;
-        this.AcrossBumpNZHeadingFlipped =
-          rotate180(BLUE_LEFT_ABUMP_NZ_POSE);
-        this.AcrossBumpNZOpposite =
-          BLUE_RIGHT_ABUMP_NZ_POSE;
-        this.AcrossBumpAZ =
-          BLUE_LEFT_ABUMP_AZ_POSE;
-        this.Plow1 = 
-          BLUE_LEFT_PLOW_1_NZ_POSE;
-        this.NZStart =
-          BLUE_LEFT_OUTPOST_NZ_POSE;
-        this.NZEnd =
-          BLUE_LEFT_HUB_NZ_POSE;
-        this.NZEndFull =
-          BLUE_LEFT_OUTPOST_NZ_POSE;
-        this.AcrossBumpAZOpposite =
-          BLUE_RIGHT_ABUMP_AZ_POSE;
-        this.NZDoubleTapStart =
-          BLUE_LEFT_DEPOT_CLOSE_NZ_POSE;
-        this.NZDoubleTapEnd =
-          BLUE_LEFT_HUB_CLOSE_NZ_POSE;
-        
+        this.AcrossBumpNZ = BLUE_LEFT_ABUMP_NZ_POSE;
+        this.AcrossBumpNZHeadingFlipped = rotate180(BLUE_LEFT_ABUMP_NZ_POSE);
+        this.AcrossBumpNZOpposite = BLUE_RIGHT_ABUMP_NZ_POSE;
+        this.AcrossBumpAZ = BLUE_LEFT_ABUMP_AZ_POSE;
+        this.Plow1 = BLUE_LEFT_PLOW_1_NZ_POSE;
+        this.NZStart = BLUE_LEFT_OUTPOST_NZ_POSE;
+        this.NZEnd = BLUE_LEFT_HUB_NZ_POSE;
+        this.NZEndFull = BLUE_LEFT_OUTPOST_NZ_POSE;
+        this.AcrossBumpAZOpposite = BLUE_RIGHT_ABUMP_AZ_POSE;
+        this.NZDoubleTapStart = BLUE_LEFT_DEPOT_CLOSE_NZ_POSE;
+        this.NZDoubleTapEnd = BLUE_LEFT_HUB_CLOSE_NZ_POSE;
+
         this.OppositeAcrossBumpNZ =
-          Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_POSE.rotateAround(FIELD_CENTER, k180deg);
+            Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.OppositeOtherBumpNZ =
-          Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_POSE.rotateAround(FIELD_CENTER, k180deg);
+            Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.OppositeOtherBumpRotatedNZ =
-          BLUE_LEFT_ABUMP_NZ_FAR_ROTATED_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AcrossBumpNZRotated =
-          BLUE_LEFT_ABUMP_NZ_ROTATED_POSE;
+            BLUE_LEFT_ABUMP_NZ_FAR_ROTATED_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpNZRotated = BLUE_LEFT_ABUMP_NZ_ROTATED_POSE;
         break;
 
       case BLUE_RIGHT:
-        this.AllianceZoneSide =
-          BLUE_RIGHT_POSE;
-        this.AllianceZoneOppositeSide =
-          BLUE_LEFT_POSE;
-        this.AllianceZoneCenter =
-          BLUE_CENTER_POSE;
-        this.DepotEnterPose =
-          BLUE_DEPOT_ENTER_POSE;
-        this.DepotExitPose =
-          BLUE_DEPOT_EXIT_POSE;
+        this.AllianceZoneSide = BLUE_RIGHT_POSE;
+        this.AllianceZoneOppositeSide = BLUE_LEFT_POSE;
+        this.AllianceZoneCenter = BLUE_CENTER_POSE;
+        this.DepotEnterPose = BLUE_DEPOT_ENTER_POSE;
+        this.DepotExitPose = BLUE_DEPOT_EXIT_POSE;
 
-        this.AcrossBumpNZ =
-          BLUE_RIGHT_ABUMP_NZ_POSE;
-        this.AcrossBumpNZHeadingFlipped =
-          rotate180(BLUE_RIGHT_ABUMP_NZ_POSE);
-        this.AcrossBumpNZOpposite =
-          BLUE_LEFT_ABUMP_NZ_POSE;
-        this.AcrossBumpAZ =
-          BLUE_RIGHT_ABUMP_AZ_POSE;
-        this.Plow1 = 
-          BLUE_RIGHT_PLOW_1_NZ_POSE;
-        this.NZStart =
-          BLUE_RIGHT_OUTPOST_NZ_POSE;
-        this.NZEnd =
-          BLUE_RIGHT_HUB_NZ_POSE;
-        this.NZEndFull =
-          BLUE_RIGHT_DEPOT_NZ_POSE;
-        this.AcrossBumpAZOpposite =
-          BLUE_LEFT_ABUMP_AZ_POSE;
-        this.NZDoubleTapStart =
-          BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE;
-        this.NZDoubleTapEnd =
-          BLUE_RIGHT_HUB_CLOSE_NZ_POSE;
+        this.AcrossBumpNZ = BLUE_RIGHT_ABUMP_NZ_POSE;
+        this.AcrossBumpNZHeadingFlipped = rotate180(BLUE_RIGHT_ABUMP_NZ_POSE);
+        this.AcrossBumpNZOpposite = BLUE_LEFT_ABUMP_NZ_POSE;
+        this.AcrossBumpAZ = BLUE_RIGHT_ABUMP_AZ_POSE;
+        this.Plow1 = BLUE_RIGHT_PLOW_1_NZ_POSE;
+        this.NZStart = BLUE_RIGHT_OUTPOST_NZ_POSE;
+        this.NZEnd = BLUE_RIGHT_HUB_NZ_POSE;
+        this.NZEndFull = BLUE_RIGHT_DEPOT_NZ_POSE;
+        this.AcrossBumpAZOpposite = BLUE_LEFT_ABUMP_AZ_POSE;
+        this.NZDoubleTapStart = BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE;
+        this.NZDoubleTapEnd = BLUE_RIGHT_HUB_CLOSE_NZ_POSE;
 
         this.OppositeAcrossBumpNZ =
-          Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_POSE.rotateAround(FIELD_CENTER, k180deg);
+            Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.OppositeOtherBumpNZ =
-          Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_POSE.rotateAround(FIELD_CENTER, k180deg);
+            Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.OppositeOtherBumpRotatedNZ =
-          BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AcrossBumpNZRotated =
-          Constants.Auto.BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE;
+            BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpNZRotated = Constants.Auto.BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE;
         break;
 
       case RED_LEFT:
-        this.AllianceZoneSide =
-          BLUE_LEFT_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AllianceZoneOppositeSide =
-          BLUE_RIGHT_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AllianceZoneCenter =
-          BLUE_CENTER_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.DepotEnterPose =
-          BLUE_DEPOT_ENTER_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.DepotExitPose =
-          BLUE_DEPOT_EXIT_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AllianceZoneSide = BLUE_LEFT_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AllianceZoneOppositeSide = BLUE_RIGHT_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AllianceZoneCenter = BLUE_CENTER_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.DepotEnterPose = BLUE_DEPOT_ENTER_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.DepotExitPose = BLUE_DEPOT_EXIT_POSE.rotateAround(FIELD_CENTER, k180deg);
 
-        this.AcrossBumpNZ =
-          BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpNZ = BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.AcrossBumpNZHeadingFlipped =
-          rotate180(BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg));
-        this.AcrossBumpNZOpposite =
-          BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AcrossBumpAZ =
-          BLUE_LEFT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.Plow1 = 
-          BLUE_LEFT_PLOW_1_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZStart =
-          BLUE_LEFT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZEnd =
-          BLUE_LEFT_HUB_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZEndFull =
-          BLUE_LEFT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AcrossBumpAZOpposite =
-          BLUE_RIGHT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZDoubleTapStart =
-          BLUE_LEFT_DEPOT_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZDoubleTapEnd =
-          BLUE_LEFT_HUB_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        
-        this.OppositeAcrossBumpNZ =
-          Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_POSE;
-        this.OppositeOtherBumpNZ =
-          Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_POSE;
-        this.OppositeOtherBumpRotatedNZ =
-          BLUE_LEFT_ABUMP_NZ_FAR_ROTATED_POSE;
+            rotate180(BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg));
+        this.AcrossBumpNZOpposite = BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpAZ = BLUE_LEFT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.Plow1 = BLUE_LEFT_PLOW_1_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZStart = BLUE_LEFT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZEnd = BLUE_LEFT_HUB_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZEndFull = BLUE_LEFT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpAZOpposite = BLUE_RIGHT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZDoubleTapStart = BLUE_LEFT_DEPOT_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZDoubleTapEnd = BLUE_LEFT_HUB_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+
+        this.OppositeAcrossBumpNZ = Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_POSE;
+        this.OppositeOtherBumpNZ = Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_POSE;
+        this.OppositeOtherBumpRotatedNZ = BLUE_LEFT_ABUMP_NZ_FAR_ROTATED_POSE;
         this.AcrossBumpNZRotated =
-          Constants.Auto.BLUE_LEFT_ABUMP_NZ_ROTATED_POSE.rotateAround(FIELD_CENTER, k180deg);
+            Constants.Auto.BLUE_LEFT_ABUMP_NZ_ROTATED_POSE.rotateAround(FIELD_CENTER, k180deg);
         break;
 
       case RED_RIGHT:
-        this.AllianceZoneSide =
-          BLUE_RIGHT_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AllianceZoneOppositeSide =
-          BLUE_LEFT_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AllianceZoneCenter =
-          BLUE_CENTER_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.DepotEnterPose =
-          BLUE_DEPOT_ENTER_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.DepotExitPose =
-          BLUE_DEPOT_EXIT_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AllianceZoneSide = BLUE_RIGHT_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AllianceZoneOppositeSide = BLUE_LEFT_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AllianceZoneCenter = BLUE_CENTER_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.DepotEnterPose = BLUE_DEPOT_ENTER_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.DepotExitPose = BLUE_DEPOT_EXIT_POSE.rotateAround(FIELD_CENTER, k180deg);
 
-        this.AcrossBumpNZ =
-          BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpNZ = BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.AcrossBumpNZHeadingFlipped =
-          rotate180(BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg));
-        this.AcrossBumpNZOpposite =
-          BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AcrossBumpAZ =
-          BLUE_RIGHT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.Plow1 = 
-          BLUE_RIGHT_PLOW_1_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZStart =
-          BLUE_RIGHT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZEnd =
-          BLUE_RIGHT_HUB_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZEndFull =
-          BLUE_RIGHT_DEPOT_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.AcrossBumpAZOpposite =
-          BLUE_LEFT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+            rotate180(BLUE_RIGHT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg));
+        this.AcrossBumpNZOpposite = BLUE_LEFT_ABUMP_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpAZ = BLUE_RIGHT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.Plow1 = BLUE_RIGHT_PLOW_1_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZStart = BLUE_RIGHT_OUTPOST_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZEnd = BLUE_RIGHT_HUB_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZEndFull = BLUE_RIGHT_DEPOT_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.AcrossBumpAZOpposite = BLUE_LEFT_ABUMP_AZ_POSE.rotateAround(FIELD_CENTER, k180deg);
         this.NZDoubleTapStart =
-          BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
-        this.NZDoubleTapEnd =
-          BLUE_RIGHT_HUB_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+            BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
+        this.NZDoubleTapEnd = BLUE_RIGHT_HUB_CLOSE_NZ_POSE.rotateAround(FIELD_CENTER, k180deg);
 
-        this.OppositeAcrossBumpNZ =
-          Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_POSE;
-        this.OppositeOtherBumpNZ =
-          Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_POSE;
-        this.OppositeOtherBumpRotatedNZ =
-          BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE;
+        this.OppositeAcrossBumpNZ = Constants.Auto.BLUE_LEFT_ABUMP_NZ_FAR_POSE;
+        this.OppositeOtherBumpNZ = Constants.Auto.BLUE_RIGHT_ABUMP_NZ_FAR_POSE;
+        this.OppositeOtherBumpRotatedNZ = BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE;
         this.AcrossBumpNZRotated =
-          Constants.Auto.BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE.rotateAround(FIELD_CENTER, k180deg);
+            Constants.Auto.BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE.rotateAround(FIELD_CENTER, k180deg);
         break;
     }
   }
@@ -266,11 +188,11 @@ public class AutoPositionConfig {
   public Pose2d AllianceZoneCenter() {
     return AllianceZoneCenter;
   }
-  
+
   public Pose2d DepotEnterPose() {
     return DepotEnterPose;
   }
-  
+
   public Pose2d DepotExitPose() {
     return DepotExitPose;
   }
@@ -300,7 +222,7 @@ public class AutoPositionConfig {
     return AcrossBumpAZOpposite;
   }
 
-  //Go to the PLOW_1 position before you plow in auto
+  // Go to the PLOW_1 position before you plow in auto
   public Pose2d Plow1() {
     return Plow1;
   }
@@ -309,7 +231,6 @@ public class AutoPositionConfig {
   public Pose2d NeutralZoneStart() {
     return NZStart;
   }
-
 
   // Position to end plow (for short)
   public Pose2d NeutralZoneEnd() {
