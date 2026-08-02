@@ -300,7 +300,7 @@ public final class Constants {
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;
 
-    public static final LoggedNetworkNumber DRIP_DISTANCE_FUDGE = new LoggedNetworkNumber("/Tuning/dripDistanceFudge", .75);
+    public static final LoggedNetworkNumber DRIP_DISTANCE_FUDGE = new LoggedNetworkNumber("/Tuning/dripDistanceFudge", .5);
 
     // Note: using wpilib coordinate system
     // intake is front
