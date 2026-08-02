@@ -938,8 +938,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.NeutralZoneDoubleTapEnd(),
-          Constants.Drive.MAX_SPEED.div(1.5),
-          MetersPerSecond.of(1),
+          Constants.Drive.MAX_SPEED.div(2.5),
+          MetersPerSecond.of(1.5),
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
