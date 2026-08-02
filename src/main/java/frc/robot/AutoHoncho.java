@@ -271,7 +271,7 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.AcrossBumpAZ(),
-          Constants.Drive.MAX_SPEED.div(5),
+          Constants.Drive.MAX_SPEED.div(7),
           Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE
         );
@@ -709,8 +709,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
 
         DriveSubsystem.getInstance().goTo(
           positionConfig.AcrossBumpNZ(),
-          Constants.Drive.MAX_SPEED,
-          Constants.Drive.MAX_SPEED,
+          Constants.Drive.MAX_SPEED.div(1.5), // MAYBE SLOW THIS DOWN
+          Constants.Drive.MAX_SPEED.div(1), // MAYBE THIS AS WELL
           Constants.Drive.MAX_ANGULAR_RATE
         );
       }
@@ -743,8 +743,8 @@ public class AutoHoncho extends StateMachine implements AutoCloseable {
       public void execute() {
         DriveSubsystem.getInstance().goTo(
           positionConfig.Plow1(), 
-          Constants.Drive.MAX_SPEED.div(1), 
-          Constants.Drive.MAX_SPEED.div(1),
+          Constants.Drive.MAX_SPEED.div(4), 
+          Constants.Drive.MAX_SPEED.div(2),
           Constants.Drive.MAX_ANGULAR_RATE.div(4));
       }
 

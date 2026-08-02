@@ -279,7 +279,7 @@ public final class Constants {
     // generally I think we shoot at around 40 to 50 rotations per second
     // chris suggests going higher so we're above rather than below
     // call it 5 volts tbh
-    public static final double HOLD_VOLTAGE = 5.0;
+    public static final double HOLD_VOLTAGE = 4.5;
 
     // shooter speed tolerance is in rotations per second
     public static final double SHOOTER_SPEED_BELOW_TOLERANCE = 1;
@@ -372,10 +372,8 @@ public final class Constants {
 
     // normally 0.3 and 1.0
     public static final double SLOW_SPEED_SCALAR = 0.15;
-    // public static final double FAST_SPEED_SCALAR = .75;
-    public static final double FAST_SPEED_SCALAR = .4;
-    // public static final double ROTATION_SPEED_SCALAR = .75 * .85;
-    public static final double ROTATION_SPEED_SCALAR = .4 * .85;
+    public static final double FAST_SPEED_SCALAR = .75;
+    public static final double ROTATION_SPEED_SCALAR = .75 * .85;
 
     // P on rotation error for auto aim
     public static final LoggedNetworkNumber AIM_ROTATION_P =

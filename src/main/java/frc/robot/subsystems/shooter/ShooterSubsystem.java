@@ -512,12 +512,11 @@ public class ShooterSubsystem extends SubsystemBase implements AutoCloseable {
       } else {
         IntakeSubsystem.getInstance().jiggleOff();
         if (
-          false
-          // AutoHoncho.autoWantToSpinUpShooter() ||
-          // (
-          //   DriveSubsystem.inAllianceZone() &&
-          //   spinUpTimeOkay()
-          // )
+          AutoHoncho.autoWantToSpinUpShooter() ||
+          (
+            DriveSubsystem.inAllianceZone() &&
+            spinUpTimeOkay()
+          )
         ) {
           holdShooter();
         } else {
