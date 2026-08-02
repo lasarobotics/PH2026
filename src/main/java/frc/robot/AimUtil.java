@@ -237,7 +237,7 @@ public class AimUtil {
 
     // Get your stationary shooter velocity 2d vector
     Translation2d shooterVelocityVec = new Translation2d(
-      getVelocityXStationary(dist, targetHeight, maxBallYPos),
+      getVelocityXStationary(dist + Constants.Shooter.DRIP_DISTANCE_FUDGE.get(), targetHeight, maxBallYPos),
       getVelocityYStationary(maxBallYPos)
     );
 
