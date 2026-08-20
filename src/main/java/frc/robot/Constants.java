@@ -335,10 +335,10 @@ public final class Constants {
     // hood position is a placeholder copy of DUMB_HOOD_POSITION; tune as needed
     // public static final Angle SLOW_HOOD_POSITION = Degrees.of(-18.906);
     public static final LoggedNetworkNumber SLOW_HOOD_POSITION
-      = new LoggedNetworkNumber("/Tuning/slowHoodPosition", -18.906);
+      = new LoggedNetworkNumber("/Tuning/slowHoodPosition", -18);
     // In rotations per second
     public static final LoggedNetworkNumber SLOW_SHOOTER_SPEED
-      = new LoggedNetworkNumber("/Tuning/slowShootSpeed", 27.5);
+      = new LoggedNetworkNumber("/Tuning/slowShootSpeed", 33.5);
 
     public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
       = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
