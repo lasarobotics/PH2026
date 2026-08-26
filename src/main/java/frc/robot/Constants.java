@@ -5,41 +5,28 @@
 package frc.robot;
 
 import static edu.wpi.first.units.Units.Celsius;
-import static edu.wpi.first.units.Units.Degree;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
-import static edu.wpi.first.units.Units.RadiansPerSecond;
-import static edu.wpi.first.units.Units.RadiansPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.RotationsPerSecond;
-import static edu.wpi.first.units.Units.RotationsPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Seconds;
-import static edu.wpi.first.units.Units.Volts;
-
-import java.util.function.DoubleSupplier;
-
-import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 import com.ctre.phoenix6.signals.RGBWColor;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Voltage;
 import frc.robot.generated.TunerConstants;
+import java.util.function.DoubleSupplier;
+import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /**
  * The Constants class provides a convenient place for teams to hold robot-wide numerical or boolean
@@ -64,46 +51,36 @@ public final class Constants {
     public static final Angle ULTRA_HIGH_ROTATION_TOLERANCE = Degrees.of(45);
     public static final Angle VERY_HIGH_ROTATION_TOLERANCE = Degrees.of(20);
     public static final Angle HIGH_ROTATION_TOLERANCE = Degrees.of(10);
-    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2.5); 
+    public static final Angle LOW_ROTATION_TOLERANCE = Degrees.of(2.5);
 
     public static final double HEIST_OFFSET = 0.416;
 
     public static Pose2d mirrorY(Pose2d poseToMirror) {
       return new Pose2d(
-        new Translation2d(
-          poseToMirror.getMeasureX(),
-          Field.FIELD_Y.minus(poseToMirror.getMeasureY())
-        ),
-        poseToMirror.getRotation().times(-1)
-      );
+          new Translation2d(
+              poseToMirror.getMeasureX(), Field.FIELD_Y.minus(poseToMirror.getMeasureY())),
+          poseToMirror.getRotation().times(-1));
     }
 
     public static Pose2d flipHeading(Pose2d poseToFlip) {
-      return new Pose2d(
-        poseToFlip.getTranslation(),
-        poseToFlip.getRotation().times(-1)
-      );
+      return new Pose2d(poseToFlip.getTranslation(), poseToFlip.getRotation().times(-1));
     }
 
     public static Pose2d rotate180(Pose2d poseToFlip) {
       return new Pose2d(
-        poseToFlip.getTranslation(),
-        poseToFlip.getRotation().plus(Rotation2d.k180deg)
-      );
+          poseToFlip.getTranslation(), poseToFlip.getRotation().plus(Rotation2d.k180deg));
     }
 
     public static Pose2d rotate45(Pose2d poseToFlip) {
       return new Pose2d(
-        poseToFlip.getTranslation(),
-        poseToFlip.getRotation().plus(new Rotation2d(Degrees.of(45)))
-      );
+          poseToFlip.getTranslation(),
+          poseToFlip.getRotation().plus(new Rotation2d(Degrees.of(45))));
     }
 
     public static Pose2d rotate225(Pose2d poseToFlip) {
       return new Pose2d(
-        poseToFlip.getTranslation(),
-        poseToFlip.getRotation().plus(new Rotation2d(Degrees.of(45+180)))
-      );
+          poseToFlip.getTranslation(),
+          poseToFlip.getRotation().plus(new Rotation2d(Degrees.of(45 + 180))));
     }
 
     //                                     //
@@ -113,37 +90,22 @@ public final class Constants {
     // move 1.5 meters over depot
     public static final Distance DEPOT_EXIT_OFFSET = Meters.of(1.5);
 
-    public static final Pose2d BLUE_RIGHT_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(2.5),
-        Meters.of(1.542)
-      ),
-      new Rotation2d(
-        Degrees.of(-135)
-      )
-    );
+    public static final Pose2d BLUE_RIGHT_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(2.5), Meters.of(1.542)), new Rotation2d(Degrees.of(-135)));
     public static final Pose2d BLUE_LEFT_POSE = mirrorY(BLUE_RIGHT_POSE);
-    public static final Pose2d BLUE_CENTER_POSE = new Pose2d(
-      new Translation2d(
-        BLUE_RIGHT_POSE.getMeasureX(),
-        Field.FIELD_Y.div(2)
-      ),
-      Rotation2d.k180deg
-    );
-    public static final Pose2d BLUE_DEPOT_ENTER_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(0.5),
-        Meters.of(7)
-      ),
-      Rotation2d.kCW_90deg
-    );
-    public static final Pose2d BLUE_DEPOT_EXIT_POSE = new Pose2d(
-      new Translation2d(
-        BLUE_DEPOT_ENTER_POSE.getMeasureX(),
-        BLUE_DEPOT_ENTER_POSE.getMeasureY().minus(DEPOT_EXIT_OFFSET)
-      ),
-      BLUE_DEPOT_ENTER_POSE.getRotation()
-    );
+    public static final Pose2d BLUE_CENTER_POSE =
+        new Pose2d(
+            new Translation2d(BLUE_RIGHT_POSE.getMeasureX(), Field.FIELD_Y.div(2)),
+            Rotation2d.k180deg);
+    public static final Pose2d BLUE_DEPOT_ENTER_POSE =
+        new Pose2d(new Translation2d(Meters.of(0.5), Meters.of(7)), Rotation2d.kCW_90deg);
+    public static final Pose2d BLUE_DEPOT_EXIT_POSE =
+        new Pose2d(
+            new Translation2d(
+                BLUE_DEPOT_ENTER_POSE.getMeasureX(),
+                BLUE_DEPOT_ENTER_POSE.getMeasureY().minus(DEPOT_EXIT_OFFSET)),
+            BLUE_DEPOT_ENTER_POSE.getRotation());
 
     //                                     //
     // bump traversal & neutral zone poses //
@@ -154,107 +116,84 @@ public final class Constants {
     //              //
 
     // bump crossing
-    public static final Pose2d BLUE_RIGHT_ABUMP_AZ_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(3.1),
-        Meters.of(2.375)
-      ),
-      Rotation2d.k180deg
-    );
-    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(5.983),
-        BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()
-      ),
-      Rotation2d.kZero
-    );
+    public static final Pose2d BLUE_RIGHT_ABUMP_AZ_POSE =
+        new Pose2d(new Translation2d(Meters.of(3.1), Meters.of(2.375)), Rotation2d.k180deg);
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(5.983), BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()),
+            Rotation2d.kZero);
 
     // first tap
-    public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(7.5),
-        Meters.of(6.16)
-      ),
-      new Rotation2d(Degrees.of(45))
-    );
-    public static final Pose2d BLUE_RIGHT_HUB_NZ_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(7.9),
-        Meters.of(3.5)
-      ),
-      Rotation2d.kCCW_90deg
-    );
-    public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(7.8),
-        Meters.of(2.375)
-      ),
-      new Rotation2d(Degrees.of(90))
-    );
-    public static final Pose2d BLUE_RIGHT_PLOW_1_NZ_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(7.8),
-        BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureY()
-      ), new Rotation2d(Degrees.of(0))
-    );
+    public static final Pose2d BLUE_RIGHT_DEPOT_NZ_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(7.5), Meters.of(6.16)), new Rotation2d(Degrees.of(45)));
+    public static final Pose2d BLUE_RIGHT_HUB_NZ_POSE =
+        new Pose2d(new Translation2d(Meters.of(7.9), Meters.of(3.5)), Rotation2d.kCCW_90deg);
+    public static final Pose2d BLUE_RIGHT_OUTPOST_NZ_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(7.8), Meters.of(2.375)), new Rotation2d(Degrees.of(90)));
+    public static final Pose2d BLUE_RIGHT_PLOW_1_NZ_POSE =
+        new Pose2d(
+            new Translation2d(Meters.of(7.8), BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureY()),
+            new Rotation2d(Degrees.of(0)));
 
-    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_FAR_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(5.983).plus(Meters.of(HEIST_OFFSET)),
-        BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()
-      ),
-      Rotation2d.kZero
-    );
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_FAR_POSE =
+        new Pose2d(
+            new Translation2d(
+                Meters.of(5.983).plus(Meters.of(HEIST_OFFSET)),
+                BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()),
+            Rotation2d.kZero);
 
-    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE = new Pose2d(
-      new Translation2d(
-        Meters.of(5.983).plus(Meters.of(HEIST_OFFSET)),
-        BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()
-      ),
-      new Rotation2d(Degrees.of(45))
-    );
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE =
+        new Pose2d(
+            new Translation2d(
+                Meters.of(5.983).plus(Meters.of(HEIST_OFFSET)),
+                BLUE_RIGHT_ABUMP_AZ_POSE.getMeasureY()),
+            new Rotation2d(Degrees.of(45)));
 
     // double tap stuff
-    public static final Pose2d BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE = new Pose2d(
-      new Translation2d(
-        BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
-        BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY().minus(Meters.of(1.5))
-      ),
-      BLUE_RIGHT_DEPOT_NZ_POSE.getRotation()
-    );
-    public static final Pose2d BLUE_RIGHT_HUB_CLOSE_NZ_POSE = new Pose2d(
-      new Translation2d(
-        BLUE_RIGHT_HUB_NZ_POSE.getMeasureX().minus(Meters.of(1.0)),
-        BLUE_RIGHT_HUB_NZ_POSE.getMeasureY().plus(Meters.of(0.5))
-      ),
-      BLUE_RIGHT_HUB_NZ_POSE.getRotation()
-    );
-    public static final Pose2d BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE = new Pose2d(
-      new Translation2d(
-        BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
-        BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureY()
-      ),
-      Rotation2d.kCCW_90deg
-    );
-    
-    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE = rotate225(BLUE_RIGHT_ABUMP_NZ_POSE);
+    public static final Pose2d BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE =
+        new Pose2d(
+            new Translation2d(
+                BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
+                BLUE_RIGHT_DEPOT_NZ_POSE.getMeasureY().minus(Meters.of(1.5))),
+            BLUE_RIGHT_DEPOT_NZ_POSE.getRotation());
+    public static final Pose2d BLUE_RIGHT_HUB_CLOSE_NZ_POSE =
+        new Pose2d(
+            new Translation2d(
+                BLUE_RIGHT_HUB_NZ_POSE.getMeasureX().minus(Meters.of(1.0)),
+                BLUE_RIGHT_HUB_NZ_POSE.getMeasureY().plus(Meters.of(0.5))),
+            BLUE_RIGHT_HUB_NZ_POSE.getRotation());
+    public static final Pose2d BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE =
+        new Pose2d(
+            new Translation2d(
+                BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureX().minus(Meters.of(1.5)),
+                BLUE_RIGHT_OUTPOST_NZ_POSE.getMeasureY()),
+            Rotation2d.kCCW_90deg);
+
+    public static final Pose2d BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE =
+        rotate225(BLUE_RIGHT_ABUMP_NZ_POSE);
     //             //
     //  blue left  //
     //             //
 
     public static final Pose2d BLUE_LEFT_ABUMP_AZ_POSE = mirrorY(BLUE_RIGHT_ABUMP_AZ_POSE);
-    public static final Pose2d BLUE_LEFT_ABUMP_NZ_ROTATED_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE);
+    public static final Pose2d BLUE_LEFT_ABUMP_NZ_ROTATED_POSE =
+        mirrorY(BLUE_RIGHT_ABUMP_NZ_ROTATED_POSE);
     public static final Pose2d BLUE_LEFT_ABUMP_NZ_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_POSE);
     public static final Pose2d BLUE_LEFT_DEPOT_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_NZ_POSE);
     public static final Pose2d BLUE_LEFT_OUTPOST_NZ_POSE = mirrorY(BLUE_RIGHT_OUTPOST_NZ_POSE);
-    public static final Pose2d BLUE_LEFT_DEPOT_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_DEPOT_CLOSE_NZ_POSE =
+        flipHeading(BLUE_RIGHT_DEPOT_CLOSE_NZ_POSE);
     public static final Pose2d BLUE_LEFT_HUB_CLOSE_NZ_POSE = mirrorY(BLUE_RIGHT_HUB_CLOSE_NZ_POSE);
-    public static final Pose2d BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE = flipHeading(BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE);
+    public static final Pose2d BLUE_LEFT_OUTPOST_CLOSE_NZ_POSE =
+        flipHeading(BLUE_RIGHT_OUTPOST_CLOSE_NZ_POSE);
     public static final Pose2d BLUE_LEFT_PLOW_1_NZ_POSE = mirrorY(BLUE_RIGHT_PLOW_1_NZ_POSE);
 
     public static final Pose2d BLUE_LEFT_ABUMP_NZ_FAR_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_FAR_POSE);
-    public static final Pose2d BLUE_LEFT_ABUMP_NZ_FAR_ROTATED_POSE = mirrorY(BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE);
+    public static final Pose2d BLUE_LEFT_ABUMP_NZ_FAR_ROTATED_POSE =
+        mirrorY(BLUE_RIGHT_ABUMP_NZ_FAR_ROTATED_POSE);
   }
 
   public static class Shooter {
@@ -300,7 +239,8 @@ public final class Constants {
     public static final Distance SHOOTER_RADIUS = Inches.of(2);
     public static final double FLYWHEEL_RADIUS = 0.0508;
 
-    public static final LoggedNetworkNumber DRIP_DISTANCE_FUDGE = new LoggedNetworkNumber("/Tuning/dripDistanceFudge", .5);
+    public static final LoggedNetworkNumber DRIP_DISTANCE_FUDGE =
+        new LoggedNetworkNumber("/Tuning/dripDistanceFudge", .5);
 
     // Note: using wpilib coordinate system
     // intake is front
@@ -315,11 +255,11 @@ public final class Constants {
 
     public static final Angle SHOOTER_ROTATION = Degrees.of(180);
 
-    public static final Distance SHOOTER_DISTANCE_FROM_CENTER = Meters.of(
-      Math.sqrt(
-        Math.pow(SHOOTER_OFFSET_X.in(Meters), 2) + Math.pow(SHOOTER_OFFSET_Y.in(Meters), 2)
-      )
-    );
+    public static final Distance SHOOTER_DISTANCE_FROM_CENTER =
+        Meters.of(
+            Math.sqrt(
+                Math.pow(SHOOTER_OFFSET_X.in(Meters), 2)
+                    + Math.pow(SHOOTER_OFFSET_Y.in(Meters), 2)));
 
     // these values are for when the robot is pressed againt the tower
     public static final Angle DUMB_HOOD_POSITION = Degrees.of(-18.906);
@@ -334,20 +274,20 @@ public final class Constants {
     // slow shoot: fixed low-speed shot bound to right bumper
     // hood position is a placeholder copy of DUMB_HOOD_POSITION; tune as needed
     // public static final Angle SLOW_HOOD_POSITION = Degrees.of(-18.906);
-    public static final LoggedNetworkNumber SLOW_HOOD_POSITION
-      = new LoggedNetworkNumber("/Tuning/slowHoodPosition", -18.906);
+    public static final LoggedNetworkNumber SLOW_HOOD_POSITION =
+        new LoggedNetworkNumber("/Tuning/slowHoodPosition", -18.906);
     // In rotations per second
-    public static final LoggedNetworkNumber SLOW_SHOOTER_SPEED
-      = new LoggedNetworkNumber("/Tuning/slowShootSpeed", 27.5);
+    public static final LoggedNetworkNumber SLOW_SHOOTER_SPEED =
+        new LoggedNetworkNumber("/Tuning/slowShootSpeed", 27.5);
 
-    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
-    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND
-      = new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 0.45);
-    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR
-      = new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
-    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND
-      = new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
+    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_SCALAR =
+        new LoggedNetworkNumber("/Tuning/aimutilSpeedScalar", 1);
+    public static LoggedNetworkNumber AIMUTIL_SHOOTER_SPEED_ADDEND =
+        new LoggedNetworkNumber("/Tuning/aimutilSpeedFudger", 0.45);
+    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_SCALAR =
+        new LoggedNetworkNumber("/Tuning/hoodAngleScalar", 1);
+    public static LoggedNetworkNumber AIMUTIL_HOOD_ANGLE_ADDEND =
+        new LoggedNetworkNumber("/Tuning/hoodAngleFudger", -5);
     // public static final double AIMUTIL_SHOOTER_SPEED_SCALAR = 1;
     // public static final double AIMUTIL_SHOOTER_SPEED_ADDEND = -0.75;
     // public static final double AIMUTIL_HOOD_ANGLE_SCALAR = 1;
@@ -356,33 +296,29 @@ public final class Constants {
 
   public static class Drive {
     public static final Distance WHEEL_FROM_CENTER_DIST =
-      Meters.of(
-        Math.sqrt(
-          Math.pow(Inches.of(9.375).in(Meters), 2) +
-          Math.pow(Inches.of(12.375).in(Meters), 2)
-        )
-      );
+        Meters.of(
+            Math.sqrt(
+                Math.pow(Inches.of(9.375).in(Meters), 2)
+                    + Math.pow(Inches.of(12.375).in(Meters), 2)));
     public static final LinearVelocity MAX_SPEED = TunerConstants.kSpeedAt12Volts;
     // map linear speed onto circumference
     // approximately 2.066 rotations per second
     // or 12.981 radians
     public static final AngularVelocity MAX_ANGULAR_RATE =
-      RotationsPerSecond.of(
-        MAX_SPEED.in(MetersPerSecond) /
-        (2 * Math.PI * WHEEL_FROM_CENTER_DIST.in(Meters))
-      );
+        RotationsPerSecond.of(
+            MAX_SPEED.in(MetersPerSecond) / (2 * Math.PI * WHEEL_FROM_CENTER_DIST.in(Meters)));
 
     // normally 0.3 and 1.0
     public static final double SLOW_SPEED_SCALAR = 0.15;
     public static final double FAST_SPEED_SCALAR = .75;
-    public static final double ROTATION_SPEED_SCALAR = .75 * .85;
+    public static final double ROTATION_SPEED_SCALAR = .75 * .6;
 
     // P on rotation error for auto aim
     public static final LoggedNetworkNumber AIM_ROTATION_P =
-      new LoggedNetworkNumber("/Tuning/aimRotationP", 7);
+        new LoggedNetworkNumber("/Tuning/aimRotationP", 7);
     // D on rotation error for auto aim
     public static final LoggedNetworkNumber AIM_ROTATION_D =
-      new LoggedNetworkNumber("/Tuning/aimRotationD", 0.5);
+        new LoggedNetworkNumber("/Tuning/aimRotationD", 0.5);
 
     // meters per second
     public static final double MAX_SHOOTING_SPEED = 2.0;
@@ -408,37 +344,19 @@ public final class Constants {
     public static final int THROTTLE_IDLE = 0;
     public static final int THROTTLE_RUNNING = 0;
 
-    public static final int[] ALL_APRIL_TAGS = new int[]{};
-    public static final int[] RED_TOWER_APRIL_TAGS = new int[]{
-      15, 16
-    };
-    public static final int[] RED_HUB_APRIL_TAGS = new int[]{
-      2, 3, 4, 5, 8, 9, 10, 11
-    };
-    public static final int[] RED_TOWER_AND_HUB_APRIL_TAGS = new int[] {
-      2, 3, 4, 5, 8, 9, 10, 11, 15, 16
-    };
-    public static final int[] RED_TRENCH_APRIL_TAGS = new int[] {
-      1, 12, 6, 7
-    };
-    public static final int[] RED_OUTPOST_APRIL_TAGS = new int[] {
-      13, 14
-    };
-    public static final int[] BLUE_TOWER_APRIL_TAGS = new int[]{
-      31, 32
-    };
-    public static final int[] BLUE_HUB_APRIL_TAGS = new int[]{
-      18, 19, 20, 21, 24, 25, 26, 27
-    };
-    public static final int[] BLUE_TOWER_AND_HUB_APRIL_TAGS = new int[] {
-      18, 19, 20, 21, 24, 25, 26, 27, 31, 32
-    };
-    public static final int[] BLUE_TRENCH_APRIL_TAGS = new int[] {
-      17, 28, 22, 23
-    };
-    public static final int[] BLUE_OUTPOST_APRIL_TAGS = new int[] {
-      29, 30
-    };
+    public static final int[] ALL_APRIL_TAGS = new int[] {};
+    public static final int[] RED_TOWER_APRIL_TAGS = new int[] {15, 16};
+    public static final int[] RED_HUB_APRIL_TAGS = new int[] {2, 3, 4, 5, 8, 9, 10, 11};
+    public static final int[] RED_TOWER_AND_HUB_APRIL_TAGS =
+        new int[] {2, 3, 4, 5, 8, 9, 10, 11, 15, 16};
+    public static final int[] RED_TRENCH_APRIL_TAGS = new int[] {1, 12, 6, 7};
+    public static final int[] RED_OUTPOST_APRIL_TAGS = new int[] {13, 14};
+    public static final int[] BLUE_TOWER_APRIL_TAGS = new int[] {31, 32};
+    public static final int[] BLUE_HUB_APRIL_TAGS = new int[] {18, 19, 20, 21, 24, 25, 26, 27};
+    public static final int[] BLUE_TOWER_AND_HUB_APRIL_TAGS =
+        new int[] {18, 19, 20, 21, 24, 25, 26, 27, 31, 32};
+    public static final int[] BLUE_TRENCH_APRIL_TAGS = new int[] {17, 28, 22, 23};
+    public static final int[] BLUE_OUTPOST_APRIL_TAGS = new int[] {29, 30};
 
     // TODO tune
     public static final Angle ROTATION_TOLERANCE = Degrees.of(3);
@@ -449,9 +367,7 @@ public final class Constants {
     public static final double ROBOT_LATENCY = 0.0;
 
     public static final LinearVelocity[] OVER_RAMP_STAGE_MAX_SPEED = {
-      MetersPerSecond.of(2.25),
-      MetersPerSecond.of(1.67),
-      MetersPerSecond.of(0.75)
+      MetersPerSecond.of(2.25), MetersPerSecond.of(1.67), MetersPerSecond.of(0.75)
     };
     public static final Distance OVER_RAMP_POSITION_TOLERANCE = Meters.of(0.2);
     public static final Angle OVER_RAMP_HEADING_TOLERANCE = Radians.of(20);
@@ -467,32 +383,35 @@ public final class Constants {
     private static final double AZ_POS_A_OFFSET_RED_X = 0.908304; // good
     private static final double AZ_POS_A_OFFSET_BLUE_X = -0.986536; // good
     private static final double AZ_POS_B_OFFSET_X = 0.1524 + 0.31; // good
-    private static final double AZ_POS_C_OFFSET_X = 1.0668+0.1524; // good
+    private static final double AZ_POS_C_OFFSET_X = 1.0668 + 0.1524; // good
 
-    public static final Translation2d[] AZ_rampRed1 = new Translation2d[] {
-      new Translation2d(RED_RAMP_BASE_X + AZ_POS_A_OFFSET_RED_X,   RAMP_LOW_Y),
-      new Translation2d(RED_RAMP_BASE_X - AZ_POS_B_OFFSET_X,       RAMP_LOW_Y),
-      new Translation2d(RED_RAMP_BASE_X - AZ_POS_C_OFFSET_X,       RAMP_LOW_Y)
-    };
-    public static final Translation2d[] AZ_rampRed2 = new Translation2d[] {
-      new Translation2d(RED_RAMP_BASE_X + AZ_POS_A_OFFSET_RED_X,   RAMP_HIGH_Y),
-      new Translation2d(RED_RAMP_BASE_X - AZ_POS_B_OFFSET_X,       RAMP_HIGH_Y),
-      new Translation2d(RED_RAMP_BASE_X - AZ_POS_C_OFFSET_X,       RAMP_HIGH_Y)
-    };
-    public static final Translation2d[] AZ_rampBlue1 = new Translation2d[] {
-      new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_A_OFFSET_BLUE_X, RAMP_LOW_Y),
-      new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_B_OFFSET_X,      RAMP_LOW_Y),
-      new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_C_OFFSET_X,      RAMP_LOW_Y)
-    };
-    public static final Translation2d[] AZ_rampBlue2 = new Translation2d[] {
-      new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_A_OFFSET_BLUE_X, RAMP_HIGH_Y),
-      new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_B_OFFSET_X,      RAMP_HIGH_Y),
-      new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_C_OFFSET_X,      RAMP_HIGH_Y)
-    };
+    public static final Translation2d[] AZ_rampRed1 =
+        new Translation2d[] {
+          new Translation2d(RED_RAMP_BASE_X + AZ_POS_A_OFFSET_RED_X, RAMP_LOW_Y),
+          new Translation2d(RED_RAMP_BASE_X - AZ_POS_B_OFFSET_X, RAMP_LOW_Y),
+          new Translation2d(RED_RAMP_BASE_X - AZ_POS_C_OFFSET_X, RAMP_LOW_Y)
+        };
+    public static final Translation2d[] AZ_rampRed2 =
+        new Translation2d[] {
+          new Translation2d(RED_RAMP_BASE_X + AZ_POS_A_OFFSET_RED_X, RAMP_HIGH_Y),
+          new Translation2d(RED_RAMP_BASE_X - AZ_POS_B_OFFSET_X, RAMP_HIGH_Y),
+          new Translation2d(RED_RAMP_BASE_X - AZ_POS_C_OFFSET_X, RAMP_HIGH_Y)
+        };
+    public static final Translation2d[] AZ_rampBlue1 =
+        new Translation2d[] {
+          new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_A_OFFSET_BLUE_X, RAMP_LOW_Y),
+          new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_B_OFFSET_X, RAMP_LOW_Y),
+          new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_C_OFFSET_X, RAMP_LOW_Y)
+        };
+    public static final Translation2d[] AZ_rampBlue2 =
+        new Translation2d[] {
+          new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_A_OFFSET_BLUE_X, RAMP_HIGH_Y),
+          new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_B_OFFSET_X, RAMP_HIGH_Y),
+          new Translation2d(BLUE_RAMP_BASE_X + AZ_POS_C_OFFSET_X, RAMP_HIGH_Y)
+        };
 
-    public static final Translation2d[] AZ_RAMP_POSA_CANDIDATES = new Translation2d[] {
-      AZ_rampRed1[0], AZ_rampRed2[0], AZ_rampBlue1[0], AZ_rampBlue2[0]
-    };
+    public static final Translation2d[] AZ_RAMP_POSA_CANDIDATES =
+        new Translation2d[] {AZ_rampRed1[0], AZ_rampRed2[0], AZ_rampBlue1[0], AZ_rampBlue2[0]};
 
     /*
      * From neutral zone
@@ -502,74 +421,71 @@ public final class Constants {
     private static final double NZ_POS_B_OFFSET_X = AZ_POS_B_OFFSET_X + 0.1143; // good
     private static final double NZ_POS_C_OFFSET_X = AZ_POS_C_OFFSET_X + 0.1143; // good
 
-    public static final Translation2d[] NZ_rampRed1 = new Translation2d[] {
-      new Translation2d(RED_RAMP_BASE_X - NZ_POS_A_OFFSET_RED_X,   RAMP_LOW_Y),
-      new Translation2d(RED_RAMP_BASE_X + NZ_POS_B_OFFSET_X,       RAMP_LOW_Y),
-      new Translation2d(RED_RAMP_BASE_X + NZ_POS_C_OFFSET_X,       RAMP_LOW_Y)
-    };
-    public static final Translation2d[] NZ_rampRed2 = new Translation2d[] {
-      new Translation2d(RED_RAMP_BASE_X - NZ_POS_A_OFFSET_RED_X,   RAMP_HIGH_Y),
-      new Translation2d(RED_RAMP_BASE_X + NZ_POS_B_OFFSET_X,       RAMP_HIGH_Y),
-      new Translation2d(RED_RAMP_BASE_X + NZ_POS_C_OFFSET_X,       RAMP_HIGH_Y)
-    };
-    public static final Translation2d[] NZ_rampBlue1 = new Translation2d[] {
-      new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_A_OFFSET_BLUE_X, RAMP_LOW_Y),
-      new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_B_OFFSET_X,      RAMP_LOW_Y),
-      new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_C_OFFSET_X,      RAMP_LOW_Y)
-    };
-    public static final Translation2d[] NZ_rampBlue2 = new Translation2d[] {
-      new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_A_OFFSET_BLUE_X, RAMP_HIGH_Y),
-      new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_B_OFFSET_X,      RAMP_HIGH_Y),
-      new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_C_OFFSET_X,      RAMP_HIGH_Y)
-    };
+    public static final Translation2d[] NZ_rampRed1 =
+        new Translation2d[] {
+          new Translation2d(RED_RAMP_BASE_X - NZ_POS_A_OFFSET_RED_X, RAMP_LOW_Y),
+          new Translation2d(RED_RAMP_BASE_X + NZ_POS_B_OFFSET_X, RAMP_LOW_Y),
+          new Translation2d(RED_RAMP_BASE_X + NZ_POS_C_OFFSET_X, RAMP_LOW_Y)
+        };
+    public static final Translation2d[] NZ_rampRed2 =
+        new Translation2d[] {
+          new Translation2d(RED_RAMP_BASE_X - NZ_POS_A_OFFSET_RED_X, RAMP_HIGH_Y),
+          new Translation2d(RED_RAMP_BASE_X + NZ_POS_B_OFFSET_X, RAMP_HIGH_Y),
+          new Translation2d(RED_RAMP_BASE_X + NZ_POS_C_OFFSET_X, RAMP_HIGH_Y)
+        };
+    public static final Translation2d[] NZ_rampBlue1 =
+        new Translation2d[] {
+          new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_A_OFFSET_BLUE_X, RAMP_LOW_Y),
+          new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_B_OFFSET_X, RAMP_LOW_Y),
+          new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_C_OFFSET_X, RAMP_LOW_Y)
+        };
+    public static final Translation2d[] NZ_rampBlue2 =
+        new Translation2d[] {
+          new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_A_OFFSET_BLUE_X, RAMP_HIGH_Y),
+          new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_B_OFFSET_X, RAMP_HIGH_Y),
+          new Translation2d(BLUE_RAMP_BASE_X - NZ_POS_C_OFFSET_X, RAMP_HIGH_Y)
+        };
 
-    public static final Translation2d[] NZ_RAMP_POSA_CANDIDATES = new Translation2d[] {
-      NZ_rampRed1[0], NZ_rampRed2[0], NZ_rampBlue1[0], NZ_rampBlue2[0]
-    };
+    public static final Translation2d[] NZ_RAMP_POSA_CANDIDATES =
+        new Translation2d[] {NZ_rampRed1[0], NZ_rampRed2[0], NZ_rampBlue1[0], NZ_rampBlue2[0]};
   }
 
   public static class Field {
     public static final double BLUE_ZONE_X = 3.964;
     public static final double RED_ZONE_X = 12.549;
-    public static final LoggedNetworkNumber MAX_BALL_Y_POS
-      = new LoggedNetworkNumber("Tuning/maxBallYPos", 3.0);
-      // TODO for comp
-      // = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.7);
+    public static final LoggedNetworkNumber MAX_BALL_Y_POS =
+        new LoggedNetworkNumber("Tuning/maxBallYPos", 3.0);
+    // TODO for comp
+    // = new LoggedNetworkNumber("Tuning/maxBallYPos", 2.7);
     public static final double HUB_Y_POS = 1.83;
     public static final double GRAVITY_VALUE = 9.80665;
     public static final DoubleSupplier HUB_HANG_TIME =
-      () -> (
-        Math.sqrt((MAX_BALL_Y_POS.getAsDouble() - Shooter.SHOOTER_OFFSET_Z.in(Meters)) * 2) +
-        Math.sqrt(
-          2 * (
-            (MAX_BALL_Y_POS.getAsDouble() - Shooter.SHOOTER_OFFSET_Z.in(Meters)) -
-            (HUB_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters))
-          )
-        )
-      ) / Math.sqrt(GRAVITY_VALUE);
+        () ->
+            (Math.sqrt((MAX_BALL_Y_POS.getAsDouble() - Shooter.SHOOTER_OFFSET_Z.in(Meters)) * 2)
+                    + Math.sqrt(
+                        2
+                            * ((MAX_BALL_Y_POS.getAsDouble() - Shooter.SHOOTER_OFFSET_Z.in(Meters))
+                                - (HUB_Y_POS - Shooter.SHOOTER_OFFSET_Z.in(Meters)))))
+                / Math.sqrt(GRAVITY_VALUE);
     // we're only playing on andymark field so we can just use these
     public static final Distance FIELD_X = Inches.of(650.12);
     public static final Distance FIELD_Y = Inches.of(316.64);
-    public static final Translation2d FIELD_CENTER = new Translation2d(FIELD_X.div(2), FIELD_Y.div(2));
+    public static final Translation2d FIELD_CENTER =
+        new Translation2d(FIELD_X.div(2), FIELD_Y.div(2));
     public static final Translation2d BLUE_HUB_COORDINATES = new Translation2d(4.619, 4.049);
     public static final Translation2d RED_HUB_COORDINATES = new Translation2d(11.925, 4.049);
 
     public static final Pose2d BLUE_TOWER =
-        new Pose2d(
-            new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(0));
+        new Pose2d(new Translation2d(Meters.of(1.6), Meters.of(3.7)), Rotation2d.fromDegrees(0));
 
     public static final Pose2d BLUE_TOWER_DEPOT_SIDE =
-        new Pose2d(
-            new Translation2d(Meters.of(1.53), Meters.of(3.918)), Rotation2d.fromDegrees(0));  
+        new Pose2d(new Translation2d(Meters.of(1.53), Meters.of(3.918)), Rotation2d.fromDegrees(0));
     public static final Pose2d BLUE_TOWER_OUTPOST_SIDE =
-        new Pose2d(
-            new Translation2d(Meters.of(1.53), Meters.of(3.030)), Rotation2d.fromDegrees(0));  
+        new Pose2d(new Translation2d(Meters.of(1.53), Meters.of(3.030)), Rotation2d.fromDegrees(0));
     public static final Pose2d BLUE_TOWER_DEPOT_ALIGN_POSE =
-        new Pose2d(
-            new Translation2d(Meters.of(2), Meters.of(3.918)), Rotation2d.fromDegrees(0));  
+        new Pose2d(new Translation2d(Meters.of(2), Meters.of(3.918)), Rotation2d.fromDegrees(0));
     public static final Pose2d BLUE_TOWER_OUTPOST_ALIGN_POSE =
-        new Pose2d(
-            new Translation2d(Meters.of(2), Meters.of(3.030)), Rotation2d.fromDegrees(0));
+        new Pose2d(new Translation2d(Meters.of(2), Meters.of(3.030)), Rotation2d.fromDegrees(0));
 
     public static final Pose2d RED_TOWER =
         new Pose2d(
@@ -577,25 +493,29 @@ public final class Constants {
 
     public static final Pose2d RED_TOWER_DEPOT_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(14.919), Meters.of(4.2)), Rotation2d.fromDegrees(180));  
+            new Translation2d(Meters.of(14.919), Meters.of(4.2)), Rotation2d.fromDegrees(180));
     public static final Pose2d RED_TOWER_OUTPOST_SIDE =
         new Pose2d(
-            new Translation2d(Meters.of(14.919), Meters.of(5.1)), Rotation2d.fromDegrees(180));  
-   public static final Pose2d RED_TOWER_DEPOT_ALIGN_POSE =
+            new Translation2d(Meters.of(14.919), Meters.of(5.1)), Rotation2d.fromDegrees(180));
+    public static final Pose2d RED_TOWER_DEPOT_ALIGN_POSE =
         new Pose2d(
-            new Translation2d(Meters.of(12.919), Meters.of(4.2)), Rotation2d.fromDegrees(180));  
+            new Translation2d(Meters.of(12.919), Meters.of(4.2)), Rotation2d.fromDegrees(180));
     public static final Pose2d RED_TOWER_OUTPOST_ALIGN_POSE =
         new Pose2d(
-            new Translation2d(Meters.of(12.919), Meters.of(5.1)), Rotation2d.fromDegrees(180));  
+            new Translation2d(Meters.of(12.919), Meters.of(5.1)), Rotation2d.fromDegrees(180));
 
     public static final Translation2d BLUE_BOTTOM_PASS_COORDINATES = new Translation2d(1.5, 2.235);
-    public static final Translation2d BLUE_TOP_PASS_COORDINATES = new Translation2d(BLUE_BOTTOM_PASS_COORDINATES.getX(), 6.235);
-    public static final Translation2d RED_BOTTOM_PASS_COORDINATES = new Translation2d(FIELD_X.minus(BLUE_BOTTOM_PASS_COORDINATES.getMeasureX()).in(Meters), BLUE_BOTTOM_PASS_COORDINATES.getY());
-    public static final Translation2d RED_TOP_PASS_COORDINATES = new Translation2d(RED_BOTTOM_PASS_COORDINATES.getX(), BLUE_TOP_PASS_COORDINATES.getY());
+    public static final Translation2d BLUE_TOP_PASS_COORDINATES =
+        new Translation2d(BLUE_BOTTOM_PASS_COORDINATES.getX(), 6.235);
+    public static final Translation2d RED_BOTTOM_PASS_COORDINATES =
+        new Translation2d(
+            FIELD_X.minus(BLUE_BOTTOM_PASS_COORDINATES.getMeasureX()).in(Meters),
+            BLUE_BOTTOM_PASS_COORDINATES.getY());
+    public static final Translation2d RED_TOP_PASS_COORDINATES =
+        new Translation2d(RED_BOTTOM_PASS_COORDINATES.getX(), BLUE_TOP_PASS_COORDINATES.getY());
 
     // meters
     public static final double HALF_FIELD_Y_POS = 4.022;
-    
   }
 
   public static class Intake {
