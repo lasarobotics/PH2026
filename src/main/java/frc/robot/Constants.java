@@ -240,7 +240,7 @@ public final class Constants {
     public static final double FLYWHEEL_RADIUS = 0.0508;
 
     public static final LoggedNetworkNumber DRIP_DISTANCE_FUDGE =
-        new LoggedNetworkNumber("/Tuning/dripDistanceFudge", .5);
+        new LoggedNetworkNumber("/Tuning/dripDistanceFudge", 1);
 
     // Note: using wpilib coordinate system
     // intake is front
